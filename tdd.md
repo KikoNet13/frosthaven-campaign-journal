@@ -133,3 +133,15 @@ No incluye en MVP:
 - Estructura mínima Firestore.
 - Estrategia de sincronización multi dispositivo.
 - Política de conflictos concurrentes.
+
+## Modelo de dominio e invariantes (Issue #6)
+
+Definiciones e invariantes cerradas en:
+
+- `docs/domain-glossary.md`
+
+Estado:
+
+- Dominio base cerrado para `Week`, `Scenario`, `Outpost`, `Session` y
+  `ResourceChange`.
+- Persistencia y sincronización quedan para ADRs posteriores.

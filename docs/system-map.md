@@ -29,6 +29,8 @@ Este documento permite que una persona o agente nuevo entienda rápidamente:
   - Decisiones aceptadas y trazabilidad.
 - `docs/context-checklists.md`
   - Checklists por trigger de trabajo.
+- `docs/domain-glossary.md`
+  - Definiciones de dominio, invariantes y casos borde.
 - `docs/repo-workflow.md`
   - Flujo GitHub Flow minimalista para este proyecto.
 - `learning/handbook.md`

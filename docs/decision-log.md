@@ -133,18 +133,3 @@
   implementación inicial.
 - `impact`: queda cerrada la Issue #5 y se habilita trabajo de Issue #6.
 - `references`: `tdd.md`, `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/5`
-
-### DEC-0012
-
-- `date`: 2026-02-20
-- `status`: accepted
-- `problem`: cerrar modelo de dominio e invariantes antes de entrar en diseño
-  de persistencia.
-- `decision`: aprobar glosario de dominio y conjunto de invariantes operativas
-  para `Week`, `Scenario`, `Outpost`, `Session` y `ResourceChange`.
-- `rationale`: disminuir ambigüedad funcional y preparar ADRs técnicos con base
-  estable.
-- `impact`: queda cerrada la Issue #6 y se reduce riesgo de regresiones de
-  comportamiento.
-- `references`: `docs/domain-glossary.md`,
-  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/6`

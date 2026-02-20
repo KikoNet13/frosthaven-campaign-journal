@@ -39,6 +39,35 @@ UI:
 - Etiquetas y tooltips en castellano.
 - Icono informativo por recurso.
 
+## Alcance MVP v1 aprobado (Issue #5)
+
+Incluye:
+
+1. Pantalla única con tres zonas:
+   - timeline,
+   - panel de foco,
+   - barra inferior.
+1. Campaña única `campaign/01` sin login.
+1. Timeline por `Week` con `Scenario(s)` y `Outpost`.
+1. Foco editable por entry y estado activo de cronómetro.
+1. Registro de recursos con `+/-`, edición y borrado.
+1. Totales globales derivados del log.
+1. Temporizador `play/stop` para un único entry activo.
+1. Campo de notas de `Week` (“secciones a leer”).
+
+No incluye en MVP:
+
+1. Oro, XP, recursos de personaje, prosperity, perks y pegatinas.
+1. Catálogo avanzado de escenarios.
+1. Multi campaña.
+1. Automatización de `.apk` en release.
+
+## Criterios de éxito MVP
+
+1. Se puede registrar una semana completa sin papel.
+1. Se pueden corregir errores de log sin romper totales.
+1. Estado activo y tiempo visibles y consistentes.
+
 ## No objetivos MVP
 
 - Oro, XP o recursos de personaje.

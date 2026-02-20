@@ -121,3 +121,15 @@
 - `rationale`: menor ambigüedad de alcance.
 - `impact`: navegación y mantenimiento más simples.
 - `references`: `important.txt`, `tdd.md`, `neil.txt`
+
+### DEC-0011
+
+- `date`: 2026-02-20
+- `status`: accepted
+- `problem`: cerrar alcance MVP funcional antes de modelado de dominio.
+- `decision`: aprobar alcance MVP v1 con lista de incluye/no incluye y
+  criterios de éxito.
+- `rationale`: reducir ambigüedad y evitar cambios de alcance durante
+  implementación inicial.
+- `impact`: queda cerrada la Issue #5 y se habilita trabajo de Issue #6.
+- `references`: `tdd.md`, `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/5`

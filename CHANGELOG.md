@@ -1,6 +1,6 @@
 # Changelog
 
-Todos los cambios relevantes de este proyecto se documentan en este archivo.
+Todos los cambios relevantes del proyecto se documentan en este archivo.
 
 El formato sigue
 [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
@@ -9,23 +9,19 @@ y usa versionado
 
 ## [Unreleased]
 
-### Bootstrap
+### Añadido
 
-- Pendiente de cambios no versionados.
+- Archivo `LICENSE` con licencia MIT.
 
 ## [0.1.0] - 2026-02-20
 
-### Added
+### Bootstrap inicial
 
 - Estructura base de contexto (`AGENTS.md`, `docs/`, `learning/`).
-- Flujo GitHub Flow minimalista y convenciones de commits.
-- `README.md`, `CONTRIBUTING.md` y plantillas de Issues/PR.
+- Flujo GitHub Flow minimalista y convención de commits.
+- `README.md`, `CONTRIBUTING.md` y plantillas de Issues y PR.
 - Base de versionado con `CHANGELOG.md`.
-
-### Changed
-
-- Normalización UTF-8 con tildes en documentación Markdown.
-- Ajustes para compatibilidad con `markdownlint`.
+- Normalización UTF-8 en documentos Markdown.
 
 [Unreleased]:
   https://github.com/KikoNet13/frosthaven-campaign-journal/compare/v0.1.0...HEAD

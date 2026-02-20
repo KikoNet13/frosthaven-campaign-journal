@@ -27,6 +27,8 @@ Este documento permite que una persona o agente nuevo entienda rápidamente:
   - Evidencias de verificación.
 - `docs/decision-log.md`
   - Decisiones aceptadas y trazabilidad.
+- `docs/domain-glossary.md`
+  - Contrato de modelo de dominio e invariantes.
 - `docs/context-checklists.md`
   - Checklists por trigger de trabajo.
 - `docs/repo-workflow.md`
@@ -69,6 +71,7 @@ Este documento permite que una persona o agente nuevo entienda rápidamente:
 
 - Regla activa -> `AGENTS.md`
 - Decisión tomada -> `docs/decision-log.md`
+- Modelo de dominio -> `docs/domain-glossary.md`
 - Estado de fase -> `docs/context-governance.md`
 - Pasos operativos -> `docs/context-checklists.md`
 - Material reutilizable -> `learning/handbook.md`

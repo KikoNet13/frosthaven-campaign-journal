@@ -15,6 +15,8 @@ y usa versionado
 - Estrategia de división de tareas múltiples en `docs/context-checklists.md`.
 - Cierre de alcance MVP v1 documentado en `tdd.md` (Issue #5).
 - Regla de aviso para activar `Plan Mode` antes de decisiones interactivas.
+- Modelo de dominio unificado `Entry` y glosario oficial en
+  `docs/domain-glossary.md` (Issue #6).
 
 ### Cambiado
 
@@ -24,6 +26,10 @@ y usa versionado
 - Registro de decisión DEC-0011 en `docs/decision-log.md`.
 - Reglas de colaboración reforzadas en `AGENTS.md` y
   `docs/repo-workflow.md`.
+- `tdd.md` actualiza el bloque de dominio/Firestore de pendiente a cerrado
+  según la Issue #6.
+- `docs/system-map.md` incorpora `docs/domain-glossary.md` como fuente
+  oficial.
 
 ## [0.1.0] - 2026-02-20
 

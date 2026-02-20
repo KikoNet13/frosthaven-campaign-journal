@@ -133,3 +133,18 @@
   implementación inicial.
 - `impact`: queda cerrada la Issue #5 y se habilita trabajo de Issue #6.
 - `references`: `tdd.md`, `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/5`
+
+### DEC-0012
+
+- `date`: 2026-02-20
+- `status`: accepted
+- `problem`: cerrar modelo de dominio e invariantes de la Issue #6 sin abrir
+  decisiones de implementación.
+- `decision`: adoptar modelo unificado `Entry` (`scenario|outpost`) con
+  jerarquía temporal explícita `campaign > year > season > week > entry`.
+- `rationale`: reducir complejidad del dominio y evitar duplicación de
+  estructura en `Session` y `ResourceChange`.
+- `impact`: contrato de dominio cerrado en `docs/domain-glossary.md`; se
+  elimina necesidad de `owner_type` en entidades hijas.
+- `references`: `docs/domain-glossary.md`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/6`

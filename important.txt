@@ -1,0 +1,4 @@
+- CREA UN CONTEXTO PERFECTO PARA TRABAJAR CON AGENTES IA
+- Consulta en internet cuales son las mejores prácticas para hacerlo
+- Aunque estemos generando una app, el principal objetivo es que yo (Kiko) aprenda a trabajar con agentes IA como tu (Codex) para obtener los mejores resultados en apps más complejas
+- Para ello, he extraído de unos videos de youtube (con NotebookLM) el contenido de neil.txt

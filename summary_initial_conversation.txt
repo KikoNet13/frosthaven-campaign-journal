@@ -1,0 +1,65 @@
+Quiero que actúes como arquitecto/analista de requisitos y me ayudes a hacer ingeniería de contexto. NO programes (de momento). NO crees implementación (de momento). Solo documentos y decisiones.
+
+Objetivo
+- Definir y cerrar requisitos y diseño para una app Frosthaven muy simple (1 pantalla principal) que resuelva el problema de registrar recursos de campaña sin tener que borrar/re-escribir en papel.
+
+Stack ya decidido
+- Flet (Python) + Firestore (gratis)
+- Sin usuarios/login/PIN
+- Campaña única con ID fijo: campaign/01
+- Multi-dispositivo: todos pueden leer/escribir
+
+Convenciones
+- Documentación y UI en castellano.
+- Identificadores (modelos, campos, colecciones) en inglés.
+- Cuando propongas entidades, aclara si es “concepto de dominio” o “detalle de implementación”. Nada se considera definitivo hasta que lo aprobemos.
+
+Modelo mental correcto (corrige lo anterior)
+- Timeline por semanas (Weeks).
+- Dentro de cada Week hay exactamente 1 Outpost y 1..N Scenarios.
+- “Sesión” es el tiempo de juego (start/stop). Es metadato asociado a Outpost/Scenario y puede ser:
+  - un único intervalo (started_at, ended_at) o
+  - múltiples intervalos (por pausas), lo decidiremos.
+- “Movimientos” es como el usuario llama a los cambios de recursos. Tú propondrás un nombre de entidad (ej. ResourceChange) solo si aporta valor para: deshacer/editar y recalcular totales.
+
+UI y UX
+- Tablet Android horizontal.
+- Pantalla única con 3 zonas:
+  1) Izquierda: timeline con Weeks y sus entries (Scenarios apilados + Outpost).
+     - Se ve claramente el FOCO (lo que se edita).
+     - Se ve claramente cuál entry está ACTIVO (cronómetro).
+     - Indicador de week_cursor (semana actual).
+     - Botón “+ Escenario” dentro de la semana actual.
+  2) Derecha: panel del entry en foco:
+     - Log editable de cambios de recursos (deshacer/corregir).
+     - Controles +/- rápidos por recurso (sin formulario).
+     - Para Weeks: campo “secciones a leer” (notas).
+  3) Barra inferior fija:
+     - Totales globales actuales.
+     - Tiempo activo hh:mm y play/stop.
+     - Identificador de entry activo (Scenario # / Outpost).
+- Recursos mostrados con:
+  - icono informativo (yo los aportaré)
+  - tooltip en castellano
+  - clave interna en inglés para persistencia
+
+Qué quiero que hagas (iterativo)
+Fase 1 — Documentos iniciales (v0.1)
+1) Crear/actualizar TDD.md (castellano) con: alcance MVP, no-objetivos, flujos, wireframe textual, invariantes.
+2) Crear un “Glosario de dominio” (1 página) para fijar Week/Scenario/Outpost/Session/ResourceChange.
+3) Crear una lista corta de ADRs propuestas (solo títulos + decisión a debatir).
+
+Fase 2 — Cierre de decisiones
+4) Proponer 2-3 opciones para:
+   - representación del tiempo (1 intervalo vs múltiples)
+   - estructura Firestore mínima (rutas)
+   - estrategia de sincronización (listener vs refresh manual)
+   Para cada opción: pros/contras y recomendación.
+5) Hacerme preguntas de una en una (con opciones) solo cuando sea estrictamente necesario para desbloquear una decisión.
+
+IMPORTANTE
+- No crees archivos de código.
+- No generes scaffolding.
+- No asumas cosas no dichas.
+- Tu salida debe ser: borradores de documentos + lista de decisiones pendientes + siguiente pregunta (si procede).
+Empieza por Fase 1.

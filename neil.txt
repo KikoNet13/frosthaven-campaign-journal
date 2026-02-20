@@ -1,0 +1,36 @@
+Yo: "Neil menciona las instrucciones que le da a Codex para su comportamiento. ¿Cuáles son?"
+NB: 
+"Neil detalla las instrucciones personalizadas (o *system prompt*) que utiliza para configurar el comportamiento de **GPT-5.3 Codex**, las cuales describe como un "**centro de gravedad**" para mantener al modelo enfocado en la realidad y en las capas base de cualquier problema.
+
+Las instrucciones específicas que Neil le da al modelo son las siguientes:
+
+*   **Identidad y honestidad:** Define al modelo como un asistente "servicial y amable", pero que es "**brutalmente honesto**".
+*   **Análisis multinivel:** Le pide que analice conceptos o sistemas a través de "**múltiples lentes**", considerando diferentes perspectivas y niveles de complejidad.
+*   **Pensamiento desde primeros principios:** Esta es una de las instrucciones más críticas. Neil instruye al modelo para que, al explicar conceptos o resolver problemas, comience por "**reducir el problema al menor número de partes constituyentes posible**" (lo que él llama "simplicidad irreducible de los primeros principios").
+*   **Rigor en la resolución:** El modelo debe explicar primero el marco de trabajo o algoritmo y luego "**razonar hacia la solución y responder con rigor**".
+*   **Proactividad y visión:** Le ordena ayudar a identificar **puntos ciegos y casos de borde** (*edge cases*), además de ser "altamente creativo y visionario".
+*   **Prioridad de comprensión:** La instrucción dicta: "**Primero busca entender antes de ser entendido**".
+*   **Estilo de comunicación:** Debe responder de forma **concisa**, a menos que considere que una explicación adicional sea necesaria y útil para el tema en cuestión.
+
+Neil enfatiza que prefiere no incluir orquestaciones de comportamiento complejas en este *prompt* del sistema, sino dejar que el agente sea lo más amplio posible, siempre que estas instrucciones lo obliguen a regresar a la "**capa base**" de los problemas. Además, aclara que utiliza el archivo `agents.md` como un mapa del sistema y no para definir el comportamiento, ya que esa función recae exclusivamente en las instrucciones mencionadas."
+Yo: "¿Dónde escribe este comportamiento y qué escribe en agents.md?"
+NB:
+"Neil define el comportamiento de la IA en las **instrucciones personalizadas** (dentro de la sección de personalización o *system prompt*) y no en el archivo `agents.md`. 
+
+Él prefiere utilizar el *system prompt* como un "**centro de gravedad**" que obligue al modelo a volver siempre a la realidad y a la capa base de los problemas, permitiendo que el agente sea lo más amplio posible fuera de esas reglas fundamentales.
+
+En cuanto al archivo **`agents.md`**, Neil escribe lo siguiente:
+
+*   **Mapa del sistema:** Lo define estrictamente como un **mapa efectivo del producto**, software o proyecto que está construyendo.
+*   **Destilación y compactación:** Es una versión compactada y destilada de **toda la pieza de software**, lo que permite al agente tener una visión global.
+*   **Punto de referencia:** Sirve para que el modelo pueda usarlo como **referencia para navegar por cualquier parte del código**.
+*   **Actualización automatizada:** Neil menciona que utiliza **automatizaciones** para que el archivo `agents.md` se actualice periódicamente de forma automática, asegurando que el mapa sea coherente con lo que realmente existe en la base de código sin intervención manual."
+Yo: "¿Cómo maneja Neil las alucinaciones de GPT-5.3 en su flujo?"
+NB:
+"Neil aborda el problema de las alucinaciones de GPT-5.3 Codex no como un impedimento insalvable, sino como una parte natural del proceso que puede gestionarse mediante **estrategias de revisión y un contexto sólido**. Su enfoque se basa en los siguientes puntos clave:
+
+*   **Autocorrección y Revisión del Modelo:** Neil sostiene que, al igual que los desarrolladores humanos revisan su trabajo, se puede pedir al propio modelo que **revise su propio código para encontrar errores**. Según él, las alucinaciones dejan de ser un problema si se sabe cómo "doble, triple o incluso cuádruple verificar" los resultados desde diferentes ángulos utilizando la IA.
+*   **Prompting de Rigor y Primeros Principios:** En sus instrucciones personalizadas, Neil obliga al modelo a **razonar hacia la solución con rigor** tras haber reducido el problema a sus partes más simples o "primeros principios". Este método de pensamiento estructurado ayuda a que el modelo no se desvíe hacia respuestas inventadas, manteniéndolo anclado a la lógica del sistema.
+*   **El Contexto como Antídoto:** Para Neil, la ingeniería de software actual es fundamentalmente un **"problema de contexto"**. Él argumenta que si proporcionas al modelo el contexto suficiente —como documentación técnica actualizada en archivos Markdown o repositorios clonados en una carpeta de referencias—, el modelo puede "recuperar e implementar" soluciones reales en lugar de alucinar sobre cómo funcionan.
+*   **Iteración y el "Algoritmo de Elon":** Neil aplica un ciclo de mejora continua donde uno de los pasos finales es asegurar que no haya errores y que el código sea seguro. Este proceso de **acelerar el tiempo de ciclo** permite identificar y corregir fallos o alucinaciones de manera rápida antes de que se conviertan en un problema mayor.
+*   **Uso del Mapa del Sistema (agents.md):** Al mantener un archivo `agents.md` que sirve como mapa destilado y coherente de toda la base de código, Neil se asegura de que la IA siempre tenga una **referencia veraz** a la que acudir, lo que reduce la probabilidad de que el modelo invente rutas o funciones que no existen en el proyecto."

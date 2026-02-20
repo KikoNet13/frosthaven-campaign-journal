@@ -28,6 +28,19 @@ Aplicar un flujo profesional, simple y mantenible para un solo desarrollador.
 - Para trabajo trivial:
   - se permite commit y push directo a `main`
 
+## Flujo recomendado con Codex
+
+1. Kiko pide objetivo o cambio.
+1. Codex lo traduce a unidades ejecutables.
+1. Si hay varias unidades, se crean Issues separadas.
+1. Si una unidad es no trivial, va en rama con patrón
+   `tipo/<issue-id>-slug`.
+1. Si una unidad es trivial y aislada, puede ir a `main`.
+1. Codex reporta siempre:
+   - qué unidad ejecutó,
+   - qué commit generó,
+   - qué Issue cerró o dejó abierta.
+
 ## Reglas de commits
 
 - Formato: `type(scope): resumen en español`.
@@ -68,6 +81,27 @@ Aplicar un flujo profesional, simple y mantenible para un solo desarrollador.
   - actualizar `CHANGELOG.md`
   - crear tag
   - publicar release notes
+
+## Estrategia de APK en releases
+
+Estado actual:
+
+- No hay pipeline de build Android en GitHub Actions.
+- No hay adjunto automático de `.apk` en releases.
+
+Opciones para Fase 1:
+
+1. Manual:
+   - compilar localmente y adjuntar `.apk` en la release.
+1. Automática:
+   - workflow de GitHub Actions al crear tag;
+   - generar `.apk` y adjuntarlo a la release.
+
+Requisitos de automatización:
+
+- toolchain Android en CI;
+- secretos de firma (`keystore`, passwords y alias);
+- definición de variante (`debug` o `release`).
 
 ## Cadencia recomendada
 

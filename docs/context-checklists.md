@@ -34,6 +34,23 @@
 
 - `owner`: IA ejecuta, Kiko valida.
 
+## CHK-TASK-SPLIT
+
+- `trigger`: petición con múltiples cambios en un mismo mensaje.
+- `steps`:
+
+  1. Identificar unidades independientes.
+  1. Clasificar cada unidad como trivial o no trivial.
+  1. Definir si se agrupa o se separa en Issues.
+  1. Registrar criterio de separación en el reporte de sesión.
+
+- `validation`:
+
+  1. No hay mezcla de cambios no relacionados en una sola unidad.
+  1. La trazabilidad final explica qué quedó en cada commit/Issue.
+
+- `owner`: IA ejecuta, Kiko valida.
+
 ## CHK-MILESTONE-CLOSE
 
 - `trigger`: cierre de hito.

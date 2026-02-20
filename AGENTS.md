@@ -51,6 +51,22 @@ sencillo.
 1. Ejecutar checklists de `docs/context-checklists.md`.
 1. Mantener trazabilidad de conflictos y precedencia.
 
+### Protocolo de colaboración con Codex
+
+1. Kiko puede pedir implementación directa en lenguaje natural.
+1. Codex se encarga de convertir la petición en unidades de trabajo.
+1. Si la petición incluye cambios independientes, Codex los separa.
+1. Regla por defecto:
+   - trabajo trivial aislado: puede ir directo a `main`;
+   - trabajo no trivial o con varias unidades: Issue por unidad.
+1. Relación objetivo:
+   - `1 Issue -> 1 rama -> N commits -> 1 cierre`.
+1. Si Kiko pide varias cosas pequeñas juntas, Codex decide el corte y deja
+   trazabilidad de cómo las agrupó.
+1. Al inicio de una sesión, Kiko puede pedir “dame 3-5 tareas recomendadas”
+   y Codex propondrá un menú priorizado.
+1. Al cierre de cada sesión, Codex devuelve siguiente menú numerado.
+
 ### Cierre de hito
 
 1. Actualizar documentos oficiales.
@@ -82,6 +98,12 @@ Cada interacción termina con un menú numerado fijo de 3 a 5 siguientes pasos.
 - Bibliografía anotada: `learning/sources.md`
 - Flujo Git y GitHub: `docs/repo-workflow.md`
 - Guía didáctica de flujo Git: `learning/git-workflow-handbook.md`
+
+## Nota sobre APK y releases
+
+La subida automática de `.apk` a Releases no está activa en Fase 0.
+Cuando se implemente build Android, se definirá si el `.apk` se adjunta
+manualmente o mediante GitHub Actions al crear tags de release.
 
 ## Nota de legado
 

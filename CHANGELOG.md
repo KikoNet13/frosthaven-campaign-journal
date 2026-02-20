@@ -11,7 +11,13 @@ y usa versionado
 
 ### Añadido
 
-- Archivo `LICENSE` con licencia MIT.
+- Reglas explícitas de colaboración Kiko-Codex en `AGENTS.md`.
+- Estrategia de división de tareas múltiples en `docs/context-checklists.md`.
+
+### Cambiado
+
+- Flujo operativo detallado para trabajo con agente en `docs/repo-workflow.md`.
+- Nota formal sobre estrategia de `.apk` y releases.
 
 ## [0.1.0] - 2026-02-20
 
@@ -22,6 +28,7 @@ y usa versionado
 - `README.md`, `CONTRIBUTING.md` y plantillas de Issues y PR.
 - Base de versionado con `CHANGELOG.md`.
 - Normalización UTF-8 en documentos Markdown.
+- Archivo `LICENSE` con licencia MIT.
 
 [Unreleased]:
   https://github.com/KikoNet13/frosthaven-campaign-journal/compare/v0.1.0...HEAD

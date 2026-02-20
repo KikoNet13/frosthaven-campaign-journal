@@ -36,6 +36,8 @@ sencillo.
 - Cadencia de actualización por hito.
 - Verificación doble obligatoria en cada cierre de hito.
 - Gate estricto antes de pasar a código.
+- Las decisiones de arquitectura o dominio se trabajan en modo interactivo.
+- Ninguna Issue de diseño se cierra sin aprobación explícita de Kiko.
 
 ## Flujo operativo
 
@@ -63,6 +65,8 @@ sencillo.
    - `1 Issue -> 1 rama -> N commits -> 1 cierre`.
 1. Si Kiko pide varias cosas pequeñas juntas, Codex decide el corte y deja
    trazabilidad de cómo las agrupó.
+1. En tareas de diseño (`type:decision` o equivalentes), Codex primero
+   propone, luego revisa con Kiko y solo después documenta como cerrado.
 1. Al inicio de una sesión, Kiko puede pedir “dame 3-5 tareas recomendadas”
    y Codex propondrá un menú priorizado.
 1. Al cierre de cada sesión, Codex devuelve siguiente menú numerado.

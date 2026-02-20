@@ -61,6 +61,13 @@ Aplicar un flujo profesional, simple y mantenible para un solo desarrollador.
   - resumen de alcance
   - checklist de calidad completada
 
+## Regla especial para diseño y arquitectura
+
+- Si la tarea es de dominio, arquitectura o proceso crítico:
+  - se discute primero en conversación interactiva;
+  - se documenta después de aprobación explícita de Kiko;
+  - no se cierra la Issue sin esa aprobación.
+
 ## Definición de cambio trivial
 
 - typo o formato local

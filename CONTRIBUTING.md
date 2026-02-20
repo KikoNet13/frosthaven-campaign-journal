@@ -11,6 +11,8 @@ Mantener un flujo profesional, simple y trazable para un proyecto pequeño.
 - Tareas no triviales: Issue + rama + commits + cierre.
 - Cambios relevantes: PR obligatoria.
 - Cambios triviales: permitido directo a `main`.
+- Decisiones de arquitectura o dominio: revisión interactiva obligatoria con
+  aprobación explícita antes del cierre.
 
 ## Convención de ramas
 
@@ -72,6 +74,7 @@ Checklist mínima:
 - Descripción de objetivo y alcance.
 - Confirmación de compatibilidad con Markdown lint.
 - Impacto documentado en `CHANGELOG.md` (si aplica).
+- Si es diseño o arquitectura, incluir nota de aprobación explícita de Kiko.
 
 ## Versionado
 

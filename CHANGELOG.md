@@ -15,6 +15,7 @@ y usa versionado
 - Estrategia de división de tareas múltiples en `docs/context-checklists.md`.
 - Cierre de alcance MVP v1 documentado en `tdd.md` (Issue #5).
 - Glosario de dominio e invariantes en `docs/domain-glossary.md` (Issue #6).
+- Regla de aviso para activar `Plan Mode` antes de decisiones interactivas.
 
 ### Cambiado
 
@@ -22,6 +23,7 @@ y usa versionado
 - Nota formal sobre estrategia de `.apk` y releases.
 - Registro de decisión DEC-0011 en `docs/decision-log.md`.
 - Registro de decisión DEC-0012 en `docs/decision-log.md`.
+- Reglas de colaboración reforzadas en `AGENTS.md` y `docs/repo-workflow.md`.
 
 ## [0.1.0] - 2026-02-20
 

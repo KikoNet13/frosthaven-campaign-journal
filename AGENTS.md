@@ -38,6 +38,8 @@ sencillo.
 - Gate estricto antes de pasar a código.
 - Las decisiones de arquitectura o dominio se trabajan en modo interactivo.
 - Ninguna Issue de diseño se cierra sin aprobación explícita de Kiko.
+- Si una decisión requiere respuestas interactivas, Codex debe avisar
+  explícitamente para activar `Plan Mode` antes de continuar.
 
 ## Flujo operativo
 
@@ -67,6 +69,8 @@ sencillo.
    trazabilidad de cómo las agrupó.
 1. En tareas de diseño (`type:decision` o equivalentes), Codex primero
    propone, luego revisa con Kiko y solo después documenta como cerrado.
+1. Cuando sea necesario responder con interfaz interactiva, Codex debe indicar
+   “activa `Plan Mode`” antes de lanzar decisiones.
 1. Al inicio de una sesión, Kiko puede pedir “dame 3-5 tareas recomendadas”
    y Codex propondrá un menú priorizado.
 1. Al cierre de cada sesión, Codex devuelve siguiente menú numerado.

@@ -67,6 +67,8 @@ Aplicar un flujo profesional, simple y mantenible para un solo desarrollador.
   - se discute primero en conversación interactiva;
   - se documenta después de aprobación explícita de Kiko;
   - no se cierra la Issue sin esa aprobación.
+  - si hace falta interfaz de respuestas clicables, Codex avisa para activar
+    `Plan Mode`.
 
 ## Definición de cambio trivial
 

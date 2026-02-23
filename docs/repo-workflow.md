@@ -62,8 +62,23 @@ Aplicar un flujo profesional, simple y mantenible para un solo desarrollador.
 - Si hay varias PRs abiertas, prioriza la PR con número más bajo.
 - Si existe al menos una PR abierta, el siguiente paso es llevar esa PR a
   cierre (merge o cierre explícito si se descarta).
-- Si no hay PRs abiertas, el siguiente paso es resolver la `siguiente pendiente`
-  (`siguiente issue pendiente`).
+- Si no hay PRs abiertas, Codex busca un **orden técnico recomendado** en la
+  documentación oficial aplicable.
+- Si existe orden técnico recomendado:
+  - usa la fuente oficial más específica disponible (detalle > macro);
+  - recorre el orden y elige la primera Issue abierta **cerrable**;
+  - si una Issue abierta no es cerrable, la salta y evalúa la siguiente;
+  - si no hay Issues cerrables en ese orden, elige la primera Issue
+    `draftable`.
+- Si no existe orden técnico aplicable, el siguiente paso es resolver la
+  `siguiente pendiente` (`siguiente issue pendiente`).
+- Definición operativa para esta regla:
+  - `cerrable`: Issue abierta con dependencias de cierre satisfechas según la
+    documentación oficial vigente.
+  - `draftable`: Issue abierta que puede iniciarse en borrador, pero cuyo cierre
+    depende de otras Issues.
+  - `blocked`: Issue abierta que no debe cerrarse hasta resolver dependencias
+    faltantes.
 - Cuando Kiko pide `siguiente paso`, Codex identifica el paso prioritario y lo
   ejecuta en la misma sesión/pasada por defecto.
 - Excepciones explícitas:

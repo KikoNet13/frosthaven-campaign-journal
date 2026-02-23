@@ -73,8 +73,12 @@ sencillo.
 1. Comandos conversacionales de priorización:
    - `siguiente pendiente` y `siguiente issue pendiente` son equivalentes;
    - `siguiente paso` revisa primero PRs pendientes (incluyendo `draft`);
-   - si no hay PRs pendientes, `siguiente paso` pasa a resolver la siguiente
-     Issue pendiente.
+   - si no hay PRs pendientes, `siguiente paso` usa orden técnico recomendado
+     (si existe) tomando la fuente oficial más específica (detalle > macro);
+   - si no existe orden técnico aplicable, `siguiente paso` pasa a resolver la
+     siguiente Issue pendiente;
+   - si el siguiente item técnico no es cerrable, salta al siguiente cerrable;
+   - si no hay cerrables en el orden técnico, toma el primer `draftable`.
 1. Ejecución por defecto de `siguiente paso`:
    - `siguiente paso` implica identificar el trabajo prioritario y ejecutarlo
      en la misma pasada por defecto;

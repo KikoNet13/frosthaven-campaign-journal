@@ -169,3 +169,24 @@
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/8`,
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/12`,
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/18`
+
+### DEC-0014
+
+- `date`: 2026-02-23
+- `status`: accepted
+- `problem`: hay ambigüedad operativa sobre el uso de `main`, el momento de
+  cierre de Issues cuando el trabajo va en rama y la prioridad entre PRs e
+  Issues al pedir “siguiente paso”.
+- `decision`: mantener PR obligatoria para cambios relevantes; cerrar la Issue
+  asociada tras merge/integración en `main` cuando el trabajo va en rama;
+  tratar `siguiente pendiente` y `siguiente issue pendiente` como equivalentes;
+  y priorizar PRs abiertas (incluyendo `draft`) antes de pasar a la siguiente
+  Issue pendiente al pedir `siguiente paso`.
+- `rationale`: reduce ambigüedad de ejecución, evita cierres tempranos como el
+  caso de la Issue #7 y deja una regla de priorización conversacional
+  determinista.
+- `impact`: estandariza el flujo de cierre en trabajo con rama y el orden de
+  priorización entre PRs e Issues; mejora trazabilidad de sesiones con Codex.
+- `references`: `AGENTS.md`, `docs/repo-workflow.md`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/7`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/22`

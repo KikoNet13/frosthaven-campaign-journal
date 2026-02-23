@@ -235,3 +235,27 @@
   `.github/ISSUE_TEMPLATE/decision.md`, `.github/ISSUE_TEMPLATE/task.md`,
   `.github/ISSUE_TEMPLATE/bug.md`, `.editorconfig`,
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/25`
+
+### DEC-0017
+
+- `date`: 2026-02-23
+- `status`: accepted
+- `problem`: el diseño de ajustes de campaña para provisión de años quedó
+  desalineado con el nuevo enfoque de pantalla única con selector temporal
+  superior.
+- `decision`: reencuadrar la Issue #9 para definir controles temporales de
+  campaña en la barra superior (selector de año/semana), provisión inicial
+  automática de 4 años, extensión manual `+1` con confirmación, patrón de
+  selector de entry en popover anclado y ajuste manual explícito de
+  `week_cursor` separado de la navegación de semanas.
+- `rationale`: simplifica la UI principal, evita una pantalla de ajustes
+  separada solo para años y mantiene coherencia con el modelo de pantalla única
+  del MVP.
+- `impact`: cambia el corte funcional de la Issue #9 respecto a #13 y #14;
+  exige alinear `week_cursor` en `docs/domain-glossary.md` y su política de
+  conflicto en `docs/conflict-policy.md`.
+- `references`: `docs/campaign-temporal-controls.md`, `docs/domain-glossary.md`,
+  `docs/conflict-policy.md`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/9`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/13`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/14`

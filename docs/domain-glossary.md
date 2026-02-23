@@ -6,8 +6,8 @@
 - `purpose`: Definir el modelo de dominio e invariantes operativas del MVP.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-02-20
-- `next_review`: 2026-03-06
+- `last_updated`: 2026-02-23
+- `next_review`: 2026-03-09
 
 ## Objetivo
 
@@ -21,6 +21,8 @@ entidad `Entry` (`scenario|outpost`) y jerarquía temporal explícita:
 
 - `campaign_id`: string fijo, valor `01`.
 - `week_cursor`: entero, semana actual activa.
+  - Puede cambiar por cierre de `Week` o por acción manual explícita del flujo
+    de controles temporales del MVP.
 - `resource_totals`: mapa `resource_key -> int` derivado del log de cambios.
 
 ### Year
@@ -89,6 +91,9 @@ entidad `Entry` (`scenario|outpost`) y jerarquía temporal explícita:
 
 - Persistencia temporal en UTC.
 - `week_number` global inmutable.
+- Seleccionar `Week` para navegación/foco no implica cambiar `week_cursor`.
+- `week_cursor` puede ajustarse manualmente mediante acción explícita separada
+  del selector de semana (MVP).
 - `year_number` y `season_type` son coherentes con `week_number` y la jerarquía.
 - En esta issue no se define provisión inicial de años (por ejemplo, crear 4
   años en bloque).
@@ -104,6 +109,8 @@ entidad `Entry` (`scenario|outpost`) y jerarquía temporal explícita:
 1. Si se borra una `Entry` activa, se hace `auto-stop` y luego borrado en
    cascada (`sessions` y `resource_changes`).
 1. Si se cierra `Week` con sesión activa, se hace `auto-stop` y luego cierre.
+1. `week_cursor` puede cambiar por cierre de `Week` y por acción manual
+   explícita de controles temporales; navegar semanas no cambia el cursor.
 1. `ResourceChange.delta` es entero firmado y se valida que el estado final de
    totales no sea negativo.
 1. `scenario_ref` es obligatorio y entero positivo para `scenario`.
@@ -119,3 +126,5 @@ entidad `Entry` (`scenario|outpost`) y jerarquía temporal explícita:
 1. Borrar `Entry` debe eliminar en cascada sus hijos.
 1. Operaciones que dejen totales finales negativos deben rechazarse.
 1. Cerrar `Week` con sesión activa debe cerrar sesión y avanzar cursor.
+1. Seleccionar una semana en el control temporal superior no debe cambiar
+   `week_cursor` sin acción explícita adicional.

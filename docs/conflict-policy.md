@@ -52,6 +52,7 @@ No incluye:
 | `Session.stop` | `campaign` + `entry` + `session` | Alto | `rechazar` | `refrescar` + `reintentar` | Rechazar si la sesión activa cambió o ya fue cerrada |
 | `auto-stop` por nuevo `start` | `campaign` + `session` | Alto | `rechazar` | `refrescar` + `reintentar` | No usar LWW sobre estado de sesión |
 | `Week.close` | `week` + `campaign` | Alto | `rechazar` | `refrescar` + `reintentar` | Rechazar si `week.status` o `week_cursor` cambió |
+| `Campaign.set_week_cursor` (acción manual) | `campaign` | Alto | `rechazar` | `refrescar` + `reintentar` | Cambio de estado de campaña; sin `last-write-wins` |
 | Borrado de `Entry` activa (con cascada) | `entry` + `session` + `resource_change` | Alto | `rechazar` | `refrescar` + `reintentar` | Incluye auto-stop y borrado en cascada; contratos técnicos en #12 |
 | Edición de `Week.notes` | `week` | Medio | `rechazar` | `refrescar` + reingresar cambios | No usar `last-write-wins` en MVP |
 | Crear `ResourceChange` | `resource_change` (+ totales derivados) | Medio/Alto | `rechazar` | `refrescar` + `reintentar` | Política estricta para evitar inconsistencias silenciosas |
@@ -68,6 +69,8 @@ No incluye:
    la operación se **rechaza**.
 1. Si una operación depende de la sesión activa global y esa condición cambió,
    la operación se **rechaza**.
+1. Si una operación de ajuste manual de `week_cursor` encuentra que el cursor
+   cambió concurrentemente, la operación se **rechaza** y requiere `refresco`.
 1. Si el rechazo ocurre durante una operación compuesta (por ejemplo `auto-stop`
    + `start`, cierre de semana, borrado con cascada), se considera fallo de la
    operación completa y se requiere `refresco`.

@@ -37,6 +37,8 @@ Este documento permite que una persona o agente nuevo entienda rápidamente:
   - Controles temporales de campaña y provisión/extensión de años del MVP.
 - `docs/mvp-implementation-checklist.md`
   - Checklist técnico base para preparar la implementación del MVP.
+- `docs/mvp-implementation-blocks.md`
+  - Desglose operativo de bloques y subbloques ejecutables del MVP.
 - `docs/context-checklists.md`
   - Checklists por trigger de trabajo.
 - `docs/repo-workflow.md`
@@ -84,6 +86,7 @@ Este documento permite que una persona o agente nuevo entienda rápidamente:
 - Conflictos concurrentes MVP -> `docs/conflict-policy.md`
 - Controles temporales de campaña -> `docs/campaign-temporal-controls.md`
 - Checklist técnico MVP -> `docs/mvp-implementation-checklist.md`
+- Bloques de implementación MVP -> `docs/mvp-implementation-blocks.md`
 - Estado de fase -> `docs/context-governance.md`
 - Pasos operativos -> `docs/context-checklists.md`
 - Material reutilizable -> `learning/handbook.md`

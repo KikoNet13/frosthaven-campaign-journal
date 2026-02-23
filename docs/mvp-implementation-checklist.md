@@ -79,6 +79,8 @@ este checklist:
 - **Rol respecto a #10**: downstream inmediato.
 - **Criterio mínimo**: desglose completo con dependencias y riesgos
   identificados.
+- **Detalle operativo**: ver `docs/mvp-implementation-blocks.md` (desglose por
+  issue y subbloques ejecutables).
 
 ### Bloque B — Contratos de dominio para implementación (núcleo)
 
@@ -178,7 +180,7 @@ Usar esta plantilla mínima en cada issue/bloque del checklist:
 
 - [x] Prerrequisitos base resueltos: #7, #8, #9
 - [x] Checklist técnico base definido (Issue #10)
-- [ ] Desglose en bloques ejecutables (Issue #11)
+- [x] Desglose en bloques ejecutables (Issue #11)
 - [ ] Inicialización temporal detallada (Issue #13)
 - [ ] Contrato de operaciones Firestore por agregado (Issue #12)
 - [ ] Política de timestamps y orden estable (Issue #18)
@@ -194,6 +196,7 @@ Usar esta plantilla mínima en cada issue/bloque del checklist:
 - `AGENTS.md`
 - `docs/system-map.md`
 - `docs/repo-workflow.md`
+- `docs/mvp-implementation-blocks.md`
 - `docs/sync-strategy.md`
 - `docs/conflict-policy.md`
 - `docs/campaign-temporal-controls.md`

@@ -213,3 +213,25 @@
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/8`,
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/12`,
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/18`
+
+### DEC-0016
+
+- `date`: 2026-02-23
+- `status`: accepted
+- `problem`: faltaba una regla explícita de ortografía en castellano (`tildes`,
+  `ñ` y signos correctos), codificación `UTF-8` y limpieza sistemática de
+  ramas locales/remotas tras merge/cierre.
+- `decision`: adoptar ortografía completa en castellano para issues, PR,
+  documentación y futuros textos de UI; usar `UTF-8` para archivos de texto;
+  y limpiar por defecto ramas locales/remotas mergeadas no reutilizables tras
+  cada merge/cierre, con exclusiones documentadas.
+- `rationale`: mejora consistencia textual, evita correcciones erróneas por
+  mojibake visual de terminal y reduce ruido operativo por ramas ya integradas.
+- `impact`: se actualizan `AGENTS.md`, `docs/repo-workflow.md`,
+  `CONTRIBUTING.md`, plantillas `.github`, checklists operativas y se añade
+  `.editorconfig` para reforzar `UTF-8`.
+- `references`: `AGENTS.md`, `docs/repo-workflow.md`, `CONTRIBUTING.md`,
+  `docs/context-checklists.md`, `.github/pull_request_template.md`,
+  `.github/ISSUE_TEMPLATE/decision.md`, `.github/ISSUE_TEMPLATE/task.md`,
+  `.github/ISSUE_TEMPLATE/bug.md`, `.editorconfig`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/25`

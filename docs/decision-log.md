@@ -277,3 +277,27 @@
   petición explícita de solo plan/análisis).
 - `references`: `AGENTS.md`, `docs/repo-workflow.md`,
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/28`
+
+### DEC-0019
+
+- `date`: 2026-02-23
+- `status`: accepted
+- `problem`: priorizar por número de Issue al pedir `siguiente paso` ignora el
+  orden técnico del checklist cuando ya existe una secuencia recomendada
+  documentada para la Fase 1.
+- `decision`: mantener prioridad de PRs abiertas (incluyendo `draft`) y, si no
+  hay PRs, priorizar el orden técnico recomendado en documentación oficial
+  aplicable usando la fuente más específica (detalle > macro). Si una Issue del
+  orden técnico no es cerrable, se salta a la siguiente cerrable; si no hay
+  cerrables, se toma la primera `draftable`. Solo si no existe orden técnico
+  aplicable se usa la Issue abierta de número más bajo.
+- `rationale`: alinea la ejecución conversacional con la secuencia técnica
+  documentada, reduce saltos de contexto y evita priorizaciones por número que
+  aumentan el retrabajo.
+- `impact`: actualiza la selección de `siguiente paso` en Fase 1 (por ejemplo,
+  puede priorizar `#13` antes de `#12`); mantiene sin cambios `siguiente
+  pendiente`/`siguiente issue pendiente` y la regla de ejecución por defecto de
+  `siguiente paso`.
+- `references`: `AGENTS.md`, `docs/repo-workflow.md`,
+  `docs/mvp-implementation-checklist.md`, `docs/mvp-implementation-blocks.md`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/32`

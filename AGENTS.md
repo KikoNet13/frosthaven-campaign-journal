@@ -65,6 +65,16 @@ sencillo.
    - trabajo no trivial o con varias unidades: Issue por unidad.
 1. Relación objetivo:
    - `1 Issue -> 1 rama -> N commits -> 1 cierre`.
+1. Aclaración de `main`:
+   - `main` es rama principal;
+   - el trabajo directo a `main` se reserva a cambios triviales y aislados.
+1. Si una unidad se ejecuta en rama, su Issue se cierra tras integración en
+   `main` (merge/PR), salvo instrucción explícita de Kiko.
+1. Comandos conversacionales de priorización:
+   - `siguiente pendiente` y `siguiente issue pendiente` son equivalentes;
+   - `siguiente paso` revisa primero PRs pendientes (incluyendo `draft`);
+   - si no hay PRs pendientes, `siguiente paso` pasa a resolver la siguiente
+     Issue pendiente.
 1. Si Kiko pide varias cosas pequeñas juntas, Codex decide el corte y deja
    trazabilidad de cómo las agrupó.
 1. En tareas de diseño (`type:decision` o equivalentes), Codex primero

@@ -64,6 +64,12 @@ Aplicar un flujo profesional, simple y mantenible para un solo desarrollador.
   cierre (merge o cierre explícito si se descarta).
 - Si no hay PRs abiertas, el siguiente paso es resolver la `siguiente pendiente`
   (`siguiente issue pendiente`).
+- Cuando Kiko pide `siguiente paso`, Codex identifica el paso prioritario y lo
+  ejecuta en la misma sesión/pasada por defecto.
+- Excepciones explícitas:
+  - `Plan Mode` (se planifica y no se ejecuta).
+  - Bloqueo real que impida continuar.
+  - Petición explícita de solo plan o solo análisis.
 
 ## Reglas de commits
 

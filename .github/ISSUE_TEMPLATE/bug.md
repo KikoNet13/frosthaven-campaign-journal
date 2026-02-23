@@ -6,6 +6,9 @@ labels: ["type:bug"]
 assignees: []
 ---
 
+> Redacta en castellano con tildes y `ñ` correctas. Mantén términos técnicos en
+> inglés cuando aplique.
+
 # Descripción
 
 Describe el comportamiento observado.

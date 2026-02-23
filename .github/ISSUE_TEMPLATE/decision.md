@@ -6,6 +6,9 @@ labels: ["type:decision"]
 assignees: []
 ---
 
+> Redacta en castellano con tildes y `ñ` correctas. Mantén términos técnicos en
+> inglés cuando aplique.
+
 # Problema
 
 Describe el problema que requiere decisión.

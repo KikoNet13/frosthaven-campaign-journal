@@ -6,8 +6,8 @@
 - `purpose`: Definir el flujo Git y GitHub adoptado.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-02-20
-- `next_review`: 2026-03-06
+- `last_updated`: 2026-02-23
+- `next_review`: 2026-03-09
 
 ## Objetivo
 
@@ -40,6 +40,15 @@ Aplicar un flujo profesional, simple y mantenible para un solo desarrollador.
    - qué unidad ejecutó,
    - qué commit generó,
    - qué Issue cerró o dejó abierta.
+
+### Regla de priorización conversacional (`siguiente pendiente`)
+
+- Si Kiko pide `siguiente pendiente`, Codex selecciona por defecto la Issue
+  abierta (`state=open`) con número más bajo.
+- Si Kiko indica filtros (por ejemplo `type`, `label` o `phase`), Codex aplica
+  esos filtros antes de ordenar por número.
+- Si no hay Issues abiertas que cumplan el criterio, Codex lo reporta de forma
+  explícita.
 
 ## Reglas de commits
 

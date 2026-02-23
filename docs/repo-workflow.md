@@ -27,6 +27,8 @@ Aplicar un flujo profesional, simple y mantenible para un solo desarrollador.
   - nomenclatura `tipo/<issue-id>-slug`
 - Para trabajo trivial:
   - se permite commit y push directo a `main`
+- `main` es la rama principal del repositorio, pero el trabajo directo a
+  `main` se reserva para cambios triviales y aislados.
 
 ## Flujo recomendado con Codex
 
@@ -36,12 +38,16 @@ Aplicar un flujo profesional, simple y mantenible para un solo desarrollador.
 1. Si una unidad es no trivial, va en rama con patrón
    `tipo/<issue-id>-slug`.
 1. Si una unidad es trivial y aislada, puede ir a `main`.
+1. Si una unidad se ejecuta en rama, la Issue asociada se cierra tras integrar
+   el trabajo en `main` (merge/PR), salvo instrucción explícita de Kiko.
 1. Codex reporta siempre:
    - qué unidad ejecutó,
    - qué commit generó,
    - qué Issue cerró o dejó abierta.
 
-### Regla de priorización conversacional (`siguiente pendiente`)
+### Reglas de priorización conversacional (`siguiente paso`, `siguiente pendiente`)
+
+- `siguiente pendiente` y `siguiente issue pendiente` son equivalentes.
 
 - Si Kiko pide `siguiente pendiente`, Codex selecciona por defecto la Issue
   abierta (`state=open`) con número más bajo.
@@ -49,6 +55,15 @@ Aplicar un flujo profesional, simple y mantenible para un solo desarrollador.
   esos filtros antes de ordenar por número.
 - Si no hay Issues abiertas que cumplan el criterio, Codex lo reporta de forma
   explícita.
+
+#### Regla de `siguiente paso`
+
+- Codex revisa primero las PRs abiertas del repo (incluyendo `draft`).
+- Si hay varias PRs abiertas, prioriza la PR con número más bajo.
+- Si existe al menos una PR abierta, el siguiente paso es llevar esa PR a
+  cierre (merge o cierre explícito si se descarta).
+- Si no hay PRs abiertas, el siguiente paso es resolver la `siguiente pendiente`
+  (`siguiente issue pendiente`).
 
 ## Reglas de commits
 
@@ -65,6 +80,8 @@ Aplicar un flujo profesional, simple y mantenible para un solo desarrollador.
 ## Reglas de PR
 
 - PR obligatoria cuando el cambio sea relevante.
+- Si el trabajo se hace en rama, la Issue asociada se cierra tras merge o
+  integración en `main`, salvo instrucción explícita de Kiko.
 - Debe incluir:
   - referencia al Issue
   - resumen de alcance
@@ -123,9 +140,19 @@ Requisitos de automatización:
 
 ## Cadencia recomendada
 
+### Flujo en rama (trabajo no trivial o relevante)
+
 1. Abrir Issue.
 1. Ejecutar trabajo en rama.
 1. Hacer N commits pequeños.
-1. Abrir PR si aplica.
+1. Abrir PR.
+1. Mergear en `main`.
 1. Cerrar Issue.
 1. Actualizar changelog.
+
+### Flujo directo a `main` (trabajo trivial y aislado)
+
+1. Ejecutar ajuste trivial en `main`.
+1. Hacer commit y push.
+1. Cerrar Issue (si aplica).
+1. Actualizar changelog si corresponde.

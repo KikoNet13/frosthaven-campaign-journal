@@ -75,6 +75,11 @@ sencillo.
    - `siguiente paso` revisa primero PRs pendientes (incluyendo `draft`);
    - si no hay PRs pendientes, `siguiente paso` pasa a resolver la siguiente
      Issue pendiente.
+1. Ejecución por defecto de `siguiente paso`:
+   - `siguiente paso` implica identificar el trabajo prioritario y ejecutarlo
+     en la misma pasada por defecto;
+   - excepciones: `Plan Mode`, bloqueo real o petición explícita de solo plan/
+     análisis.
 1. Redacción en castellano:
    - usar ortografía completa (tildes, `ñ` y signos correctos) en issues, PR,
      documentación y futuros textos de UI;

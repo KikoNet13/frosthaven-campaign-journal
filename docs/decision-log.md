@@ -259,3 +259,21 @@
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/9`,
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/13`,
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/14`
+
+### DEC-0018
+
+- `date`: 2026-02-23
+- `status`: accepted
+- `problem`: había ambigüedad entre responder cuál era el “siguiente paso” y
+  ejecutar ese siguiente paso en la misma sesión.
+- `decision`: cuando Kiko pide `siguiente paso`, Codex identifica el trabajo
+  prioritario y lo ejecuta por defecto en la misma pasada, manteniendo la
+  prioridad vigente (PRs abiertas, incluyendo `draft`, antes que issues). Si no
+  hay PRs abiertas, se resuelve la siguiente issue pendiente.
+- `rationale`: reduce fricción conversacional, evita intercambios innecesarios y
+  alinea la operación con el objetivo de avanzar de punta a punta en cada turno.
+- `impact`: se actualizan `docs/repo-workflow.md` y `AGENTS.md` para reflejar
+  el comportamiento por defecto y sus excepciones (`Plan Mode`, bloqueo real,
+  petición explícita de solo plan/análisis).
+- `references`: `AGENTS.md`, `docs/repo-workflow.md`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/28`

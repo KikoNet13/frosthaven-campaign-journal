@@ -6,8 +6,8 @@
 - `purpose`: Contrato operativo de trabajo entre IA y humano.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-02-20
-- `next_review`: 2026-03-06
+- `last_updated`: 2026-02-23
+- `next_review`: 2026-03-09
 
 ## Propósito
 
@@ -101,6 +101,7 @@ Cada interacción termina con un menú numerado fijo de 3 a 5 siguientes pasos.
 - Gobierno de contexto: `docs/context-governance.md`
 - Registro de decisiones: `docs/decision-log.md`
 - Checklists operativas: `docs/context-checklists.md`
+- Estrategia de sincronización MVP: `docs/sync-strategy.md`
 - Guía reusable: `learning/handbook.md`
 - Anexo Frosthaven: `learning/frosthaven-annex.md`
 - Bibliografía anotada: `learning/sources.md`

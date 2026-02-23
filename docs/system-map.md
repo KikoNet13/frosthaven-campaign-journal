@@ -33,6 +33,8 @@ Este documento permite que una persona o agente nuevo entienda rápidamente:
   - Estrategia de sincronización multidispositivo del MVP.
 - `docs/conflict-policy.md`
   - Política de conflictos concurrentes del MVP.
+- `docs/campaign-temporal-controls.md`
+  - Controles temporales de campaña y provisión/extensión de años del MVP.
 - `docs/context-checklists.md`
   - Checklists por trigger de trabajo.
 - `docs/repo-workflow.md`
@@ -78,6 +80,7 @@ Este documento permite que una persona o agente nuevo entienda rápidamente:
 - Modelo de dominio -> `docs/domain-glossary.md`
 - Sincronización MVP -> `docs/sync-strategy.md`
 - Conflictos concurrentes MVP -> `docs/conflict-policy.md`
+- Controles temporales de campaña -> `docs/campaign-temporal-controls.md`
 - Estado de fase -> `docs/context-governance.md`
 - Pasos operativos -> `docs/context-checklists.md`
 - Material reutilizable -> `learning/handbook.md`

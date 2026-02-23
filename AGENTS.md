@@ -123,6 +123,7 @@ Cada interacción termina con un menú numerado fijo de 3 a 5 siguientes pasos.
 - Checklists operativas: `docs/context-checklists.md`
 - Estrategia de sincronización MVP: `docs/sync-strategy.md`
 - Política de conflictos concurrentes MVP: `docs/conflict-policy.md`
+- Controles temporales de campaña: `docs/campaign-temporal-controls.md`
 - Guía reusable: `learning/handbook.md`
 - Anexo Frosthaven: `learning/frosthaven-annex.md`
 - Bibliografía anotada: `learning/sources.md`

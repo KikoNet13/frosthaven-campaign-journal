@@ -155,4 +155,7 @@ No incluye en MVP:
   `docs/sync-strategy.md`, Issue #7).
 - Política de conflictos concurrentes (resuelta en `docs/conflict-policy.md`,
   Issue #8).
-- Proceso de provisión inicial de años (por ejemplo, crear 4 años).
+- Controles temporales de campaña y provisión/extensión de años (resuelta en
+  `docs/campaign-temporal-controls.md`, Issue #9).
+- Estrategia de inicialización de años, temporadas y semanas (detalle técnico,
+  Issue #13).

@@ -11,6 +11,10 @@ Mantener un flujo profesional, simple y trazable para un proyecto pequeño.
 - Tareas no triviales: Issue + rama + commits + cierre.
 - Cambios relevantes: PR obligatoria.
 - Cambios triviales: permitido directo a `main`.
+- Si el trabajo va en rama, la Issue se cierra tras merge/integración en
+  `main`.
+- Tras merge/cierre, limpiar ramas locales/remotas mergeadas no reutilizables
+  (excepto `main`, rama actual, PR abierta o ramas no mergeadas).
 - Decisiones de arquitectura o dominio: revisión interactiva obligatoria con
   aprobación explícita antes del cierre.
 
@@ -75,6 +79,7 @@ Checklist mínima:
 - Confirmación de compatibilidad con Markdown lint.
 - Impacto documentado en `CHANGELOG.md` (si aplica).
 - Si es diseño o arquitectura, incluir nota de aprobación explícita de Kiko.
+- Si aplica, confirmar limpieza de ramas mergeadas no reutilizables tras cerrar.
 
 ## Versionado
 
@@ -87,5 +92,9 @@ Checklist mínima:
 ## Estilo de documentación
 
 - Idioma de descripciones: castellano.
+- Usar ortografía completa en castellano (tildes, `ñ` y signos correctos).
 - Identificadores técnicos: inglés cuando aplique.
+- Archivos de texto en `UTF-8`.
+- Si la terminal muestra mojibake (`Ã`, `â`, etc.), verificar la codificación
+  real del archivo antes de “corregir” texto ya correcto.
 - Markdown compatible con `markdownlint`.

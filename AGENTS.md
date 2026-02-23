@@ -75,6 +75,16 @@ sencillo.
    - `siguiente paso` revisa primero PRs pendientes (incluyendo `draft`);
    - si no hay PRs pendientes, `siguiente paso` pasa a resolver la siguiente
      Issue pendiente.
+1. Redacción en castellano:
+   - usar ortografía completa (tildes, `ñ` y signos correctos) en issues, PR,
+     documentación y futuros textos de UI;
+   - mantener identificadores técnicos en inglés cuando aplique;
+   - usar `UTF-8` en archivos de texto del repo.
+1. Limpieza de ramas:
+   - tras cada merge/cierre, limpiar ramas locales y remotas mergeadas no
+     reutilizables;
+   - excluir `main`, la rama actual, ramas con PR abierta y ramas no mergeadas
+     (salvo descarte explícito).
 1. Si Kiko pide varias cosas pequeñas juntas, Codex decide el corte y deja
    trazabilidad de cómo las agrupó.
 1. En tareas de diseño (`type:decision` o equivalentes), Codex primero
@@ -112,6 +122,7 @@ Cada interacción termina con un menú numerado fijo de 3 a 5 siguientes pasos.
 - Registro de decisiones: `docs/decision-log.md`
 - Checklists operativas: `docs/context-checklists.md`
 - Estrategia de sincronización MVP: `docs/sync-strategy.md`
+- Política de conflictos concurrentes MVP: `docs/conflict-policy.md`
 - Guía reusable: `learning/handbook.md`
 - Anexo Frosthaven: `learning/frosthaven-annex.md`
 - Bibliografía anotada: `learning/sources.md`

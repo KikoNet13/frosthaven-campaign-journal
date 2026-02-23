@@ -6,8 +6,8 @@
 - `purpose`: Mapa navegable de la documentación oficial y legado temporal.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-02-20
-- `next_review`: 2026-03-06
+- `last_updated`: 2026-02-23
+- `next_review`: 2026-03-09
 
 ## Objetivo
 
@@ -29,6 +29,8 @@ Este documento permite que una persona o agente nuevo entienda rápidamente:
   - Decisiones aceptadas y trazabilidad.
 - `docs/domain-glossary.md`
   - Contrato de modelo de dominio e invariantes.
+- `docs/sync-strategy.md`
+  - Estrategia de sincronización multidispositivo del MVP.
 - `docs/context-checklists.md`
   - Checklists por trigger de trabajo.
 - `docs/repo-workflow.md`
@@ -72,6 +74,7 @@ Este documento permite que una persona o agente nuevo entienda rápidamente:
 - Regla activa -> `AGENTS.md`
 - Decisión tomada -> `docs/decision-log.md`
 - Modelo de dominio -> `docs/domain-glossary.md`
+- Sincronización MVP -> `docs/sync-strategy.md`
 - Estado de fase -> `docs/context-governance.md`
 - Pasos operativos -> `docs/context-checklists.md`
 - Material reutilizable -> `learning/handbook.md`

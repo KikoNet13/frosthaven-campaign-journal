@@ -151,6 +151,7 @@ No incluye en MVP:
 
 ## Decisiones pendientes
 
-- Estrategia de sincronización multi dispositivo.
+- Estrategia de sincronización multi dispositivo (resuelta en
+  `docs/sync-strategy.md`, Issue #7).
 - Política de conflictos concurrentes.
 - Proceso de provisión inicial de años (por ejemplo, crear 4 años).

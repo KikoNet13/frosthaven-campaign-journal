@@ -6,8 +6,8 @@
 - `purpose`: Registrar decisiones con trazabilidad y precedencia.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-02-20
-- `next_review`: 2026-03-06
+- `last_updated`: 2026-02-23
+- `next_review`: 2026-03-09
 
 ## Formato canónico por entrada
 
@@ -148,3 +148,24 @@
   elimina necesidad de `owner_type` en entidades hijas.
 - `references`: `docs/domain-glossary.md`,
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/6`
+
+### DEC-0013
+
+- `date`: 2026-02-23
+- `status`: accepted
+- `problem`: falta una estrategia de sincronización multidispositivo para el
+  MVP con simplicidad operativa y consistencia explícita.
+- `decision`: adoptar una estrategia MVP de sincronización con Firestore como
+  fuente de verdad, modo operativo recomendado `single writer`, escrituras
+  `online-only` y actualización remota `on-demand refresh`.
+- `rationale`: reduce complejidad inicial, alinea expectativas del MVP y
+  separa claramente la estrategia general de las decisiones específicas de
+  conflictos (#8) y orden/timestamps (#18).
+- `impact`: deja trazable el comportamiento esperado en uso normal, explicita
+  límites aceptados del MVP y habilita la especificación de conflictos,
+  timestamps y contrato de operaciones Firestore por agregado.
+- `references`: `docs/sync-strategy.md`, `docs/domain-glossary.md`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/7`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/8`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/12`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/18`

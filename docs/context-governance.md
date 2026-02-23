@@ -6,8 +6,8 @@
 - `purpose`: Gobierno de contexto, gate de calidad y estado verificable.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-02-20
-- `next_review`: 2026-03-06
+- `last_updated`: 2026-02-23
+- `next_review`: 2026-03-09
 
 ## Alcance de Fase 0
 
@@ -104,7 +104,8 @@ Se valida:
 
 - Representación de tiempo.
 - Estructura mínima de Firestore.
-- Estrategia de sincronización.
+- Estrategia de sincronización (resuelta en Fase 1; ver DEC-0013 y
+  `docs/sync-strategy.md`).
 
 ## Estado actual de fase
 

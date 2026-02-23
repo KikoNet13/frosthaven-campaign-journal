@@ -26,7 +26,8 @@ Incluye:
 
 No incluye:
 
-- política detallada de conflictos concurrentes (Issue #8);
+- política detallada de conflictos concurrentes (ver `docs/conflict-policy.md`,
+  Issue #8);
 - política de timestamps y desempate estable entre dispositivos (Issue #18);
 - contrato de operaciones Firestore por agregado (Issue #12);
 - soporte offline con cola de escrituras.
@@ -40,7 +41,8 @@ No incluye:
   - Se recomienda un dispositivo escribiendo activamente a la vez.
   - Otros dispositivos pueden consultar.
   - Si otro dispositivo escribe de forma concurrente, el resultado queda en
-    zona de `best-effort` hasta cerrar la política de conflictos en la Issue #8.
+    zona de `best-effort` hasta definir la política de conflictos en la
+    Issue #8 (`docs/conflict-policy.md`).
 - **Política de conectividad para escrituras**: `online-only writes`.
   - Sin conexión, las escrituras del MVP se bloquean.
   - No existe cola offline de escrituras en esta fase.
@@ -65,8 +67,8 @@ No incluye:
    (sin encolar para sincronización posterior).
 1. El uso normal esperado es `single writer`; el segundo dispositivo escritor no
    está prohibido por contrato, pero queda fuera del flujo recomendado.
-1. La resolución de conflictos de escrituras concurrentes queda diferida a la
-   Issue #8.
+1. La resolución de conflictos de escrituras concurrentes se rige por
+   `docs/conflict-policy.md` (Issue #8).
 
 ## Criterios de consistencia del MVP
 
@@ -91,7 +93,8 @@ Límites aceptados MVP:
 - `No realtime guarantee`.
 - no soporte formal de `multiwriter` coordinado.
 - no escrituras offline ni cola de sincronización.
-- conflictos concurrentes detallados se definen en la Issue #8.
+- conflictos concurrentes detallados se definen en `docs/conflict-policy.md`
+  (Issue #8).
 - política de timestamps y desempates se define en la Issue #18.
 
 ## Escenarios normales esperados
@@ -114,7 +117,8 @@ Límites aceptados MVP:
 
 - Dos dispositivos escriben casi al mismo tiempo sobre el mismo agregado.
   - Esta estrategia solo define el límite de soporte del MVP.
-  - La política de resolución queda en la Issue #8.
+  - La política de resolución se define en `docs/conflict-policy.md`
+    (Issue #8).
 - Diferencias de orden visual entre dispositivos por eventos casi simultáneos.
   - La política de timestamps y desempate queda en la Issue #18.
 - La definición de operaciones por agregado y atomicidad se concreta en la
@@ -123,7 +127,8 @@ Límites aceptados MVP:
 ## Dependencias y relación con otras Issues
 
 - **Issue #7**: documento de decisión principal (esta estrategia).
-- **Issue #8**: política de conflictos concurrentes (depende de este marco).
+- **Issue #8**: política de conflictos concurrentes, documentada en
+  `docs/conflict-policy.md` y dependiente de este marco.
 - **Issue #18**: política de timestamps y orden estable (depende de #7 y debe
   ser compatible con #8).
 - **Issue #12**: contrato de operaciones Firestore por agregado, que deberá
@@ -132,6 +137,7 @@ Límites aceptados MVP:
 ## Referencias
 
 - `docs/domain-glossary.md`
+- `docs/conflict-policy.md`
 - `docs/decision-log.md`
 - `tdd.md` (legado temporal, alineado con referencia oficial)
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/7`

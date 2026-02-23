@@ -190,3 +190,26 @@
 - `references`: `AGENTS.md`, `docs/repo-workflow.md`,
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/7`,
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/22`
+
+### DEC-0015
+
+- `date`: 2026-02-23
+- `status`: accepted
+- `problem`: falta una política de conflictos concurrentes para operaciones
+  simultáneas sobre `entries`, `sessions`, `weeks` y `resource_changes` en el
+  MVP con Firestore.
+- `decision`: adoptar una política MVP estricta de rechazo en conflicto con
+  `refresco` y `reintento`, sin `last-write-wins`, aplicada por familias de
+  operación (estado crítico, `Week.notes` y `ResourceChange`), y diferir el
+  mecanismo técnico exacto de detección/validación a la Issue #12.
+- `rationale`: prioriza previsibilidad y consistencia del estado frente a
+  sobrescrituras silenciosas, y mantiene bajo control la complejidad antes de
+  cerrar el contrato técnico por agregado (#12) y la política de
+  timestamps/desempates (#18).
+- `impact`: cierra la Issue #8 a nivel de política, condiciona la definición de
+  operaciones por agregado en #12 y la compatibilidad con orden estable en #18.
+- `references`: `docs/conflict-policy.md`, `docs/sync-strategy.md`,
+  `docs/domain-glossary.md`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/8`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/12`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/18`

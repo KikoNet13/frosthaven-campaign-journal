@@ -153,5 +153,6 @@ No incluye en MVP:
 
 - Estrategia de sincronización multi dispositivo (resuelta en
   `docs/sync-strategy.md`, Issue #7).
-- Política de conflictos concurrentes.
+- Política de conflictos concurrentes (resuelta en `docs/conflict-policy.md`,
+  Issue #8).
 - Proceso de provisión inicial de años (por ejemplo, crear 4 años).

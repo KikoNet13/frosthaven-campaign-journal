@@ -31,6 +31,8 @@ Este documento permite que una persona o agente nuevo entienda rápidamente:
   - Contrato de modelo de dominio e invariantes.
 - `docs/sync-strategy.md`
   - Estrategia de sincronización multidispositivo del MVP.
+- `docs/conflict-policy.md`
+  - Política de conflictos concurrentes del MVP.
 - `docs/context-checklists.md`
   - Checklists por trigger de trabajo.
 - `docs/repo-workflow.md`
@@ -75,6 +77,7 @@ Este documento permite que una persona o agente nuevo entienda rápidamente:
 - Decisión tomada -> `docs/decision-log.md`
 - Modelo de dominio -> `docs/domain-glossary.md`
 - Sincronización MVP -> `docs/sync-strategy.md`
+- Conflictos concurrentes MVP -> `docs/conflict-policy.md`
 - Estado de fase -> `docs/context-governance.md`
 - Pasos operativos -> `docs/context-checklists.md`
 - Material reutilizable -> `learning/handbook.md`

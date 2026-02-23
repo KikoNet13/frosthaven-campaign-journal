@@ -20,3 +20,5 @@ Closes #<id>
 - [ ] El Markdown no tiene warnings de lint.
 - [ ] Actualicé `CHANGELOG.md` si corresponde.
 - [ ] La trazabilidad de decisiones está actualizada.
+- [ ] Texto en castellano revisado (tildes/ñ/ortografía).
+- [ ] Ramas mergeadas no reutilizables limpiadas (local/remoto) si aplica.

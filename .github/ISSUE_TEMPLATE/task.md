@@ -6,6 +6,9 @@ labels: ["type:task"]
 assignees: []
 ---
 
+> Redacta en castellano con tildes y `ñ` correctas. Mantén términos técnicos en
+> inglés cuando aplique.
+
 # Resumen
 
 Describe el objetivo de la tarea.

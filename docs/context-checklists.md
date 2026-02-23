@@ -6,8 +6,8 @@
 - `purpose`: Checklists operativas para calidad y trazabilidad.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-02-20
-- `next_review`: 2026-03-06
+- `last_updated`: 2026-02-23
+- `next_review`: 2026-03-09
 
 ## Formato canónico por checklist
 
@@ -84,6 +84,27 @@
 
   1. Alcance nuevo documentado.
   1. No hay trabajo oculto fuera de fase.
+
+- `owner`: IA ejecuta, Kiko valida.
+
+## CHK-BRANCH-CLEANUP
+
+- `trigger`: merge/cierre de PR o cierre de Issue trabajada en rama.
+- `steps`:
+
+  1. Verificar estado de la PR asociada (mergeada o cerrada explícitamente).
+  1. Confirmar que la rama no queda en uso activo.
+  1. Limpiar ramas locales mergeadas no reutilizables (excepto `main` y rama
+     actual).
+  1. Limpiar ramas remotas mergeadas no reutilizables.
+  1. Confirmar que no queda PR abierta asociada a la rama limpiada.
+  1. Registrar excepciones (por ejemplo rama no mergeada conservada).
+
+- `validation`:
+
+  1. No se borran `main`, la rama actual ni ramas con PR abierta.
+  1. La limpieza local/remota queda ejecutada o justificada.
+  1. El estado final de la PR/Issue asociada es trazable.
 
 - `owner`: IA ejecuta, Kiko valida.
 

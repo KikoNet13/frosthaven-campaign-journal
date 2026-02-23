@@ -77,6 +77,15 @@ Aplicar un flujo profesional, simple y mantenible para un solo desarrollador.
   - `test`
   - `hotfix`
 
+## Redacción y codificación de texto
+
+- En textos en castellano (issues, PR, documentación y futuros textos de UI)
+  usar ortografía completa: tildes, `ñ` y signos correctos.
+- Mantener identificadores técnicos en inglés cuando aplique.
+- Archivos de texto del repo en `UTF-8`.
+- Si aparece mojibake en la terminal, verificar primero la codificación real
+  del archivo antes de editar contenido ya correcto.
+
 ## Reglas de PR
 
 - PR obligatoria cuando el cambio sea relevante.
@@ -86,6 +95,18 @@ Aplicar un flujo profesional, simple y mantenible para un solo desarrollador.
   - referencia al Issue
   - resumen de alcance
   - checklist de calidad completada
+
+## Limpieza de ramas
+
+- Tras cada merge/cierre, limpiar ramas locales y remotas mergeadas que no se
+  vayan a reutilizar.
+- Exclusiones por defecto:
+  - `main`
+  - rama actual
+  - ramas con PR abierta
+  - ramas no mergeadas (salvo descarte explícito)
+- Si una rama fue integrada por `rebase` y `git branch -d` avisa que no está
+  mergeada en `HEAD`, se permite borrarla tras verificar que la PR fue mergeada.
 
 ## Regla especial para diseño y arquitectura
 
@@ -148,6 +169,7 @@ Requisitos de automatización:
 1. Abrir PR.
 1. Mergear en `main`.
 1. Cerrar Issue.
+1. Limpiar rama local/remota si ya no se reutiliza.
 1. Actualizar changelog.
 
 ### Flujo directo a `main` (trabajo trivial y aislado)

@@ -1,0 +1,212 @@
+# Checklist Técnico de Implementación MVP
+
+## Metadatos
+
+- `doc_id`: DOC-MVP-IMPLEMENTATION-CHECKLIST
+- `purpose`: Checklist técnico base para preparar la implementación del MVP con orden, dependencias y verificación mínima.
+- `status`: active
+- `source_of_truth`: official
+- `last_updated`: 2026-02-23
+- `next_review`: 2026-03-09
+
+## Objetivo
+
+Definir un checklist técnico base, accionable y ordenado para preparar la
+implementación del MVP sin codificar todavía, con trazabilidad entre issues,
+dependencias explícitas y criterios mínimos de verificación por bloque.
+
+## Alcance y no alcance
+
+Incluye:
+
+- macro-bloques de trabajo para preparación técnica de Fase 1;
+- orden recomendado de ejecución;
+- matriz de dependencias entre issues abiertas y decisiones ya resueltas;
+- criterios mínimos de verificación por bloque;
+- reglas de paralelización y riesgos de secuencia;
+- corte explícito con las Issues #11 y #20.
+
+No incluye:
+
+- codificación de la app;
+- desglose fino en bloques ejecutables con responsables y entregables (Issue #11);
+- gate final de "listo para codificar" (Issue #20);
+- cierre de decisiones de dominio pendientes (por ejemplo #12, #18).
+
+## Entradas ya cerradas (prerrequisitos disponibles)
+
+Las siguientes decisiones base ya están resueltas y se toman como insumo para
+este checklist:
+
+- **Sincronización MVP** (Issue #7): `docs/sync-strategy.md`
+  - `single writer` recomendado, `online-only writes`, `on-demand refresh`.
+- **Política de conflictos concurrentes** (Issue #8): `docs/conflict-policy.md`
+  - estrategia estricta de rechazo + refresco/reintento.
+- **Controles temporales de campaña** (Issue #9):
+  `docs/campaign-temporal-controls.md`
+  - selector temporal superior, provisión inicial de 4 años, extensión manual
+    `+1`, separación entre navegación de semana y `week_cursor`.
+
+## Corte de responsabilidades entre `#10`, `#11` y `#20`
+
+### Issue `#10` (esta tarea) sí cierra
+
+- checklist técnico base de preparación MVP;
+- macro-bloques y secuencia recomendada;
+- dependencias y paralelización a alto nivel;
+- criterios mínimos de verificación por bloque.
+
+### Issue `#11` (no se adelanta aquí)
+
+- desglose en bloques ejecutables finos;
+- responsables por bloque;
+- entregables detallados por sub-bloque;
+- riesgos operativos por subpaso.
+
+### Issue `#20` (no se adelanta aquí)
+
+- gate final de entrada a codificación;
+- criterio definitivo de "listo para codificar";
+- evidencia mínima de readiness para comenzar código.
+
+## Orden recomendado de ejecución (macro-bloques)
+
+### Bloque A — Base del plan técnico de ejecución
+
+- **Issue**: #11
+- **Objetivo**: convertir este checklist base en bloques ejecutables con
+  entregables verificables.
+- **Rol respecto a #10**: downstream inmediato.
+- **Criterio mínimo**: desglose completo con dependencias y riesgos
+  identificados.
+
+### Bloque B — Contratos de dominio para implementación (núcleo)
+
+- **Issues**: #13, #12, #18
+- **Orden recomendado**:
+  1. #13 — inicialización temporal detallada.
+  1. #12 — contrato de operaciones Firestore por agregado, alineado con #13.
+  1. #18 — timestamps y orden estable entre dispositivos.
+- **Justificación**:
+  - #13 concreta la provisión/extensión temporal decidida en #9.
+  - #12 necesita alineación con provisión temporal (#9) y detalle técnico (#13).
+  - #18 cierra orden estable para lecturas y logs entre dispositivos.
+
+### Bloque C — Flujos funcionales e invariantes de operación
+
+- **Issues**: #14, #15
+- **Orden recomendado**:
+  1. #14 — flujo de sesión activa y reglas de `auto-stop`.
+  1. #15 — validación y recálculo de recursos.
+- **Dependencias mínimas**:
+  - #14 requiere #8 (resuelta) y se beneficia del contrato #12.
+  - #15 requiere #8 (resuelta) y debe alinearse con #12.
+
+### Bloque D — Lecturas, edge cases y verificación
+
+- **Issues**: #16, #17, #19
+- **Orden recomendado**:
+  1. #16 — consultas mínimas para timeline/foco.
+  1. #17 — matriz de edge cases de concurrencia y sincronización.
+  1. #19 — plan de pruebas de invariantes.
+- **Notas**:
+  - #16 debe alinearse con #9 y conviene cerrarla con #18 definido.
+  - #17 se enriquece con contratos/flows definidos en #12, #14, #15 y #18.
+  - #19 consolida evidencia de validación para el gate posterior (#20).
+
+### Bloque E — Gate final de entrada a codificación
+
+- **Issue**: #20
+- **Objetivo**: definir "listo para codificar" usando #10 y sus derivadas.
+- **Regla de secuencia**: debe ir al final del checklist de preparación.
+
+## Matriz de dependencias (issues / bloques)
+
+| Bloque / Issue | Tipo | Depende de | ¿Puede empezar en paralelo? | Condición de cierre | Impacta a |
+| --- | --- | --- | --- | --- | --- |
+| Bloque A / #11 | `task` | #10 | Sí, como borrador parcial; no cerrar antes de #10 | Desglose completo y trazable | #12, #13, #14, #15, #16, #17, #19, #20 |
+| Bloque B / #13 | `task` | #9 (resuelta) | Sí | Flujo temporal detallado sin contradicciones | #12, #16, #20 |
+| Bloque B / #12 | `decision` | #7, #8, #9 (resueltas) + alineación con #13 | Borrador sí; cierre recomendado tras #13 | Contrato por agregado con pre/postcondiciones | #14, #15, #16, #17, #18, #19, #20 |
+| Bloque B / #18 | `decision` | #7, #8 (resueltas) | Sí, pero cierre recomendado tras #12 | Política de timestamps y desempate estable | #16, #17, #19, #20 |
+| Bloque C / #14 | `task` | #8 (resuelta) | Sí, parcial | Flujo de sesión + `auto-stop` sin romper invariantes | #17, #19, #20 |
+| Bloque C / #15 | `task` | #8 (resuelta) | Sí, parcial | Reglas de validación y recálculo trazables | #17, #19, #20 |
+| Bloque D / #16 | `task` | #7, #9 (resueltas) | Sí | Inventario mínimo de consultas y orden estable | #19, #20 |
+| Bloque D / #17 | `task` | #7, #8 (resueltas) | Sí, pero gana valor tras #12/#14/#15/#18 | Matriz de edge cases con expectativa verificable | #19, #20 |
+| Bloque D / #19 | `task` | #7, #8, #9 (resueltas) | Sí, parcial | Plan de pruebas de invariantes con evidencia repetible | #20 |
+| Bloque E / #20 | `task` | Base de #10 + derivadas relevantes | No, cierre al final | Gate de readiness explícito y verificable | Paso a implementación |
+
+## Criterios mínimos de verificación por bloque
+
+Usar esta plantilla mínima en cada issue/bloque del checklist:
+
+1. **Artefacto principal existe**
+   - Documento, diagrama, matriz o checklist creado y enlazado.
+1. **Aceptación de la issue cubierta**
+   - Los criterios de aceptación de la issue se traducen a evidencia verificable.
+1. **Referencias cruzadas actualizadas**
+   - Documentación oficial afectada actualizada (`docs/`, `AGENTS.md`, etc.).
+1. **Consistencia con decisiones cerradas**
+   - No contradice #7, #8, #9 ni decisiones posteriores aplicables.
+1. **Dependencias downstream identificadas**
+   - Queda claro qué issues se desbloquean o se condicionan.
+1. **Estado trazable**
+   - PR/issue/commit y cierre correcto tras merge.
+
+## Riesgos de secuencia y reglas de paralelización
+
+### Riesgos de secuencia
+
+- **Solape #10 / #11 / #20**: evitar que #10 se convierta en desglose fino (#11)
+  o en gate definitivo (#20).
+- **Cerrar #12 antes de #13**: puede introducir contrato Firestore desalineado
+  con provisión temporal detallada.
+- **Cerrar #16 sin #18**: riesgo de definir orden de lectura sin desempate
+  estable documentado.
+- **Matriz #17 demasiado temprana**: puede quedar incompleta si faltan contratos
+  y flujos clave (#12, #14, #15, #18).
+
+### Reglas de paralelización (recomendadas)
+
+- Se permiten **borradores** en paralelo cuando la issue lo indique, pero el
+  cierre debe respetar dependencias explícitas.
+- La paralelización se usa para reducir tiempo de análisis, no para forzar
+  cierres prematuros.
+- Las issues `type:decision` (#12, #18) requieren revisión interactiva con Kiko
+  antes de cerrar.
+
+## Checklist de seguimiento (estado inicial)
+
+- [x] Prerrequisitos base resueltos: #7, #8, #9
+- [x] Checklist técnico base definido (Issue #10)
+- [ ] Desglose en bloques ejecutables (Issue #11)
+- [ ] Inicialización temporal detallada (Issue #13)
+- [ ] Contrato de operaciones Firestore por agregado (Issue #12)
+- [ ] Política de timestamps y orden estable (Issue #18)
+- [ ] Flujo de sesión activa y `auto-stop` (Issue #14)
+- [ ] Reglas de validación y recálculo de recursos (Issue #15)
+- [ ] Consultas mínimas para timeline/foco (Issue #16)
+- [ ] Matriz de edge cases de concurrencia y sincronización (Issue #17)
+- [ ] Plan de pruebas para invariantes (Issue #19)
+- [ ] Gate de listo para codificar (Issue #20)
+
+## Referencias
+
+- `AGENTS.md`
+- `docs/system-map.md`
+- `docs/repo-workflow.md`
+- `docs/sync-strategy.md`
+- `docs/conflict-policy.md`
+- `docs/campaign-temporal-controls.md`
+- `docs/domain-glossary.md`
+- `docs/context-checklists.md`
+- `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/10`
+- `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/11`
+- `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/12`
+- `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/13`
+- `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/14`
+- `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/15`
+- `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/16`
+- `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/17`
+- `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/18`
+- `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/19`
+- `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/20`

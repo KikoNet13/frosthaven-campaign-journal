@@ -156,6 +156,7 @@ Cada interacción termina con un menú numerado fijo de 3 a 5 siguientes pasos.
 - Contrato de operaciones Firestore por agregado (MVP): `docs/firestore-operation-contract.md`
 - Modelo de recursos por `Entry` (MVP): `docs/resource-delta-model.md`
 - Política de timestamps y orden estable (MVP): `docs/timestamp-order-policy.md`
+- Flujo de sesión activa y `auto-stop` (MVP): `docs/active-session-flow.md`
 - Controles temporales de campaña: `docs/campaign-temporal-controls.md`
 - Inicialización temporal de campaña (técnica): `docs/campaign-temporal-initialization.md`
 - Política de editabilidad manual MVP: `docs/editability-policy.md`

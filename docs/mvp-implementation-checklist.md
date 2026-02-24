@@ -63,6 +63,10 @@ este checklist:
   `docs/timestamp-order-policy.md`
   - auditoría temporal server-only, sin `deleted_at_utc` en MVP, y matriz de
     orden canónico por lista para UI + `#16`.
+- **Flujo de sesión activa y `auto-stop`** (Issue #14):
+  `docs/active-session-flow.md`
+  - separación entre `current week`, selección y `Entry` activa; reglas de
+    `start/stop/auto-stop` y recuperación por `conflicto`/`transicion_invalida`.
 
 ## Corte de responsabilidades entre `#10`, `#11` y `#20`
 
@@ -212,7 +216,7 @@ Usar esta plantilla mínima en cada issue/bloque del checklist:
 - [x] Contrato de operaciones Firestore por agregado (Issue #12)
 - [x] Modelo de recursos por `Entry` (delta neto; Issue #40)
 - [x] Política de timestamps y orden estable (Issue #18)
-- [ ] Flujo de sesión activa y `auto-stop` (Issue #14)
+- [x] Flujo de sesión activa y `auto-stop` (Issue #14)
 - [ ] Reglas de validación y recálculo de recursos (Issue #15)
 - [ ] Consultas mínimas para timeline/foco (Issue #16)
 - [ ] Matriz de edge cases de concurrencia y sincronización (Issue #17)
@@ -230,6 +234,7 @@ Usar esta plantilla mínima en cada issue/bloque del checklist:
 - `docs/firestore-operation-contract.md`
 - `docs/resource-delta-model.md`
 - `docs/timestamp-order-policy.md`
+- `docs/active-session-flow.md`
 - `docs/campaign-temporal-controls.md`
 - `docs/campaign-temporal-initialization.md`
 - `docs/editability-policy.md`

@@ -39,6 +39,8 @@ Este documento permite que una persona o agente nuevo entienda rápidamente:
   - Modelo de recursos del MVP por `Entry` (`resource_deltas`, delta neto).
 - `docs/timestamp-order-policy.md`
   - Política de timestamps de auditoría y orden estable entre dispositivos.
+- `docs/active-session-flow.md`
+  - Flujo de sesión activa (`start/stop/auto-stop`) y separación foco/activo.
 - `docs/campaign-temporal-controls.md`
   - Controles temporales de campaña y provisión/extensión de años del MVP.
 - `docs/campaign-temporal-initialization.md`
@@ -98,6 +100,7 @@ Este documento permite que una persona o agente nuevo entienda rápidamente:
 - Contrato Firestore por agregado -> `docs/firestore-operation-contract.md`
 - Modelo de recursos por `Entry` -> `docs/resource-delta-model.md`
 - Timestamps y orden estable -> `docs/timestamp-order-policy.md`
+- Flujo de sesión activa y `auto-stop` -> `docs/active-session-flow.md`
 - Controles temporales de campaña -> `docs/campaign-temporal-controls.md`
 - Inicialización temporal técnica -> `docs/campaign-temporal-initialization.md`
 - Editabilidad manual MVP -> `docs/editability-policy.md`

@@ -93,6 +93,9 @@ No incluye:
    `Week`.
 1. Seleccionar semana para navegar/focalizar sigue siendo una acción separada de
    la navegación temporal y no cambia automáticamente `week_cursor`.
+1. El marcador visual de `current week` (derivado de `week_cursor`) y la
+   selección `Week`/`Entry` usada por el flujo de sesión se tratan como
+   conceptos separados (ver `docs/active-session-flow.md`, Issue `#14`).
 
 ## Click en semana y selector de entry (patrón + intención)
 
@@ -111,7 +114,8 @@ No incluye:
 - **Issue #13**: detalle técnico de inicialización y extensión de
   `year/season/week`.
 - **Issue #14** (o equivalente): detalle del popover de entries y flujo de
-  selección/creación de entry desde semana.
+  selección/creación de entry desde semana, incluyendo flujo de sesión activa y
+  separación entre `current week`, foco y activo (`docs/active-session-flow.md`).
 - **Issue #12**: contrato de operaciones Firestore por agregado (implementación
   técnica de operaciones como provisión/extensión/cambio de cursor).
 - **Issue #37**: política de editabilidad manual del MVP y semántica derivada de
@@ -124,6 +128,7 @@ No incluye:
 - `docs/conflict-policy.md`
 - `docs/decision-log.md`
 - `docs/editability-policy.md`
+- `docs/active-session-flow.md`
 - `tdd.md` (legado temporal, alineado con referencia oficial)
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/9`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/12`

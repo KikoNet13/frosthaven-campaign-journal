@@ -38,6 +38,8 @@ Este documento permite que una persona o agente nuevo entienda rápidamente:
 - `docs/campaign-temporal-initialization.md`
   - Estrategia técnica de inicialización/extensión de años y creación de
     `year/season/week` del MVP.
+- `docs/editability-policy.md`
+  - Política de editabilidad manual y correcciones de estado/sesiones del MVP.
 - `docs/mvp-implementation-checklist.md`
   - Checklist técnico base para preparar la implementación del MVP.
 - `docs/mvp-implementation-blocks.md`
@@ -89,6 +91,7 @@ Este documento permite que una persona o agente nuevo entienda rápidamente:
 - Conflictos concurrentes MVP -> `docs/conflict-policy.md`
 - Controles temporales de campaña -> `docs/campaign-temporal-controls.md`
 - Inicialización temporal técnica -> `docs/campaign-temporal-initialization.md`
+- Editabilidad manual MVP -> `docs/editability-policy.md`
 - Checklist técnico MVP -> `docs/mvp-implementation-checklist.md`
 - Bloques de implementación MVP -> `docs/mvp-implementation-blocks.md`
 - Estado de fase -> `docs/context-governance.md`

@@ -353,3 +353,36 @@
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/35`,
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/13`,
   `https://github.com/KikoNet13/frosthaven-campaign-journal/pull/34`
+
+### DEC-0022
+
+- `date`: 2026-02-24
+- `status`: accepted
+- `problem`: el dominio del MVP quedó demasiado restrictivo para el objetivo de
+  trabajo “como papel”: no permitía reordenación manual de `Entry`, no definía
+  correcciones manuales amplias de `Session` ni `Week.reopen/reclose`, y
+  mantenía una semántica de `week_cursor` incompatible con esa editabilidad
+  ampliada, lo que bloqueaba la redacción coherente de la Issue #12.
+- `decision`: introducir una política marco de editabilidad manual del MVP
+  (`docs/editability-policy.md`, Issue #37) que permite reordenación manual de
+  `Entry` dentro de la misma `Week` con `order_index` denso `1..N`, habilita
+  correcciones manuales de `Week.status` (`reopen/reclose`) y correcciones
+  manuales completas de `Session` (crear/editar/borrar, incluyendo timestamps),
+  manteniendo la invariante de `0..1` sesión activa global; además, redefinir
+  `campaign.week_cursor` para que apunte siempre a la primera `Week` abierta
+  (menor `week_number` abierta) y rechazar operaciones que dejen `0` weeks
+  abiertas provisionadas.
+- `rationale`: permite un flujo de trabajo más flexible y cercano a papel sin
+  perder invariantes críticos, y separa correctamente la decisión de dominio
+  (editabilidad/cursor) del contrato técnico Firestore por agregado (Issue #12).
+- `impact`: actualiza `docs/domain-glossary.md`, `docs/conflict-policy.md`,
+  `docs/campaign-temporal-controls.md`, `docs/campaign-temporal-initialization.md`
+  y el orden técnico en `docs/mvp-implementation-checklist.md` /
+  `docs/mvp-implementation-blocks.md`; añade `docs/editability-policy.md` como
+  fuente oficial; desplaza la ejecución de `#12` para después de `#37`.
+- `references`: `docs/editability-policy.md`, `docs/domain-glossary.md`,
+  `docs/conflict-policy.md`, `docs/campaign-temporal-controls.md`,
+  `docs/campaign-temporal-initialization.md`,
+  `docs/mvp-implementation-checklist.md`, `docs/mvp-implementation-blocks.md`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/37`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/12`

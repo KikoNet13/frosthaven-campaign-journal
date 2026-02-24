@@ -151,6 +151,7 @@ Cada interacción termina con un menú numerado fijo de 3 a 5 siguientes pasos.
 - Política de conflictos concurrentes MVP: `docs/conflict-policy.md`
 - Controles temporales de campaña: `docs/campaign-temporal-controls.md`
 - Inicialización temporal de campaña (técnica): `docs/campaign-temporal-initialization.md`
+- Política de editabilidad manual MVP: `docs/editability-policy.md`
 - Checklist técnico de implementación MVP: `docs/mvp-implementation-checklist.md`
 - Bloques de implementación MVP: `docs/mvp-implementation-blocks.md`
 - Guía reusable: `learning/handbook.md`

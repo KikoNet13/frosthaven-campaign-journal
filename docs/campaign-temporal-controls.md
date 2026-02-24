@@ -6,8 +6,8 @@
 - `purpose`: Definir el contrato funcional de navegación temporal y provisión/extensión de años en la pantalla principal del MVP.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-02-23
-- `next_review`: 2026-03-09
+- `last_updated`: 2026-02-24
+- `next_review`: 2026-03-10
 
 ## Objetivo
 
@@ -83,15 +83,16 @@ No incluye:
 1. Tras confirmar, se añade **1 año** nuevo.
 1. No hay extensión automática por umbral en el MVP.
 
-## Ajuste manual de `week_cursor` (acción explícita separada)
+## Política de `week_cursor` (actualización posterior de dominio)
 
-1. `week_cursor` sigue avanzando por el flujo normal de cierre de `Week`.
-1. Además, el MVP permite un ajuste manual explícito de `week_cursor` dentro del
-   flujo de controles temporales.
-1. La acción manual de `week_cursor` es separada del click en semana de
-   navegación (por ejemplo, una acción de “Marcar como actual”).
-1. Seleccionar semana para navegar/focalizar y cambiar `week_cursor` son
-   acciones distintas.
+1. La semántica original de ajuste manual explícito de `week_cursor` definida en
+   esta issue fue **actualizada** por la Issue `#37`
+   (`docs/editability-policy.md`).
+1. En el MVP actual, `week_cursor` apunta a la **primera `Week` abierta**
+   (menor `week_number` abierta) y se recalcula tras cambios de estado de
+   `Week`.
+1. Seleccionar semana para navegar/focalizar sigue siendo una acción separada de
+   la navegación temporal y no cambia automáticamente `week_cursor`.
 
 ## Click en semana y selector de entry (patrón + intención)
 
@@ -113,6 +114,8 @@ No incluye:
   selección/creación de entry desde semana.
 - **Issue #12**: contrato de operaciones Firestore por agregado (implementación
   técnica de operaciones como provisión/extensión/cambio de cursor).
+- **Issue #37**: política de editabilidad manual del MVP y semántica derivada de
+  `week_cursor` (primera `Week` abierta), que actualiza esta decisión.
 - **Issue #18**: timestamps y desempates de orden estable entre dispositivos.
 
 ## Referencias
@@ -120,9 +123,11 @@ No incluye:
 - `docs/domain-glossary.md`
 - `docs/conflict-policy.md`
 - `docs/decision-log.md`
+- `docs/editability-policy.md`
 - `tdd.md` (legado temporal, alineado con referencia oficial)
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/9`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/12`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/13`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/14`
+- `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/37`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/18`

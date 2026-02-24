@@ -602,3 +602,32 @@
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/8`,
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/12`,
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/40`
+
+### DEC-0029
+
+- `date`: 2026-02-24
+- `status`: accepted
+- `problem`: faltaba una especificación oficial y trazable de consultas mínimas
+  para la pantalla principal del MVP, y `#16` seguía descrita en términos de
+  "timeline/panel de foco" sin cerrar el inventario de lecturas por superficie,
+  triggers de carga y compatibilidad con `#18`.
+- `decision`: aceptar `docs/minimal-read-queries.md` como contrato oficial de
+  lecturas mínimas de pantalla principal para el MVP (`#16`), fijando:
+  Figma compartido por Kiko como canon de layout/superficies para esta issue;
+  arranque sin `Week`/`Entry` seleccionada (barra en el año de `current week`);
+  inventario de consultas Q1..Q8; carga diferida de sesiones hasta selección de
+  `Entry`; y ausencia de paginación en MVP.
+- `rationale`: reduce ambigüedad entre layout heredado (`tdd.md`) y diseño
+  actual, alinea lecturas con `#9`, `#14`, `#15`, `#18` y `#12`, y deja una
+  base ejecutable para implementación sin listeners realtime ni sobrecargar el
+  modelo con lecturas innecesarias.
+- `impact`: cierra `#16`; actualiza tracking y trazabilidad (`AGENTS.md`,
+  `docs/system-map.md`, checklist y blocks); y añade referencias cruzadas en
+  docs temporales/flujo/orden para que `#17` y `#19` usen el mismo contrato de
+  lectura.
+- `references`: `docs/minimal-read-queries.md`, `docs/timestamp-order-policy.md`,
+  `docs/campaign-temporal-controls.md`, `docs/active-session-flow.md`,
+  `docs/firestore-operation-contract.md`, `docs/decision-log.md`,
+  `docs/mvp-implementation-checklist.md`, `docs/mvp-implementation-blocks.md`,
+  `AGENTS.md`, `docs/system-map.md`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/16`

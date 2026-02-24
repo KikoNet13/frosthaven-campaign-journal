@@ -6,8 +6,8 @@
 - `purpose`: Desglosar el checklist técnico base de implementación MVP en bloques y subbloques ejecutables con trazabilidad.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-02-23
-- `next_review`: 2026-03-09
+- `last_updated`: 2026-02-24
+- `next_review`: 2026-03-10
 
 ## Objetivo
 
@@ -139,7 +139,7 @@ No incluye:
 - Puede iniciarse en borrador antes de cerrar `#13`.
 - El cierre se recomienda después de `#13` para reducir retrabajo.
 
-### Issue #13 — Especificar estrategia de inicialización de años, temporadas y semanas
+### Issue #13 — Especificar estrategia de inicialización de años, estaciones (`season`) y semanas
 
 #### Ficha de bloque
 
@@ -155,7 +155,7 @@ No incluye:
 | --- | --- | --- | --- | --- | --- | --- |
 | `I13-S1` | Definir flujo técnico de provisión inicial de 4 años en `campaign/01` | `Codex` | `#9` | Especificación del flujo inicial | Queda descrito de forma no ambigua y sin contradicción con `#9` | `ready` |
 | `I13-S2` | Definir regla de extensión manual `+1` año con confirmación y criterios de creación | `Codex` | `I13-S1`, `#9` | Especificación de extensión `+1` | Se documenta comportamiento completo de extensión manual | `ready` |
-| `I13-S3` | Especificar creación de `year/season/week` y validaciones para evitar duplicados/estados inválidos | `Codex` | `I13-S1`, `I13-S2` | Reglas de inicialización y validación | Existen validaciones mínimas y estructura temporal consistente | `ready` |
+| `I13-S3` | Especificar creación de `year/season/week` y validaciones (estaciones `summer->winter`, 10 semanas por estación) para evitar duplicados/estados inválidos | `Codex` | `I13-S1`, `I13-S2` | Reglas de inicialización y validación | Existen validaciones mínimas, cardinalidades cerradas y estructura temporal consistente | `ready` |
 | `I13-S4` | Alinear referencias con `#9` y preparar insumo directo para `#12` | `Codex+Kiko` | `I13-S3` | Referencias cruzadas y nota para `#12` | `#12` puede usar el resultado sin ambigüedad temporal | `ready` |
 
 #### Riesgos y bloqueos
@@ -165,8 +165,9 @@ No incluye:
 
 #### Criterio de cierre de la issue
 
-- Estrategia de inicialización/extensión temporal detallada, consistente con `#9`
-  y sin contradicciones con `docs/domain-glossary.md`.
+- Estrategia de inicialización/extensión temporal detallada (incluyendo
+  estaciones `summer|winter` en orden fijo y 10 semanas por estación),
+  consistente con `#9` y sin contradicciones con `docs/domain-glossary.md`.
 
 #### Notas de secuencia / paralelización
 
@@ -477,6 +478,7 @@ No incluye:
 - `docs/sync-strategy.md`
 - `docs/conflict-policy.md`
 - `docs/campaign-temporal-controls.md`
+- `docs/campaign-temporal-initialization.md`
 - `docs/domain-glossary.md`
 - `docs/context-checklists.md`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/10`

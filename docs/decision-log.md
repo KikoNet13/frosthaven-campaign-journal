@@ -6,8 +6,8 @@
 - `purpose`: Registrar decisiones con trazabilidad y precedencia.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-02-23
-- `next_review`: 2026-03-09
+- `last_updated`: 2026-02-24
+- `next_review`: 2026-03-10
 
 ## Formato canónico por entrada
 
@@ -301,3 +301,26 @@
 - `references`: `AGENTS.md`, `docs/repo-workflow.md`,
   `docs/mvp-implementation-checklist.md`, `docs/mvp-implementation-blocks.md`,
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/32`
+
+### DEC-0020
+
+- `date`: 2026-02-24
+- `status`: accepted
+- `problem`: había ambigüedad en la traducción de `season` (usada como
+  “temporada”) y faltaba fijar el template temporal exacto para cerrar la
+  especificación técnica de inicialización de `year/season/week` (Issue #13).
+- `decision`: traducir `season` como **estación** (verano e invierno, en ese
+  orden) en la documentación en castellano, y fijar para el MVP un template
+  temporal determinista de `4` años iniciales, `2` estaciones por año
+  (`summer`, `winter`) y `10` semanas por estación, con extensión manual de
+  `+1` año desde el control de cambio de año.
+- `rationale`: elimina ambigüedad terminológica, evita investigar un calendario
+  externo innecesario para la Fase 1 y deja una base técnica cerrable para
+  `#13` que reduce retrabajo en `#12`, `#16` y `#20`.
+- `impact`: habilita documentar `docs/campaign-temporal-initialization.md` como
+  contrato técnico temporal del MVP; corrige terminología en documentación
+  oficial relacionada y fija cardinalidades mínimas de creación temporal.
+- `references`: `docs/campaign-temporal-controls.md`,
+  `docs/campaign-temporal-initialization.md`, `docs/domain-glossary.md`,
+  `docs/mvp-implementation-blocks.md`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/13`

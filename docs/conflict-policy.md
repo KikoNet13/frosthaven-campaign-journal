@@ -140,6 +140,9 @@ No incluye:
 - **Issue #40**: redefine el modelo de recursos del MVP como
   `Entry.resource_deltas` (sin entidad `ResourceChange`) y actualiza la matriz
   de conflictos de recursos sobre `Entry`.
+- **Issue #15**: detalla validación y recálculo de recursos (`Entry.resource_deltas`
+  y `campaign.resource_totals`) y alinea la clasificación de rechazos sobre
+  recursos con esta política.
 - **Issue #18**: define timestamps y desempates de orden estable entre
   dispositivos, compatibles con esta política.
 
@@ -150,10 +153,12 @@ No incluye:
 - `docs/decision-log.md`
 - `docs/firestore-operation-contract.md`
 - `docs/resource-delta-model.md`
+- `docs/resource-validation-recalculation.md`
 - `docs/timestamp-order-policy.md`
 - `tdd.md` (legado temporal, alineado con referencia oficial)
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/8`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/12`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/37`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/40`
+- `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/15`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/18`

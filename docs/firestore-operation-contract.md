@@ -45,6 +45,7 @@ No incluye:
 - `docs/campaign-temporal-initialization.md` (Issue `#13`)
 - `docs/editability-policy.md` (Issue `#37`)
 - `docs/resource-delta-model.md` (Issue `#40`, supersesión parcial de recursos)
+- `docs/resource-validation-recalculation.md` (Issue `#15`, detalle de validación y recálculo de recursos)
 - `docs/timestamp-order-policy.md` (Issue `#18`)
 - `docs/domain-glossary.md`
 
@@ -238,7 +239,9 @@ Operaciones compuestas mínimas:
 - El contrato no define lecturas ni consultas (`#16`).
 - La parte de recursos de este contrato fue parcialmente supersedida por
   `docs/resource-delta-model.md` (Issue `#40`) y parcheada con operaciones
-  sobre `Entry.resource_deltas`.
+  sobre `Entry.resource_deltas`; el detalle de validación y recálculo de
+  recursos se especifica en `docs/resource-validation-recalculation.md`
+  (Issue `#15`).
 - La UX exacta para errores de conflicto vs transición inválida se concreta en
   issues de flujo (`#14`) y UI.
 
@@ -251,6 +254,7 @@ Operaciones compuestas mínimas:
 - `docs/campaign-temporal-initialization.md`
 - `docs/editability-policy.md`
 - `docs/resource-delta-model.md`
+- `docs/resource-validation-recalculation.md`
 - `docs/timestamp-order-policy.md`
 - `docs/decision-log.md`
 - `docs/mvp-implementation-checklist.md`
@@ -259,4 +263,5 @@ Operaciones compuestas mínimas:
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/13`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/37`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/40`
+- `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/15`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/18`

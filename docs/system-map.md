@@ -37,6 +37,8 @@ Este documento permite que una persona o agente nuevo entienda rápidamente:
   - Contrato de operaciones de escritura por agregado del MVP.
 - `docs/resource-delta-model.md`
   - Modelo de recursos del MVP por `Entry` (`resource_deltas`, delta neto).
+- `docs/resource-validation-recalculation.md`
+  - Reglas de validación y recálculo de `resource_deltas`/totales globales.
 - `docs/timestamp-order-policy.md`
   - Política de timestamps de auditoría y orden estable entre dispositivos.
 - `docs/active-session-flow.md`
@@ -99,6 +101,7 @@ Este documento permite que una persona o agente nuevo entienda rápidamente:
 - Conflictos concurrentes MVP -> `docs/conflict-policy.md`
 - Contrato Firestore por agregado -> `docs/firestore-operation-contract.md`
 - Modelo de recursos por `Entry` -> `docs/resource-delta-model.md`
+- Validación y recálculo de recursos -> `docs/resource-validation-recalculation.md`
 - Timestamps y orden estable -> `docs/timestamp-order-policy.md`
 - Flujo de sesión activa y `auto-stop` -> `docs/active-session-flow.md`
 - Controles temporales de campaña -> `docs/campaign-temporal-controls.md`

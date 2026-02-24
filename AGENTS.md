@@ -11,20 +11,25 @@
 
 ## Propósito
 
-Este archivo define cómo se trabaja en este repositorio durante la Fase 0.
-La prioridad es aprender ingeniería de contexto con un flujo profesional y
-sencillo.
+Este archivo define cómo se trabaja en este repositorio durante la transición
+de preparación documental a implementación y en el arranque de implementación.
+La prioridad es mantener un flujo profesional, trazable y sencillo.
 
-## Alcance de la fase
+## Alcance de la etapa actual
 
-- Diseñar y mantener el sistema documental de contexto.
-- Preparar la organización de Git y GitHub.
-- Evitar implementación de código de aplicación.
+- Mantener el sistema documental de contexto y su trazabilidad.
+- Aplicar y registrar el gate de readiness para entrada a código.
+- Permitir implementación de código de la app tras gate `#20` válido.
 
 ## Reglas no negociables
 
-- No crear código funcional de la app durante Fase 0.
-- No cerrar decisiones de runtime de producto en esta fase.
+- No iniciar código de la app antes de validar el gate `#20` con resultado
+  `apto` o `apto_con_diferidos_aceptados`.
+- Si el gate `#20` resulta `no_apto`, la implementación queda bloqueada hasta
+  corregir los bloqueantes.
+- Las decisiones de runtime/arquitectura con impacto transversal deben quedar
+  registradas en documentación oficial; las de diseño requieren aprobación
+  explícita de Kiko.
 - La documentación oficial vive en `AGENTS.md`, `docs/` y `learning/`.
 - `summary_initial_conversation.txt`, `tdd.md`, `important.txt` y `neil.txt`
   son legado temporal.
@@ -161,6 +166,7 @@ Cada interacción termina con un menú numerado fijo de 3 a 5 siguientes pasos.
 - Consultas mínimas para pantalla principal (MVP): `docs/minimal-read-queries.md`
 - Matriz de edge cases de concurrencia/sincronización (MVP): `docs/concurrency-sync-edge-case-matrix.md`
 - Plan de pruebas para invariantes de dominio (MVP): `docs/domain-invariant-test-plan.md`
+- Gate de listo para codificar (Fase 1 MVP): `docs/coding-readiness-gate.md`
 - Controles temporales de campaña: `docs/campaign-temporal-controls.md`
 - Inicialización temporal de campaña (técnica): `docs/campaign-temporal-initialization.md`
 - Política de editabilidad manual MVP: `docs/editability-policy.md`

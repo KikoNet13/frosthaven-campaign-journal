@@ -156,12 +156,21 @@
   1. Confirmar que Fase 0 está validada.
   1. Verificar decisiones críticas abiertas.
   1. Verificar checklist completa.
-  1. Emitir resultado habilitado o bloqueado.
+  1. Verificar `#19`:
+     - `P0` definidos y trazados;
+     - diferidos aceptados explícitos (si existen).
+  1. Emitir resultado del gate:
+     - `apto`;
+     - `apto_con_diferidos_aceptados`; o
+     - `no_apto`.
+  1. Registrar evidencia en `docs/context-governance.md`.
 
 - `validation`:
 
-  1. Si falta una condición, resultado bloqueado.
-  1. Si todo está completo, resultado habilitado.
+  1. Si falta una condición bloqueante, resultado `no_apto`.
+  1. Si todo está completo y no hay diferidos aceptados, resultado `apto`.
+  1. Si todo está completo y hay diferidos aceptados explícitos, resultado
+     `apto_con_diferidos_aceptados`.
 
 - `owner`: IA ejecuta, Kiko valida.
 

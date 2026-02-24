@@ -260,6 +260,9 @@ No incluye:
 - La política de selección/foco posterior a borrar una `Entry` queda fuera de
   alcance de `#14`.
 - La técnica de sincronización/atomicidad Firestore permanece en `#12` y código.
+- La matriz transversal de edge cases priorizados para concurrencia/sync se
+  documenta en `docs/concurrency-sync-edge-case-matrix.md` (Issue `#17`), que
+  reutiliza este flujo como fuente de expectativas y recuperación.
 - El legado (`tdd.md`) puede seguir reflejando un `Play/Stop` en barra inferior;
   esta decisión oficial prevalece para el MVP actual.
 
@@ -274,6 +277,7 @@ No incluye:
 - `docs/editability-policy.md`
 - `docs/timestamp-order-policy.md`
 - `docs/minimal-read-queries.md`
+- `docs/concurrency-sync-edge-case-matrix.md`
 - `docs/decision-log.md`
 - `docs/mvp-implementation-checklist.md`
 - `docs/mvp-implementation-blocks.md`
@@ -282,3 +286,4 @@ No incluye:
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/12`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/37`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/18`
+- `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/17`

@@ -337,7 +337,8 @@ No incluye:
 - `tipo`: `task`
 - `estado_inicial`: `draftable`
 - `responsable_de_coordinación`: `Codex+Kiko`
-- `dependencias_de_cierre`: mayor valor con `#37`, `#12`, `#14`, `#15`, `#18`
+- `dependencias_de_cierre`: mayor valor con `#37`, `#12`, `#14`, `#15`, `#16`,
+  `#18`
 - `impacta_a`: `#19`, `#20`
 
 #### Subbloques ejecutables
@@ -357,8 +358,9 @@ No incluye:
 
 #### Criterio de cierre de la issue
 
-- Matriz de edge cases con expectativas, severidad y prioridad, alineada con
-  sincronización/concurrencia y con insumos técnicos suficientes.
+- Matriz de edge cases (taxonomía + escenarios canónicos + variantes) con
+  expectativas, severidad y prioridad, alineada con sincronización/concurrencia
+  y con insumos técnicos suficientes.
 
 #### Notas de secuencia / paralelización
 
@@ -551,13 +553,12 @@ No incluye:
 - [x] `#14` Flujo de sesión activa y `auto-stop` (`draftable`)
 - [x] `#15` Validación y recálculo de recursos (`draftable`)
 - [x] `#16` Consultas mínimas para timeline/foco (`draftable`)
-- [ ] `#17` Matriz de edge cases (`draftable`)
+- [x] `#17` Matriz de edge cases (`draftable`)
 - [ ] `#19` Plan de pruebas de invariantes (`draftable`)
 - [ ] `#20` Gate de listo para codificar (`final_gate`)
 
 ### Próxima secuencia técnica esperada (según orden actual)
 
-1. `#17`
 1. `#19`
 1. `#20`
 

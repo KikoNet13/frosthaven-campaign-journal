@@ -349,6 +349,9 @@ se tratará como ampliación posterior (no bloquea `#16`).
 
 - La implementación concreta de queries/índices Firestore queda fuera de esta
   issue.
+- La matriz de edge cases de lecturas críticas y refresh/sync se documenta en
+  `docs/concurrency-sync-edge-case-matrix.md` (Issue `#17`) y reutiliza este
+  inventario como base.
 - La paginación real (si se necesitara por volumen) se difiere a una ampliación
   posterior.
 - El Figma usado como canon de layout para `#16` no está archivado aún en el
@@ -370,6 +373,7 @@ se tratará como ampliación posterior (no bloquea `#16`).
 - `docs/resource-delta-model.md`
 - `docs/resource-validation-recalculation.md`
 - `docs/timestamp-order-policy.md`
+- `docs/concurrency-sync-edge-case-matrix.md`
 - `docs/mvp-implementation-checklist.md`
 - `docs/mvp-implementation-blocks.md`
 - `tdd.md` (legado, no canónico para layout de `#16`)
@@ -380,5 +384,6 @@ se tratará como ampliación posterior (no bloquea `#16`).
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/14`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/15`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/18`
+- `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/17`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/37`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/40`

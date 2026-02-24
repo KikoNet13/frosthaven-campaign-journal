@@ -227,7 +227,7 @@ Usar esta plantilla mínima en cada issue/bloque del checklist:
 - [x] Flujo de sesión activa y `auto-stop` (Issue #14)
 - [x] Reglas de validación y recálculo de recursos (Issue #15)
 - [x] Consultas mínimas para timeline/foco (Issue #16)
-- [ ] Matriz de edge cases de concurrencia y sincronización (Issue #17)
+- [x] Matriz de edge cases de concurrencia y sincronización (Issue #17)
 - [ ] Plan de pruebas para invariantes (Issue #19)
 - [ ] Gate de listo para codificar (Issue #20)
 

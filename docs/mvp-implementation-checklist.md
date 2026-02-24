@@ -31,7 +31,7 @@ No incluye:
 - codificación de la app;
 - desglose fino en bloques ejecutables con responsables y entregables (Issue #11);
 - gate final de "listo para codificar" (Issue #20);
-- cierre de decisiones de dominio pendientes (por ejemplo #18).
+- cierre de decisiones de dominio pendientes (si las hay).
 
 ## Entradas ya cerradas (prerrequisitos disponibles)
 
@@ -59,6 +59,10 @@ este checklist:
   `docs/resource-delta-model.md`
   - `ResourceChange` se sustituye por `Entry.resource_deltas` (delta neto por
     recurso), con supersesión parcial de la parte de recursos en `#12`.
+- **Política de timestamps y orden estable** (Issue #18):
+  `docs/timestamp-order-policy.md`
+  - auditoría temporal server-only, sin `deleted_at_utc` en MVP, y matriz de
+    orden canónico por lista para UI + `#16`.
 
 ## Corte de responsabilidades entre `#10`, `#11` y `#20`
 
@@ -207,7 +211,7 @@ Usar esta plantilla mínima en cada issue/bloque del checklist:
 - [x] Política de editabilidad manual y correcciones de dominio (Issue #37)
 - [x] Contrato de operaciones Firestore por agregado (Issue #12)
 - [x] Modelo de recursos por `Entry` (delta neto; Issue #40)
-- [ ] Política de timestamps y orden estable (Issue #18)
+- [x] Política de timestamps y orden estable (Issue #18)
 - [ ] Flujo de sesión activa y `auto-stop` (Issue #14)
 - [ ] Reglas de validación y recálculo de recursos (Issue #15)
 - [ ] Consultas mínimas para timeline/foco (Issue #16)
@@ -225,6 +229,7 @@ Usar esta plantilla mínima en cada issue/bloque del checklist:
 - `docs/conflict-policy.md`
 - `docs/firestore-operation-contract.md`
 - `docs/resource-delta-model.md`
+- `docs/timestamp-order-policy.md`
 - `docs/campaign-temporal-controls.md`
 - `docs/campaign-temporal-initialization.md`
 - `docs/editability-policy.md`

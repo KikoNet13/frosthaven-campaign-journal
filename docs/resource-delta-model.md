@@ -162,8 +162,8 @@ Se sustituyen operaciones `ResourceChange.*` por operaciones sobre
    define operaciones sobre `Entry.resource_deltas`.
 1. `docs/conflict-policy.md` modela conflictos de recursos sobre `Entry` (más
    totales derivados), no sobre `ResourceChange`.
-1. Tras cerrar esta decisión, `#18` vuelve a quedar como siguiente paso técnico
-   recomendado.
+1. La decisión deja a `#18` (timestamps y orden estable) con menor ambigüedad
+   de inventario, al eliminar el log `ResourceChange` del MVP.
 
 ## Riesgos, límites y decisiones diferidas
 
@@ -171,7 +171,8 @@ Se sustituyen operaciones `ResourceChange.*` por operaciones sobre
   simplicidad de edición neta (aceptado en MVP).
 - La estrategia exacta de persistencia/atomicidad Firestore sigue diferida a la
   implementación.
-- La política de timestamps y orden estable sigue diferida a `#18`.
+- La política de timestamps y orden estable se define en
+  `docs/timestamp-order-policy.md` (Issue `#18`).
 
 ## Referencias
 
@@ -179,6 +180,7 @@ Se sustituyen operaciones `ResourceChange.*` por operaciones sobre
 - `docs/conflict-policy.md`
 - `docs/firestore-operation-contract.md`
 - `docs/editability-policy.md`
+- `docs/timestamp-order-policy.md`
 - `docs/decision-log.md`
 - `docs/mvp-implementation-checklist.md`
 - `docs/mvp-implementation-blocks.md`

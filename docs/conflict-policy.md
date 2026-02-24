@@ -150,6 +150,7 @@ No incluye:
 - `docs/decision-log.md`
 - `docs/firestore-operation-contract.md`
 - `docs/resource-delta-model.md`
+- `docs/timestamp-order-policy.md`
 - `tdd.md` (legado temporal, alineado con referencia oficial)
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/8`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/12`

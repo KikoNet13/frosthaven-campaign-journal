@@ -538,14 +538,14 @@ No incluye:
 
 ## Seguimiento de bloques
 
-### Estado de bloques (actualizado tras cerrar #13, #37, #12 y #40)
+### Estado de bloques (actualizado tras cerrar #13, #37, #12, #40 y #18)
 
 - [x] `#11` Desglose en bloques ejecutables (este documento)
 - [x] `#13` Inicialización temporal detallada (`ready`)
 - [x] `#37` Política de editabilidad manual y correcciones de dominio (`ready`)
 - [x] `#12` Contrato Firestore por agregado (`draftable`)
 - [x] `#40` Modelo de recursos por `Entry` (delta neto; `draftable`)
-- [ ] `#18` Timestamps y orden estable (`draftable`)
+- [x] `#18` Timestamps y orden estable (`draftable`)
 - [ ] `#14` Flujo de sesión activa y `auto-stop` (`draftable`)
 - [ ] `#15` Validación y recálculo de recursos (`draftable`)
 - [ ] `#16` Consultas mínimas para timeline/foco (`draftable`)
@@ -555,7 +555,6 @@ No incluye:
 
 ### Próxima secuencia técnica esperada (según orden actual)
 
-1. `#18`
 1. `#14`
 1. `#15`
 1. `#16`
@@ -573,6 +572,7 @@ No incluye:
 - `docs/conflict-policy.md`
 - `docs/firestore-operation-contract.md`
 - `docs/resource-delta-model.md`
+- `docs/timestamp-order-policy.md`
 - `docs/campaign-temporal-controls.md`
 - `docs/campaign-temporal-initialization.md`
 - `docs/editability-policy.md`

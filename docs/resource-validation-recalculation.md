@@ -65,8 +65,10 @@ No incluye:
    - ausencia de clave == delta `0`;
    - no se persisten claves con valor `0`.
 1. `campaign.resource_totals[resource_key]`:
-   - ausencia de clave == total `0`;
-   - en MVP se recomienda normalizar y no persistir claves con total `0`.
+   - ausencia de clave == total `0` para cálculo/validación;
+   - si una clave materializada queda en `0` tras una operación, se conserva
+     explícitamente con valor `0`;
+   - claves nunca usadas pueden permanecer ausentes.
 1. Para una operación sobre una clave `k`:
    - `entry_before = delta neto previo de k en la Entry` (ausencia => `0`)
    - `entry_after = delta neto resultante de k en la Entry`
@@ -110,8 +112,9 @@ Para cada `resource_key` del catálogo MVP:
 Además:
 
 - ningún total final puede ser negativo;
-- no se persisten claves con total `0` en `campaign.resource_totals` (ausencia =
-  `0`);
+- `campaign.resource_totals` puede omitir claves nunca usadas;
+- si una clave materializada queda en `0`, se conserva explícitamente con valor
+  `0`;
 - no se persisten claves fuera del catálogo MVP.
 
 ### Estrategia de recálculo (nivel de comportamiento, no técnico)
@@ -126,8 +129,9 @@ Además:
 1. Para `Entry.delete`, el comportamiento esperado es sustraer la contribución
    de **todas** las claves presentes en `entry.resource_deltas` antes del
    borrado (equivalente a recalcular desde el conjunto de entries restante).
-1. Si el resultado de una clave queda `0`, se elimina la clave del mapa
-   `campaign.resource_totals`.
+1. Si el resultado de una clave queda `0`, se conserva la clave con valor `0`
+   en `campaign.resource_totals` cuando la clave ya estaba materializada; las
+   claves nunca usadas pueden permanecer ausentes.
 1. `#15` no fija si la implementación materializa esto como:
    - recálculo completo;
    - actualización incremental por diferencia;
@@ -222,7 +226,10 @@ Además:
 1. `Entry.adjust_resource_delta` con taps repetidos sobre la misma clave calcula
    un delta neto único y actualiza totales globales de forma consistente.
 1. `Entry.set_resource_delta` con `target_delta = 0` elimina la clave en
-   `entry.resource_deltas` y normaliza `campaign.resource_totals`.
+   `entry.resource_deltas` y aplica la regla de representación de
+   `campaign.resource_totals`:
+   - clave `0` explícita si la clave estaba materializada;
+   - ausencia de clave si no tenía uso previo.
 1. `Entry.clear_resource_delta` sobre clave inexistente es idempotente (sin
    error).
 1. Se rechaza cualquier operación que deje un total global final negativo.
@@ -248,10 +255,12 @@ Además:
 
 ## Supuestos explícitos (registro)
 
-1. `campaign.resource_totals` usa la misma normalización lógica que
-   `entry.resource_deltas`:
-   - ausencia de clave == `0`;
-   - no persistir claves con valor `0`.
+1. `campaign.resource_totals` **no** usa la misma normalización de persistencia
+   que `entry.resource_deltas`:
+   - ausencia de clave == `0` para cálculo/validación;
+   - conservar clave explícita con valor `0` cuando una clave materializada
+     queda en `0`;
+   - las claves nunca usadas pueden permanecer ausentes.
 1. `adjustment_delta = 0` y `set` al mismo valor se aceptan como no-op
    idempotente para simplificar clientes.
 1. Una inconsistencia detectada de totales/base se clasifica como `conflicto`

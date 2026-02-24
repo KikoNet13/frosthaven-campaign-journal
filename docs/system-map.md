@@ -6,8 +6,8 @@
 - `purpose`: Mapa navegable de la documentación oficial y legado temporal.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-02-23
-- `next_review`: 2026-03-09
+- `last_updated`: 2026-02-24
+- `next_review`: 2026-03-10
 
 ## Objetivo
 
@@ -35,6 +35,9 @@ Este documento permite que una persona o agente nuevo entienda rápidamente:
   - Política de conflictos concurrentes del MVP.
 - `docs/campaign-temporal-controls.md`
   - Controles temporales de campaña y provisión/extensión de años del MVP.
+- `docs/campaign-temporal-initialization.md`
+  - Estrategia técnica de inicialización/extensión de años y creación de
+    `year/season/week` del MVP.
 - `docs/mvp-implementation-checklist.md`
   - Checklist técnico base para preparar la implementación del MVP.
 - `docs/mvp-implementation-blocks.md`
@@ -85,6 +88,7 @@ Este documento permite que una persona o agente nuevo entienda rápidamente:
 - Sincronización MVP -> `docs/sync-strategy.md`
 - Conflictos concurrentes MVP -> `docs/conflict-policy.md`
 - Controles temporales de campaña -> `docs/campaign-temporal-controls.md`
+- Inicialización temporal técnica -> `docs/campaign-temporal-initialization.md`
 - Checklist técnico MVP -> `docs/mvp-implementation-checklist.md`
 - Bloques de implementación MVP -> `docs/mvp-implementation-blocks.md`
 - Estado de fase -> `docs/context-governance.md`

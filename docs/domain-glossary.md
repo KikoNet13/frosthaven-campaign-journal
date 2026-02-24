@@ -6,8 +6,8 @@
 - `purpose`: Definir el modelo de dominio e invariantes operativas del MVP.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-02-23
-- `next_review`: 2026-03-09
+- `last_updated`: 2026-02-24
+- `next_review`: 2026-03-10
 
 ## Objetivo
 
@@ -33,6 +33,8 @@ entidad `Entry` (`scenario|outpost`) y jerarquía temporal explícita:
 
 - `season_type`: `summer|winter`.
 - `year_number`: entero positivo.
+- En castellano, `season` se traduce como **estación** (`verano|invierno`), no
+  “temporada”.
 
 ### Week
 
@@ -97,6 +99,8 @@ entidad `Entry` (`scenario|outpost`) y jerarquía temporal explícita:
 - `year_number` y `season_type` son coherentes con `week_number` y la jerarquía.
 - En esta issue no se define provisión inicial de años (por ejemplo, crear 4
   años en bloque).
+- El detalle técnico de inicialización/extensión temporal y cardinalidad de
+  semanas por estación se define en `docs/campaign-temporal-initialization.md`.
 
 ## Invariantes operativas cerradas
 

@@ -6,8 +6,8 @@
 - `purpose`: Contrato operativo de trabajo entre IA y humano.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-02-23
-- `next_review`: 2026-03-09
+- `last_updated`: 2026-02-24
+- `next_review`: 2026-03-10
 
 ## Propósito
 
@@ -133,6 +133,7 @@ Cada interacción termina con un menú numerado fijo de 3 a 5 siguientes pasos.
 - Estrategia de sincronización MVP: `docs/sync-strategy.md`
 - Política de conflictos concurrentes MVP: `docs/conflict-policy.md`
 - Controles temporales de campaña: `docs/campaign-temporal-controls.md`
+- Inicialización temporal de campaña (técnica): `docs/campaign-temporal-initialization.md`
 - Checklist técnico de implementación MVP: `docs/mvp-implementation-checklist.md`
 - Bloques de implementación MVP: `docs/mvp-implementation-blocks.md`
 - Guía reusable: `learning/handbook.md`

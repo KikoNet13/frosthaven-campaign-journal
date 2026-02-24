@@ -76,7 +76,7 @@ No incluye:
 | `Session.manual_create` | `session` + `campaign` | Sí | Histórica o activa | Preserva `0..1` sesión activa global |
 | `Session.manual_update` | `session` + `campaign` | Sí | Corrección de timestamps y estado | Preserva `0..1` sesión activa global |
 | `Session.manual_delete` | `session` + `campaign` | Sí | Borrado real | Preserva `0..1` sesión activa global |
-| `ResourceChange.create/update/delete` | `resource_change` | Sí | Weeks abiertas o cerradas | Sigue validación de totales no negativos |
+| `Entry.adjust/set/clear_resource_delta` | `entry` | Sí | Weeks abiertas o cerradas | Edita `Entry.resource_deltas` (delta neto por recurso) con validación de totales no negativos |
 
 ## Reglas por agregado
 
@@ -119,13 +119,18 @@ No incluye:
    normal), pero las correcciones manuales no deben introducir cambios implícitos
    opacos; el contrato detallado se fija en `#12` y el flujo en `#14`.
 
-### `ResourceChange`
+### Recursos en `Entry` (`resource_deltas`)
 
-1. Se mantiene la editabilidad de `ResourceChange` (crear/editar/borrar) con
-   correcciones manuales en el MVP.
+1. La editabilidad de recursos se mantiene en el MVP, pero se expresa sobre
+   `Entry.resource_deltas` (delta neto por `resource_key`), no mediante una
+   entidad `ResourceChange`.
+1. Se permiten ajustes incrementales (`+/-`), edición manual directa del delta
+   neto y limpieza de clave cuando el resultado es `0`.
 1. La política de editabilidad amplia no elimina la validación de totales
    finales no negativos.
-1. El contrato detallado de pre/postcondiciones y rechazos se define en `#12`.
+1. El modelo detallado se define en `docs/resource-delta-model.md` y el
+   contrato de pre/postcondiciones/rechazos en `#12` (parcheado por supersesión
+   parcial de recursos).
 
 ## Reglas de estado y cursor (`Week.status`, `week_cursor`)
 
@@ -233,7 +238,7 @@ abierta:
 - `#14`: flujo de sesión activa / `auto-stop` debe coexistir con correcciones
   manuales de sesión y `Week.reopen/reclose`.
 - `#15`: reglas de recursos deben considerar editabilidad en weeks cerradas y
-  correcciones amplias.
+  correcciones amplias sobre `Entry.resource_deltas`.
 - `#17`: matriz de edge cases debe incorporar reordenación, reopen/reclose y
   correcciones manuales de sesión.
 - `#19`: el plan de pruebas de invariantes debe incluir los nuevos casos de
@@ -278,9 +283,11 @@ abierta:
 - `docs/campaign-temporal-initialization.md`
 - `docs/mvp-implementation-checklist.md`
 - `docs/mvp-implementation-blocks.md`
+- `docs/resource-delta-model.md`
 - `docs/decision-log.md`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/8`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/12`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/14`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/15`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/37`
+- `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/40`

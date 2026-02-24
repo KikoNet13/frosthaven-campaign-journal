@@ -35,6 +35,8 @@ Este documento permite que una persona o agente nuevo entienda rápidamente:
   - Política de conflictos concurrentes del MVP.
 - `docs/firestore-operation-contract.md`
   - Contrato de operaciones de escritura por agregado del MVP.
+- `docs/resource-delta-model.md`
+  - Modelo de recursos del MVP por `Entry` (`resource_deltas`, delta neto).
 - `docs/campaign-temporal-controls.md`
   - Controles temporales de campaña y provisión/extensión de años del MVP.
 - `docs/campaign-temporal-initialization.md`
@@ -92,6 +94,7 @@ Este documento permite que una persona o agente nuevo entienda rápidamente:
 - Sincronización MVP -> `docs/sync-strategy.md`
 - Conflictos concurrentes MVP -> `docs/conflict-policy.md`
 - Contrato Firestore por agregado -> `docs/firestore-operation-contract.md`
+- Modelo de recursos por `Entry` -> `docs/resource-delta-model.md`
 - Controles temporales de campaña -> `docs/campaign-temporal-controls.md`
 - Inicialización temporal técnica -> `docs/campaign-temporal-initialization.md`
 - Editabilidad manual MVP -> `docs/editability-policy.md`

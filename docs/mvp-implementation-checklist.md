@@ -31,7 +31,7 @@ No incluye:
 - codificación de la app;
 - desglose fino en bloques ejecutables con responsables y entregables (Issue #11);
 - gate final de "listo para codificar" (Issue #20);
-- cierre de decisiones de dominio pendientes (por ejemplo #12, #18).
+- cierre de decisiones de dominio pendientes (por ejemplo #18).
 
 ## Entradas ya cerradas (prerrequisitos disponibles)
 
@@ -55,6 +55,10 @@ este checklist:
   - editabilidad amplia ("como papel"), reordenación manual de `Entry`,
     `Week.reopen/reclose`, correcciones manuales de `Session` y semántica
     derivada de `week_cursor`.
+- **Modelo de recursos por `Entry` (delta neto)** (Issue #40):
+  `docs/resource-delta-model.md`
+  - `ResourceChange` se sustituye por `Entry.resource_deltas` (delta neto por
+    recurso), con supersesión parcial de la parte de recursos en `#12`.
 
 ## Corte de responsabilidades entre `#10`, `#11` y `#20`
 
@@ -93,11 +97,12 @@ este checklist:
 
 ### Bloque B — Contratos de dominio para implementación (núcleo)
 
-- **Issues**: #13, #37, #12, #18
+- **Issues**: #13, #37, #12, #40, #18
 - **Orden recomendado**:
   1. #13 — inicialización temporal detallada.
   1. #37 — política de editabilidad manual y correcciones de dominio (marco).
   1. #12 — contrato de operaciones Firestore por agregado, alineado con #13 y #37.
+  1. #40 — modelo de recursos por `Entry` (delta neto; supersesión parcial de recursos).
   1. #18 — timestamps y orden estable entre dispositivos.
 - **Justificación**:
   - #13 concreta la provisión/extensión temporal decidida en #9.
@@ -105,6 +110,8 @@ este checklist:
     por agregado.
   - #12 necesita alineación con provisión temporal (#9), detalle técnico (#13)
     y política de editabilidad (#37).
+  - #40 corrige el modelo de recursos del MVP y reduce ambigüedad antes de #15
+    y del inventario ordenable de #18.
   - #18 cierra orden estable para lecturas y logs entre dispositivos.
 
 ### Bloque C — Flujos funcionales e invariantes de operación
@@ -115,7 +122,7 @@ este checklist:
   1. #15 — validación y recálculo de recursos.
 - **Dependencias mínimas**:
   - #14 requiere #8 (resuelta) y se beneficia del contrato #12.
-  - #15 requiere #8 (resuelta) y debe alinearse con #12.
+  - #15 requiere #8 (resuelta) y debe alinearse con #12 y #40.
 
 ### Bloque D — Lecturas, edge cases y verificación
 
@@ -143,9 +150,10 @@ este checklist:
 | Bloque B / #13 | `task` | #9 (resuelta) | Sí | Flujo temporal detallado sin contradicciones | #37, #12, #16, #20 |
 | Bloque B / #37 | `decision` | #8, #9 (resueltas) + coherencia con #13 | Borrador sí; cierre recomendado tras #13 | Política de editabilidad manual e invariantes actualizadas | #12, #14, #15, #17, #19, #20 |
 | Bloque B / #12 | `decision` | #7, #8, #9 (resueltas) + alineación con #13 y #37 | Borrador sí; cierre recomendado tras #13 y #37 | Contrato por agregado con pre/postcondiciones | #14, #15, #16, #17, #18, #19, #20 |
-| Bloque B / #18 | `decision` | #7, #8 (resueltas) | Sí, pero cierre recomendado tras #12 | Política de timestamps y desempate estable | #16, #17, #19, #20 |
+| Bloque B / #40 | `decision` | #8, #12, #37 (resueltas) + coherencia con glosario | Sí, pero cierre recomendado antes de #18 y #15 | Modelo de recursos por `Entry` (`resource_deltas`) y parche de consistencia | #15, #17, #18, #19, #20 |
+| Bloque B / #18 | `decision` | #7, #8 (resueltas) + coherencia con #12 y #40 | Sí, pero cierre recomendado tras #12 y #40 | Política de timestamps y desempate estable | #16, #17, #19, #20 |
 | Bloque C / #14 | `task` | #8 (resuelta) + alineación con #37 | Sí, parcial | Flujo de sesión + `auto-stop` sin romper invariantes | #17, #19, #20 |
-| Bloque C / #15 | `task` | #8 (resuelta) + alineación con #37 | Sí, parcial | Reglas de validación y recálculo trazables | #17, #19, #20 |
+| Bloque C / #15 | `task` | #8 (resuelta) + alineación con #37 y #40 | Sí, parcial | Reglas de validación y recálculo trazables | #17, #19, #20 |
 | Bloque D / #16 | `task` | #7, #9 (resueltas) | Sí | Inventario mínimo de consultas y orden estable | #19, #20 |
 | Bloque D / #17 | `task` | #7, #8 (resueltas) | Sí, pero gana valor tras #12/#14/#15/#18 | Matriz de edge cases con expectativa verificable | #19, #20 |
 | Bloque D / #19 | `task` | #7, #8, #9 (resueltas) | Sí, parcial | Plan de pruebas de invariantes con evidencia repetible | #20 |
@@ -198,6 +206,7 @@ Usar esta plantilla mínima en cada issue/bloque del checklist:
 - [x] Inicialización temporal detallada (Issue #13)
 - [x] Política de editabilidad manual y correcciones de dominio (Issue #37)
 - [x] Contrato de operaciones Firestore por agregado (Issue #12)
+- [x] Modelo de recursos por `Entry` (delta neto; Issue #40)
 - [ ] Política de timestamps y orden estable (Issue #18)
 - [ ] Flujo de sesión activa y `auto-stop` (Issue #14)
 - [ ] Reglas de validación y recálculo de recursos (Issue #15)
@@ -215,6 +224,7 @@ Usar esta plantilla mínima en cada issue/bloque del checklist:
 - `docs/sync-strategy.md`
 - `docs/conflict-policy.md`
 - `docs/firestore-operation-contract.md`
+- `docs/resource-delta-model.md`
 - `docs/campaign-temporal-controls.md`
 - `docs/campaign-temporal-initialization.md`
 - `docs/editability-policy.md`
@@ -225,6 +235,7 @@ Usar esta plantilla mínima en cada issue/bloque del checklist:
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/12`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/13`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/37`
+- `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/40`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/14`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/15`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/16`

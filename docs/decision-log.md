@@ -421,3 +421,37 @@
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/12`,
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/13`,
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/37`
+
+### DEC-0024
+
+- `date`: 2026-02-24
+- `status`: accepted
+- `problem`: el modelo MVP de recursos basado en `ResourceChange` (log `0..N`
+  por `Entry`) quedó desalineado con la intención de edición manual "como
+  papel", y dejaba complejidad innecesaria en contratos y conflictos justo
+  antes de cerrar la política de timestamps/orden estable (`#18`).
+- `decision`: sustituir `ResourceChange` como entidad MVP por un campo
+  `Entry.resource_deltas` con tipo lógico `map<resource_key, int>` y semántica
+  de delta neto editable por recurso dentro de cada `Entry`; mantener solo
+  claves con delta `!= 0` (ausencia de clave = `0`), eliminar la clave cuando
+  el delta neto resulte `0`, reutilizar únicamente la auditoría de `Entry` (sin
+  timestamps por recurso) y parchear `docs/firestore-operation-contract.md`
+  para reemplazar `ResourceChange.*` por operaciones sobre
+  `Entry.resource_deltas` sin reabrir la Issue `#12`.
+- `rationale`: simplifica el modelo de dominio y la edición de recursos en el
+  MVP, alinea el comportamiento con la editabilidad amplia definida en `#37`,
+  reduce complejidad de concurrencia/contratos y evita arrastrar un log
+  incremental intra-entry que no aporta valor al MVP actual.
+- `impact`: añade `docs/resource-delta-model.md` como fuente oficial; elimina
+  `ResourceChange` del glosario MVP activo; actualiza `docs/conflict-policy.md`
+  y parchea parcialmente `docs/firestore-operation-contract.md` (supersesión
+  parcial de la parte de recursos de `DEC-0023`); reordena el bloque técnico
+  para ejecutar esta decisión antes de `#18`, y deja `#18` como siguiente paso
+  tras su cierre.
+- `references`: `docs/resource-delta-model.md`, `docs/domain-glossary.md`,
+  `docs/firestore-operation-contract.md`, `docs/conflict-policy.md`,
+  `docs/editability-policy.md`, `docs/mvp-implementation-checklist.md`,
+  `docs/mvp-implementation-blocks.md`, `AGENTS.md`, `docs/system-map.md`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/40`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/12`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/18`

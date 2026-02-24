@@ -21,7 +21,7 @@ técnica concreta de Firestore.
 Incluye:
 
 - inventario de operaciones de escritura por agregado (`campaign`, `week`,
-  `entry`, `session`, `resource_change`);
+  `entry` incluidas mutaciones de `resource_deltas`, `session`);
 - precondiciones, validaciones, postcondiciones y rechazos esperados;
 - operaciones compuestas y atomicidad esperada de comportamiento;
 - alineación explícita con `#13` (temporal) y `#37` (editabilidad);
@@ -43,6 +43,7 @@ No incluye:
 - `docs/campaign-temporal-controls.md` (Issue `#9`, con actualización por `#37`)
 - `docs/campaign-temporal-initialization.md` (Issue `#13`)
 - `docs/editability-policy.md` (Issue `#37`)
+- `docs/resource-delta-model.md` (Issue `#40`, supersesión parcial de recursos)
 - `docs/domain-glossary.md`
 
 ## Convenciones del contrato
@@ -56,8 +57,9 @@ No incluye:
    cambian estado de `Week` o estructura temporal.
 1. `Session` no usa un campo `state`; una sesión activa se define por
    `ended_at_utc = null`.
-1. Ownership de `Session` y `ResourceChange` se deriva de la ruta; no se
-   redefine por campos.
+1. Ownership de `Session` se deriva de la ruta; no se redefine por campos.
+1. Los cambios de recursos del MVP se modelan como `Entry.resource_deltas`
+   (mapa embebido), no como entidad `ResourceChange`.
 
 ## Agregados y operaciones cubiertas
 
@@ -74,6 +76,9 @@ No incluye:
   - `Entry.update`
   - `Entry.delete`
   - `Entry.reorder_within_week`
+  - `Entry.adjust_resource_delta`
+  - `Entry.set_resource_delta`
+  - `Entry.clear_resource_delta`
 - `session`
   - `Session.start`
   - `Session.stop`
@@ -81,11 +86,6 @@ No incluye:
   - `Session.manual_create`
   - `Session.manual_update`
   - `Session.manual_delete`
-- `resource_change`
-  - `ResourceChange.create`
-  - `ResourceChange.update`
-  - `ResourceChange.delete`
-
 ## Operaciones excluidas del contrato activo MVP
 
 - `Campaign.set_week_cursor_manual`
@@ -107,17 +107,17 @@ No incluye:
 | `Week.update_notes` | `week` | `week` | `simple` | edición de notas | `activa` | `#8`, `#37` | permitido en `open|closed` |
 | `Entry.create` | `entry` | `entry`, `week` | `compuesta` | creación manual de entry | `activa` | `#37`, glosario | auto-normaliza `order_index` si detecta secuencia inconsistente |
 | `Entry.update` | `entry` | `entry` | `simple` | edición manual de entry | `activa` | `#37`, glosario | alcance amplio; sin mover de `Week` |
-| `Entry.delete` | `entry` | `entry`, `session`, `resource_change`, `campaign` | `compuesta` | borrado manual de entry | `activa` | glosario, `#37` | hard delete real; cascada; auto-stop si entry activa |
+| `Entry.delete` | `entry` | `entry`, `session`, `campaign` | `compuesta` | borrado manual de entry | `activa` | glosario, `#37`, `#40` | hard delete real; auto-stop si entry activa; elimina `resource_deltas` con la entry |
 | `Entry.reorder_within_week` | `entry` | `entry`, `week` | `compuesta` | mover una entry en la misma week | `activa` | `#8`, `#37` | resecuencia densa `1..N` |
+| `Entry.adjust_resource_delta` | `entry` | `entry`, `campaign` | `compuesta` | tap `+/-` de recurso en una entry | `activa` | `#8`, `#37`, `#40`, glosario | ajusta delta neto en `Entry.resource_deltas` y valida totales |
+| `Entry.set_resource_delta` | `entry` | `entry`, `campaign` | `compuesta` | edición manual de delta neto | `activa` | `#8`, `#37`, `#40`, glosario | reemplaza delta neto; elimina clave si queda en `0` |
+| `Entry.clear_resource_delta` | `entry` | `entry`, `campaign` | `compuesta` | limpieza explícita de recurso en la entry | `activa` | `#8`, `#37`, `#40`, glosario | elimina clave de `resource_deltas`; valida totales |
 | `Session.start` | `session` | `campaign`, `entry`, `session` | `compuesta` | iniciar sesión de juego | `activa` | `#8`, glosario | permitido en week `open|closed`; auto-stop si hay activa |
 | `Session.stop` | `session` | `campaign`, `entry`, `session` | `simple` | detener sesión activa | `activa` | `#8`, glosario | inválida si la sesión ya no está activa |
 | `Session.auto_stop` | `session` | `campaign`, `entry`, `session` | `derivada` | `start`, `Week.close/reclose`, `Entry.delete` | `activa` | glosario, `#37` | no es acción manual principal |
 | `Session.manual_create` | `session` | `campaign`, `entry`, `session` | `simple` | corrección manual | `activa` | `#37`, glosario | histórica o activa; permitido en week `open|closed` |
 | `Session.manual_update` | `session` | `campaign`, `entry`, `session` | `simple` | corrección manual | `activa` | `#37`, glosario | corrige timestamps; `null <-> valor`; sin reparenting |
 | `Session.manual_delete` | `session` | `campaign`, `entry`, `session` | `simple` | corrección manual | `activa` | `#37`, glosario | hard delete; permitido en week `open|closed` |
-| `ResourceChange.create` | `resource_change` | `resource_change`, `campaign` | `compuesta` | registro manual de recursos | `activa` | `#8`, glosario | valida no-negatividad final |
-| `ResourceChange.update` | `resource_change` | `resource_change`, `campaign` | `compuesta` | corrección manual | `activa` | `#8`, glosario | valida no-negatividad final |
-| `ResourceChange.delete` | `resource_change` | `resource_change`, `campaign` | `compuesta` | corrección manual | `activa` | `#8`, glosario | valida consistencia de totales tras eliminación |
 
 ## Contrato por operación
 
@@ -131,18 +131,17 @@ No incluye:
 | `Week.update_notes` | week existe | base de `updated_at_utc`/versión no obsoleta | edición de texto válida; permitido en `open|closed` | `notes` actualizadas | base obsoleta; payload inválido | `conflicto` / `validacion` | una actualización simple | `refrescar + reingresar cambios` si conflicto; error local si payload inválido | sin LWW |
 | `Entry.create` | week existe; ownership por ruta válido | base de orden (`entries` de la week) no obsoleta para inserción | `Entry.type` válido; `scenario_ref` obligatorio si `scenario`; si secuencia `order_index` inconsistente, auto-normalizar denso `1..N` antes/asociado a inserción | nueva entry creada con `order_index` válido y secuencia consistente | payload inválido; week inexistente; base obsoleta no resoluble | `validacion` / `conflicto` | normalización de orden + creación forman operación lógica única | error local si payload inválido; `refrescar + reintentar` si conflicto | permitido en week `open|closed` |
 | `Entry.update` | entry existe | base de entry no obsoleta | edición amplia de campos funcionales; `scenario_ref` consistente; no cambiar de `Week` | entry actualizada en la misma week | payload inválido; intento de mover de week; base obsoleta | `validacion` / `conflicto` | actualización simple | error local si validación; `refrescar + reintentar` si conflicto | sin reparenting |
-| `Entry.delete` | entry existe | base de entry e hijos relevantes no obsoletas | hard delete; si entry activa, `auto-stop`; borrado en cascada de `sessions` y `resource_changes` | entry y descendientes eliminados; no queda sesión activa asociada a esa entry | entry ya borrada; base obsoleta; cascada inválida por conflicto | `transicion_invalida` / `conflicto` | auto-stop + cascada + borrado se tratan como operación lógica única | error local si ya no existe; `refrescar + reintentar` si conflicto | hard delete real (sin soft delete funcional) |
+| `Entry.delete` | entry existe | base de entry e hijos relevantes no obsoletas | hard delete; si entry activa, `auto-stop`; borrado de `sessions`; eliminación implícita de `resource_deltas` con la `Entry` | entry eliminada con sus `sessions` y `resource_deltas`; no queda sesión activa asociada a esa entry | entry ya borrada; base obsoleta; cascada inválida por conflicto | `transicion_invalida` / `conflicto` | auto-stop + borrado de hijos + borrado de entry se tratan como operación lógica única | error local si ya no existe; `refrescar + reintentar` si conflicto | hard delete real (sin soft delete funcional) |
 | `Entry.reorder_within_week` | entry existe y pertenece a la week objetivo; misma week | base del orden de la week no obsoleta | posición destino válida; resecuencia densa `1..N`; no mover entre weeks | orden de entries de la week queda consistente | entry inexistente; week inconsistente; base obsoleta | `validacion` / `conflicto` | mover + resecuencia como operación lógica única | error local si validación; `refrescar + reintentar` si conflicto | permitido en week `open|closed` |
+| `Entry.adjust_resource_delta` | entry existe; `resource_key` pertenece al catálogo MVP | base de entry y `resource_totals` relevantes no obsoletas | ajuste entero firmado; cálculo de delta neto; eliminar clave si resultado `0`; totales finales no negativos | `Entry.resource_deltas` actualizado (neto); `campaign.resource_totals` consistente | `resource_key` inválida; payload inválido; totales negativos; base obsoleta | `validacion` / `conflicto` | recálculo de totales + actualización de `Entry.resource_deltas` como operación lógica única | error local si validación; `refrescar + reintentar` si conflicto | permitido en week `open|closed`; no crea log incremental |
+| `Entry.set_resource_delta` | entry existe; `resource_key` válida | base de entry y totales relevantes no obsoletas | delta entero firmado; si delta final `0`, eliminar clave; totales finales no negativos | delta neto fijado (o clave eliminada) y totales consistentes | `resource_key` inválida; payload inválido; totales negativos; base obsoleta | `validacion` / `conflicto` | recálculo de totales + escritura del mapa como operación lógica única | error local si validación; `refrescar + reintentar` si conflicto | edición manual directa del delta neto |
+| `Entry.clear_resource_delta` | entry existe | base de entry y totales relevantes no obsoletas | `resource_key` válida; recálculo mantiene totales no negativos | clave eliminada de `resource_deltas` (o permanece ausente si se trata como idempotente) y totales consistentes | `resource_key` inválida; totales negativos; base obsoleta | `validacion` / `conflicto` | recálculo de totales + limpieza de clave como operación lógica única | error local si validación; `refrescar + reintentar` si conflicto | limpiar clave inexistente puede tratarse como idempotente (sin error) |
 | `Session.start` | entry existe; sesión activa global puede ser 0..1; week `open|closed` permitida | base de sesión activa global no obsoleta | si ya hay sesión activa, `auto-stop` previo; garantizar unicidad `0..1` activa | nueva sesión activa (o transición equivalente) creada; unicidad preservada | unicidad violada; entry inválida; base obsoleta | `validacion` / `conflicto` | `auto-stop + start` (si aplica) como operación lógica única | error local si validación; `refrescar + reintentar` si conflicto | actividad derivada por `ended_at_utc=null` |
 | `Session.stop` | sesión objetivo existe y está activa (`ended_at_utc=null`) | base de sesión no obsoleta | sesión sigue activa al momento de aplicar stop | sesión queda cerrada (`ended_at_utc` definido) | sesión ya cerrada/no activa; base obsoleta | `transicion_invalida` / `conflicto` | actualización simple | error local si transición inválida; `refrescar + reintentar` si conflicto | distingue conflicto de transición inválida |
 | `Session.auto_stop` | sesión activa previa existe | base de sesión activa no obsoleta | trigger válido (`start`, `Week.close/reclose`, `Entry.delete`) | sesión activa previa queda cerrada | sesión ya no activa; base obsoleta | `transicion_invalida` / `conflicto` | se evalúa dentro de la operación compuesta disparadora | heredada de la operación padre | no se expone como acción manual principal |
 | `Session.manual_create` | entry existe; ownership por ruta válido | base de sesión activa global no obsoleta si crea una activa | timestamps válidos; histórica o activa; unicidad `0..1` activa global | sesión manual creada | timestamps inválidos; unicidad violada; base obsoleta | `validacion` / `conflicto` | creación simple | error local si validación; `refrescar + reintentar` si conflicto | permitido en week `open|closed` |
 | `Session.manual_update` | sesión existe; ownership por ruta inmutable | base de la sesión y de unicidad global no obsoletas | corrige `started_at_utc`/`ended_at_utc`; permite `null <-> valor`; sin reparenting; unicidad de activa global | sesión corregida; unicidad preservada | timestamps inválidos; reparenting intentado; unicidad violada; base obsoleta | `validacion` / `conflicto` | actualización simple | error local si validación; `refrescar + reintentar` si conflicto | no existe campo `state` separado |
 | `Session.manual_delete` | sesión existe | base de sesión no obsoleta | hard delete; preservar `0..1` activa global | sesión eliminada | sesión ya borrada; base obsoleta | `transicion_invalida` / `conflicto` | borrado simple | error local si transición inválida; `refrescar + reintentar` si conflicto | permitido en week `open|closed` |
-| `ResourceChange.create` | entry existe; ownership por ruta válido | base de `resource_totals` / log relevante no obsoleta | `resource_key` válido; `delta != 0`; totales finales no negativos | cambio creado; totales resultantes válidos | payload inválido; totales negativos; base obsoleta | `validacion` / `conflicto` | cálculo + creación como operación lógica única | error local si validación; `refrescar + reintentar` si conflicto | permitido en week `open|closed` |
-| `ResourceChange.update` | change existe | base de change y totales relevantes no obsoletas | payload válido; totales finales no negativos | change actualizado; totales resultantes válidos | change inexistente/alterado; totales negativos; base obsoleta | `transicion_invalida` / `validacion` / `conflicto` | cálculo + actualización como operación lógica única | error local si validación/transición; `refrescar + reintentar` si conflicto | sin LWW |
-| `ResourceChange.delete` | change existe | base de change y totales relevantes no obsoletas | recálculo mantiene totales no negativos | change eliminado; totales resultantes válidos | change ya borrado; totales inválidos; base obsoleta | `transicion_invalida` / `validacion` / `conflicto` | cálculo + borrado como operación lógica única | error local si validación/transición; `refrescar + reintentar` si conflicto | hard delete real |
-
 ## Operaciones compuestas y atomicidad esperada (comportamiento)
 
 Este documento exige atomicidad a nivel de **resultado observable** (éxito
@@ -153,10 +152,12 @@ Operaciones compuestas mínimas:
 
 1. `Session.start` con `auto-stop` previo cuando ya existe sesión activa.
 1. `Week.close` / `Week.reclose` con `auto-stop` + recálculo de `week_cursor`.
-1. `Entry.delete` activa con `auto-stop` + cascada (`sessions`,
-   `resource_changes`).
+1. `Entry.delete` activa con `auto-stop` + borrado de `sessions` (y eliminación
+   implícita de `resource_deltas` al borrar la `Entry`).
 1. `Entry.create` con auto-normalización de `order_index` cuando la secuencia de
    la week llega inconsistente.
+1. `Entry.adjust_resource_delta`, `Entry.set_resource_delta` y
+   `Entry.clear_resource_delta` con recálculo de `campaign.resource_totals`.
 1. `Campaign.provision_initial_years` y `Campaign.extend_years_plus_one` con
    estructura temporal completa + cursor derivado válido.
 
@@ -167,14 +168,14 @@ Operaciones compuestas mínimas:
 | `Campaign.provision_initial_years` | 4 años iniciales, `summer->winter`, 10 semanas/estación, `week_number` correlativo | cursor derivado; no dejar 0 abiertas | creación completa con duplicados rechazados y cursor derivado válido | técnica Firestore | estructura temporal inconsistente / cursor inválido |
 | `Campaign.extend_years_plus_one` | +1 año, continuidad `year_number`/`week_number` | cursor derivado | extensión exacta de 1 año; sin reprovisión; sin duplicados | técnica Firestore | numeración rota o duplicados |
 | `Week.close/reopen/reclose` | coherencia `week_number`/jerarquía | recálculo de cursor; transición manual | cambio de estado + postcondición de `week_cursor` | timestamp/desempate | cursor incoherente o estado inválido |
-| `Entry`/`Session`/`ResourceChange` sobre weeks históricas | weeks siguen existiendo y `week_number` no cambia | editabilidad amplia en `open|closed` | operaciones permitidas en weeks `closed` salvo validación específica | política UI | bloqueos artificiales o contradicción con `#37` |
+| `Entry`/`Session` (incluyendo `Entry.resource_deltas`) sobre weeks históricas | weeks siguen existiendo y `week_number` no cambia | editabilidad amplia en `open|closed` | operaciones permitidas en weeks `closed` salvo validación específica | política UI | bloqueos artificiales o contradicción con `#37` |
 
 ## Alineación de editabilidad e invariantes con #37
 
 1. `Campaign.set_week_cursor_manual` se documenta como exclusión activa del MVP.
 1. `week_cursor` es derivado (postcondición) y nunca selección manual libre.
 1. `Week.status=closed` es marcador informativo; no bloquea por sí mismo
-   mutaciones de `Entry`, `Session` o `ResourceChange`.
+   mutaciones de `Entry` (incluyendo `resource_deltas`) ni `Session`.
 1. `Entry.reorder_within_week` está limitado a la misma `Week` y resecuencia
    densa `1..N`.
 1. `Session.manual_update` no cambia ownership por ruta y puede corregir
@@ -220,6 +221,8 @@ Operaciones compuestas mínimas:
    inconsistente.
 1. `Entry.reorder_within_week` funciona también en weeks `closed` y resecuencia
    a `1..N`.
+1. Las operaciones de recursos del contrato se expresan sobre
+   `Entry.resource_deltas` (`adjust/set/clear`) y no sobre `ResourceChange`.
 1. `Campaign.set_week_cursor_manual` aparece como exclusión activa del contrato
    MVP.
 
@@ -229,6 +232,9 @@ Operaciones compuestas mínimas:
   implementación.
 - La política de timestamps y desempate estable sigue diferida a `#18`.
 - El contrato no define lecturas ni consultas (`#16`).
+- La parte de recursos de este contrato fue parcialmente supersedida por
+  `docs/resource-delta-model.md` (Issue `#40`) y parcheada con operaciones
+  sobre `Entry.resource_deltas`.
 - La UX exacta para errores de conflicto vs transición inválida se concreta en
   issues de flujo (`#14`) y UI.
 
@@ -240,9 +246,11 @@ Operaciones compuestas mínimas:
 - `docs/campaign-temporal-controls.md`
 - `docs/campaign-temporal-initialization.md`
 - `docs/editability-policy.md`
+- `docs/resource-delta-model.md`
 - `docs/decision-log.md`
 - `docs/mvp-implementation-checklist.md`
 - `docs/mvp-implementation-blocks.md`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/12`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/13`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/37`
+- `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/40`

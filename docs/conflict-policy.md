@@ -40,7 +40,7 @@ No incluye:
 1. Se mantiene la recomendación operativa de `single writer` definida en
    `docs/sync-strategy.md`.
 1. No se usa `last-write-wins` para operaciones de estado, edición de notas,
-   reordenación manual ni `ResourceChange`.
+   reordenación manual ni edición de `Entry.resource_deltas`.
 1. La política define comportamiento esperado; el mecanismo técnico exacto de
    detección queda para la Issue #12.
 
@@ -56,11 +56,11 @@ No incluye:
 | `Week.reclose` | `week` + `campaign` | Alto | `rechazar` | `refrescar` + `reintentar` (conflicto) / error local (transición inválida/validación) | Recalcula `week_cursor`; rechazar si dejaría cursor inválido |
 | `Entry.reorder_within_week` | `week` + `entry` | Medio/Alto | `rechazar` | `refrescar` + `reintentar` | Resecuencia densa `1..N`; detalle contractual en #12 |
 | `Session.manual_create/update/delete` | `session` + `campaign` | Alto | `rechazar` | `refrescar` + `reintentar` | Mantener `0..1` sesión activa global; detalle contractual en #12 |
-| Borrado de `Entry` activa (con cascada) | `entry` + `session` + `resource_change` | Alto | `rechazar` | `refrescar` + `reintentar` | Incluye auto-stop y borrado en cascada; contratos técnicos en #12 |
+| Borrado de `Entry` activa (con cascada) | `entry` + `session` + `campaign` | Alto | `rechazar` | `refrescar` + `reintentar` | Incluye auto-stop; borra `sessions` y elimina `resource_deltas` embebidos con la `Entry`; contrato técnico en #12 |
 | Edición de `Week.notes` | `week` | Medio | `rechazar` | `refrescar` + reingresar cambios | No usar `last-write-wins` en MVP |
-| Crear `ResourceChange` | `resource_change` (+ totales derivados) | Medio/Alto | `rechazar` | `refrescar` + `reintentar` | Política estricta para evitar inconsistencias silenciosas |
-| Editar `ResourceChange` | `resource_change` | Alto | `rechazar` | `refrescar` + `reintentar` | Rechazar si el cambio fue modificado o borrado concurrentemente |
-| Borrar `ResourceChange` | `resource_change` | Alto | `rechazar` | `refrescar` + `reintentar` | Rechazar si ya fue alterado o eliminado |
+| `Entry.adjust_resource_delta` | `entry` (+ totales derivados) | Medio/Alto | `rechazar` | `refrescar` + `reintentar` | Ajusta delta neto en `Entry.resource_deltas`; valida totales finales no negativos |
+| `Entry.set_resource_delta` | `entry` (+ totales derivados) | Alto | `rechazar` | `refrescar` + `reintentar` | Edición manual directa del delta neto; opera sobre `Entry` y totales |
+| `Entry.clear_resource_delta` | `entry` (+ totales derivados) | Medio/Alto | `rechazar` | `refrescar` + `reintentar` | Elimina clave del mapa (`delta -> 0`); rechazar si base está obsoleta |
 
 ## Reglas de precedencia y rechazo
 
@@ -123,7 +123,7 @@ No incluye:
   esa `Entry`.
   - Resultado MVP: una de las operaciones quedará inválida; se rechaza la que
     opere sobre estado obsoleto.
-- Ediciones concurrentes sobre el mismo `ResourceChange`.
+- Ediciones concurrentes sobre `Entry.resource_deltas` de la misma `Entry`.
   - Resultado MVP: rechazo en conflicto; no `last-write-wins`.
 
 ## Dependencias y relación con otras Issues
@@ -137,6 +137,9 @@ No incluye:
 - **Issue #37**: actualiza la política de editabilidad manual del MVP y la
   semántica de `week_cursor`, añadiendo operaciones de corrección manual
   que deben respetar esta política de conflictos.
+- **Issue #40**: redefine el modelo de recursos del MVP como
+  `Entry.resource_deltas` (sin entidad `ResourceChange`) y actualiza la matriz
+  de conflictos de recursos sobre `Entry`.
 - **Issue #18**: define timestamps y desempates de orden estable entre
   dispositivos, compatibles con esta política.
 
@@ -146,8 +149,10 @@ No incluye:
 - `docs/sync-strategy.md`
 - `docs/decision-log.md`
 - `docs/firestore-operation-contract.md`
+- `docs/resource-delta-model.md`
 - `tdd.md` (legado temporal, alineado con referencia oficial)
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/8`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/12`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/37`
+- `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/40`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/18`

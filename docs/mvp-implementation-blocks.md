@@ -20,7 +20,8 @@ la preparación de implementación del MVP, sin codificar todavía.
 Incluye:
 
 - desglose detallado de las Issues `#12`–`#20` y decisiones marco intermedias
-  que afecten su secuencia (actualmente `#37`) por subbloques ejecutables;
+  que afecten su secuencia (actualmente `#37` y `#40`) por subbloques
+  ejecutables;
 - responsables por rol (`Codex`, `Kiko`, `Codex+Kiko`);
 - entregables, dependencias y criterios de finalización por subbloque;
 - riesgos y bloqueos por issue;
@@ -97,15 +98,16 @@ No incluye:
 | #13 | `task` | `ready` | 1.º dentro del bloque B | Sí | Coherencia con #9 y dominio | Estrategia técnica de inicialización/extensión temporal |
 | #37 | `decision` | `ready` | 2.º dentro del bloque B | Sí | Coherencia con #8/#9/#13 y dominio | Política de editabilidad manual y correcciones de dominio |
 | #12 | `decision` | `draftable` | 3.º dentro del bloque B | Sí | Alineación con #13 y #37 (cierre recomendado con ambas cerradas) | Contrato de operaciones Firestore por agregado |
+| #40 | `decision` | `draftable` | 4.º dentro del bloque B | Sí | Coherencia con #12/#37 y glosario; supersesión parcial de recursos | Modelo de recursos por `Entry` (`resource_deltas`) |
 | #14 | `task` | `draftable` | 1.º del bloque C | Sí | Alineación con #12 para cierre | Flujo de sesión activa y `auto-stop` |
 | #15 | `task` | `draftable` | 2.º del bloque C | Sí | Alineación con #12 para cierre | Reglas de validación y recálculo de recursos |
 | #16 | `task` | `draftable` | 1.º del bloque D | Sí | Compatibilidad con #18 para cierre | Inventario mínimo de consultas y orden/paginación |
 | #17 | `task` | `draftable` | 2.º del bloque D | Sí | Mayor valor tras #12/#14/#15/#18 | Matriz de edge cases de concurrencia/sincronización |
-| #18 | `decision` | `draftable` | 4.º dentro del bloque B | Sí | Compatibilidad con #12 y lecturas | Política de timestamps y desempate estable |
+| #18 | `decision` | `draftable` | 5.º dentro del bloque B | Sí | Compatibilidad con #12, #40 y lecturas | Política de timestamps y desempate estable |
 | #19 | `task` | `draftable` | 3.º del bloque D | Sí | Insumos suficientes de contratos/flows | Plan de pruebas de invariantes |
 | #20 | `task` | `final_gate` | Último (bloque E) | No (cierre final) | Base de #10 + derivadas relevantes | Gate de listo para codificar |
 
-## Detalle por issue (`#12`–`#20`) y decisión marco intermedia (`#37`)
+## Detalle por issue (`#12`–`#20`) y decisiones marco intermedias (`#37`, `#40`)
 
 ### Issue #12 — Definir contrato de operaciones Firestore por agregado de dominio
 
@@ -123,7 +125,7 @@ No incluye:
 
 | subbloque_id | objetivo | responsable | depende_de | entregable | criterio_de_finalización | estado_inicial |
 | --- | --- | --- | --- | --- | --- | --- |
-| `I12-S1` | Inventariar operaciones por agregado (`campaign`, `week`, `entry`, `session`, `resource_change`) y casos de uso | `Codex` | `#7`, `#8`, `#9`, `#37` | Tabla de operaciones por agregado | Inventario completo y sin solapes obvios con mutabilidad vigente | `draftable` |
+| `I12-S1` | Inventariar operaciones por agregado (`campaign`, `week`, `entry` incl. `resource_deltas`, `session`) y casos de uso | `Codex` | `#7`, `#8`, `#9`, `#37` | Tabla de operaciones por agregado | Inventario completo y sin solapes obvios con mutabilidad vigente | `draftable` |
 | `I12-S2` | Definir contrato por agregado (precondiciones, postcondiciones, validaciones, rechazo por conflicto/transición inválida, atomicidad esperada) | `Codex` | `I12-S1` | Tabla de contrato por agregado | Cada agregado tiene contrato explícito y coherente con `#8` y `#37` | `draftable` |
 | `I12-S3` | Alinear operaciones temporales y de cursor con `#13` y `#37` (provisión/extensión/`week_cursor` derivado) | `Codex+Kiko` | `I12-S2`, `#13`, `#37` | Nota/tabla de alineación `#12` ↔ (`#13`, `#37`) | No quedan contradicciones con flujo temporal ni editabilidad | `draftable` |
 | `I12-S4` | Cerrar la decisión (revisión interactiva, trazabilidad y referencias) | `Codex+Kiko` | `I12-S3` | Documento final + registro de decisión | Aprobación explícita de Kiko y PR mergeada | `draftable` |
@@ -262,22 +264,23 @@ No incluye:
 - `tipo`: `task`
 - `estado_inicial`: `draftable`
 - `responsable_de_coordinación`: `Codex+Kiko`
-- `dependencias_de_cierre`: coherencia con `#8`, `#37` y alineación con `#12`
+- `dependencias_de_cierre`: coherencia con `#8`, `#37`, `#40` y alineación con `#12`
 - `impacta_a`: `#17`, `#19`, `#20`
 
 #### Subbloques ejecutables
 
 | subbloque_id | objetivo | responsable | depende_de | entregable | criterio_de_finalización | estado_inicial |
 | --- | --- | --- | --- | --- | --- | --- |
-| `I15-S1` | Inventariar operaciones sobre `ResourceChange` (crear, editar, borrar, corregir) | `Codex` | `#8`, `docs/domain-glossary.md` | Inventario de operaciones de recursos | Operaciones y efectos quedan enumerados | `draftable` |
-| `I15-S2` | Definir reglas de validación de `delta` y restricción de totales no negativos | `Codex` | `I15-S1` | Reglas de validación | Casos válidos/inválidos y rechazos quedan cerrados | `draftable` |
-| `I15-S3` | Definir estrategia de recálculo y consistencia de totales globales | `Codex` | `I15-S2` | Estrategia de recálculo | Se documenta consistencia y comportamiento esperado tras correcciones | `draftable` |
-| `I15-S4` | Alinear matriz de rechazos con `#8`, editabilidad (`#37`) y contrato de operaciones (`#12`) | `Codex+Kiko` | `I15-S3`, `#37`, `#12` | Alineación final de rechazos y operaciones | No quedan contradicciones con concurrencia ni contrato | `draftable` |
+| `I15-S1` | Inventariar operaciones sobre `Entry.resource_deltas` (ajustar, fijar, limpiar delta neto) | `Codex` | `#8`, `docs/domain-glossary.md`, `#40` | Inventario de operaciones de recursos | Operaciones y efectos quedan enumerados con modelo embebido | `draftable` |
+| `I15-S2` | Definir reglas de validación de deltas netos y restricción de totales no negativos | `Codex` | `I15-S1` | Reglas de validación | Casos válidos/inválidos y rechazos quedan cerrados | `draftable` |
+| `I15-S3` | Definir estrategia de recálculo y consistencia de totales globales desde `Entry.resource_deltas` | `Codex` | `I15-S2`, `#40` | Estrategia de recálculo | Se documenta consistencia y comportamiento esperado tras correcciones | `draftable` |
+| `I15-S4` | Alinear matriz de rechazos con `#8`, editabilidad (`#37`), modelo de recursos (`#40`) y contrato de operaciones (`#12`) | `Codex+Kiko` | `I15-S3`, `#37`, `#40`, `#12` | Alineación final de rechazos y operaciones | No quedan contradicciones con concurrencia ni contrato | `draftable` |
 
 #### Riesgos y bloqueos
 
 - Riesgo de definir validaciones incompatibles con atomicidad esperada de `#12`.
-- Riesgo de subestimar casos de corrección/borrado y recálculo.
+- Riesgo de subestimar casos de corrección/borrado y recálculo en el modelo
+  embebido (`Entry.resource_deltas`).
 
 #### Criterio de cierre de la issue
 
@@ -287,7 +290,8 @@ No incluye:
 #### Notas de secuencia / paralelización
 
 - Puede avanzar en borrador antes de `#12`.
-- Conviene cerrar después de aclarar editabilidad (`#37`) y contrato por agregado en `#12`.
+- Conviene cerrar después de aclarar editabilidad (`#37`), modelo de recursos
+  (`#40`) y contrato por agregado en `#12`.
 
 ### Issue #16 — Definir consultas mínimas para timeline y panel de foco
 
@@ -359,6 +363,46 @@ No incluye:
 - Puede arrancar con taxonomía y borrador de matriz.
 - Su cierre gana calidad después de `#37`, `#12`, `#14`, `#15` y `#18`.
 
+### Issue #40 — Redefinir modelo de recursos por `Entry` (delta neto por recurso, sin `ResourceChange`)
+
+#### Ficha de bloque
+
+- `tipo`: `decision`
+- `estado_inicial`: `draftable` (cerrada en seguimiento; este bloque conserva el estado inicial del plan)
+- `responsable_de_coordinación`: `Codex+Kiko`
+- `dependencias_de_cierre`: coherencia con `#8`, `#12`, `#37` y
+  `docs/domain-glossary.md`
+- `impacta_a`: `#15`, `#17`, `#18`, `#19`, `#20`
+
+#### Subbloques ejecutables
+
+| subbloque_id | objetivo | responsable | depende_de | entregable | criterio_de_finalización | estado_inicial |
+| --- | --- | --- | --- | --- | --- | --- |
+| `I40-S1` | Definir el modelo de recursos por `Entry` (`resource_deltas`) y eliminar `ResourceChange` como entidad MVP | `Codex+Kiko` | `docs/domain-glossary.md`, `#37` | Decisión de modelo (`docs/resource-delta-model.md`) | Semántica neta por recurso cerrada y sin ambigüedad | `draftable` |
+| `I40-S2` | Parchear consistencia en glosario, conflictos y contrato `#12` (supersesión parcial de recursos) | `Codex` | `I40-S1`, `#12`, `#8` | Docs oficiales alineados | No quedan referencias activas contradictorias a `ResourceChange` en el MVP | `draftable` |
+| `I40-S3` | Actualizar orden técnico/trazabilidad downstream (`#15`, `#17`, `#18`, `#19`) | `Codex` | `I40-S2` | Checklist/bloques/referencias actualizados | `#18` vuelve a quedar como siguiente paso técnico tras `#40` | `draftable` |
+| `I40-S4` | Cerrar la decisión (revisión interactiva, registro en decision-log, PR mergeada) | `Codex+Kiko` | `I40-S3` | Decisión aceptada + `DEC-0024` + PR mergeada | Aprobación explícita de Kiko y cierre end-to-end | `draftable` |
+
+#### Riesgos y bloqueos
+
+- Riesgo de dejar `#12` contradictoria si se cambia el dominio de recursos sin
+  parchear el contrato de operaciones.
+- Riesgo de que `#18` inventarie eventos/listas innecesarios si se mantiene el
+  modelo antiguo de `ResourceChange`.
+
+#### Criterio de cierre de la issue
+
+- Existe decisión de dominio oficial que sustituye `ResourceChange` por
+  `Entry.resource_deltas` (delta neto por recurso) y deja glosario, conflictos
+  y contrato `#12` alineados mediante supersesión parcial explícita.
+
+#### Notas de secuencia / paralelización
+
+- Debe cerrarse antes de `#18` para evitar retrabajo en inventario de eventos y
+  contratos de recursos.
+- Comparte naturaleza `type:decision`; requiere revisión interactiva con Kiko
+  para cierre.
+
 ### Issue #18 — Definir política de timestamps y orden estable entre dispositivos
 
 #### Ficha de bloque
@@ -367,7 +411,7 @@ No incluye:
 - `estado_inicial`: `draftable`
 - `responsable_de_coordinación`: `Codex+Kiko`
 - `dependencias_de_cierre`: coherencia con `#7`, `#8`; compatibilidad con
-  `#12` y lecturas (`#16`)
+  `#12`, `#40` y lecturas (`#16`)
 - `impacta_a`: `#16`, `#17`, `#19`, `#20`
 
 #### Subbloques ejecutables
@@ -382,7 +426,7 @@ No incluye:
 #### Riesgos y bloqueos
 
 - Riesgo de definir desempate incompatible con consultas mínimas (`#16`) o
-  contrato de operaciones (`#12`).
+  contratos/modelo de datos (`#12`, `#40`).
 - Riesgo de cerrar sin inventario completo de eventos ordenables.
 
 #### Criterio de cierre de la issue
@@ -494,12 +538,13 @@ No incluye:
 
 ## Seguimiento de bloques
 
-### Estado de bloques (actualizado tras cerrar #13 y #37)
+### Estado de bloques (actualizado tras cerrar #13, #37, #12 y #40)
 
 - [x] `#11` Desglose en bloques ejecutables (este documento)
 - [x] `#13` Inicialización temporal detallada (`ready`)
 - [x] `#37` Política de editabilidad manual y correcciones de dominio (`ready`)
 - [x] `#12` Contrato Firestore por agregado (`draftable`)
+- [x] `#40` Modelo de recursos por `Entry` (delta neto; `draftable`)
 - [ ] `#18` Timestamps y orden estable (`draftable`)
 - [ ] `#14` Flujo de sesión activa y `auto-stop` (`draftable`)
 - [ ] `#15` Validación y recálculo de recursos (`draftable`)
@@ -527,6 +572,7 @@ No incluye:
 - `docs/sync-strategy.md`
 - `docs/conflict-policy.md`
 - `docs/firestore-operation-contract.md`
+- `docs/resource-delta-model.md`
 - `docs/campaign-temporal-controls.md`
 - `docs/campaign-temporal-initialization.md`
 - `docs/editability-policy.md`
@@ -537,6 +583,7 @@ No incluye:
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/12`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/13`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/37`
+- `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/40`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/14`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/15`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/16`

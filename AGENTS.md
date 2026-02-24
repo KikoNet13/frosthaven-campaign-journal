@@ -160,6 +160,7 @@ Cada interacción termina con un menú numerado fijo de 3 a 5 siguientes pasos.
 - Flujo de sesión activa y `auto-stop` (MVP): `docs/active-session-flow.md`
 - Consultas mínimas para pantalla principal (MVP): `docs/minimal-read-queries.md`
 - Matriz de edge cases de concurrencia/sincronización (MVP): `docs/concurrency-sync-edge-case-matrix.md`
+- Plan de pruebas para invariantes de dominio (MVP): `docs/domain-invariant-test-plan.md`
 - Controles temporales de campaña: `docs/campaign-temporal-controls.md`
 - Inicialización temporal de campaña (técnica): `docs/campaign-temporal-initialization.md`
 - Política de editabilidad manual MVP: `docs/editability-policy.md`

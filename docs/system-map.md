@@ -49,6 +49,9 @@ Este documento permite que una persona o agente nuevo entienda rápidamente:
 - `docs/concurrency-sync-edge-case-matrix.md`
   - Matriz de edge cases de concurrencia/sincronización y subset crítico para
     verificación del MVP.
+- `docs/domain-invariant-test-plan.md`
+  - Plan de pruebas por invariantes del dominio, con trazabilidad a `#17` y
+    priorización para el gate `#20`.
 - `docs/campaign-temporal-controls.md`
   - Controles temporales de campaña y provisión/extensión de años del MVP.
 - `docs/campaign-temporal-initialization.md`
@@ -112,6 +115,7 @@ Este documento permite que una persona o agente nuevo entienda rápidamente:
 - Flujo de sesión activa y `auto-stop` -> `docs/active-session-flow.md`
 - Consultas mínimas de pantalla principal -> `docs/minimal-read-queries.md`
 - Edge cases de concurrencia/sincronización -> `docs/concurrency-sync-edge-case-matrix.md`
+- Plan de pruebas de invariantes -> `docs/domain-invariant-test-plan.md`
 - Controles temporales de campaña -> `docs/campaign-temporal-controls.md`
 - Inicialización temporal técnica -> `docs/campaign-temporal-initialization.md`
 - Editabilidad manual MVP -> `docs/editability-policy.md`

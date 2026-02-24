@@ -663,3 +663,35 @@
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/17`,
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/19`,
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/20`
+
+### DEC-0031
+
+- `date`: 2026-02-24
+- `status`: accepted
+- `problem`: faltaba traducir la matriz de edge cases (`#17`) y las invariantes
+  de dominio/consistencia ya cerradas a un plan de pruebas reutilizable para el
+  gate `#20`, con evidencia mínima y reglas de repetibilidad, sin exigir aún
+  ejecución real previa al inicio de código.
+- `decision`: aceptar `docs/domain-invariant-test-plan.md` como plan oficial de
+  pruebas para invariantes de dominio del MVP (`#19`), con catálogo `INV-*`,
+  casos `TC-*`, trazabilidad obligatoria a `EC-*` de `#17`, priorización para
+  `#20` (`P0/P1/P2`), plantilla mínima de evidencia y alcance de ejecución
+  previo al gate limitado a `single device`, dejando la concurrencia
+  multi-dispositivo real como diferido explícito.
+- `rationale`: reduce ambigüedad en readiness, evita confundir definición de
+  pruebas con ejecución real antes de tener código, y permite que `#20` evalúe
+  cobertura bloqueante (`P0`) sobre un plan trazable en lugar de sobre criterios
+  ad hoc.
+- `impact`: cierra `#19`; establece el contrato documental de QA/readiness para
+  invariantes; enlaza `#17` con `#20`; actualiza tracking (checklist/bloques) y
+  añade una fuente oficial reutilizable para fases posteriores de ejecución de
+  pruebas.
+- `references`: `docs/domain-invariant-test-plan.md`,
+  `docs/concurrency-sync-edge-case-matrix.md`, `docs/domain-glossary.md`,
+  `docs/conflict-policy.md`, `docs/firestore-operation-contract.md`,
+  `docs/active-session-flow.md`, `docs/resource-validation-recalculation.md`,
+  `docs/minimal-read-queries.md`, `docs/timestamp-order-policy.md`,
+  `docs/mvp-implementation-checklist.md`, `docs/mvp-implementation-blocks.md`,
+  `AGENTS.md`, `docs/system-map.md`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/19`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/20`

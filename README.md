@@ -43,6 +43,26 @@ Aplicación de apoyo para campaña de Frosthaven con enfoque en dos objetivos:
 - [Handbook de contexto](learning/handbook.md)
 - [Handbook de flujo Git](learning/git-workflow-handbook.md)
 
+## Arranque local del bootstrap de app (`#51`)
+
+Requisitos:
+
+- Python `3.12`
+- `pipenv`
+
+Comandos:
+
+```powershell
+pipenv --python 3.12
+pipenv install flet
+pipenv run flet run src/main.py
+```
+
+Notas:
+
+- Este slice no integra aún Firestore (solo placeholders de configuración).
+- `pyproject.toml` se pospone a una issue posterior de build/publicación.
+
 ## Licencia
 
 Este proyecto se publica bajo licencia MIT.

@@ -300,28 +300,30 @@ No incluye:
 - `tipo`: `task`
 - `estado_inicial`: `draftable`
 - `responsable_de_coordinación`: `Codex+Kiko`
-- `dependencias_de_cierre`: alineación con `#9`; orden estable recomendado con
-  `#18`
+- `dependencias_de_cierre`: alineación con `#9`, `#14`, `#15`; compatibilidad
+  con `#18`; canon de layout/superficies fijado por Figma para esta issue
 - `impacta_a`: `#19`, `#20`
 
 #### Subbloques ejecutables
 
 | subbloque_id | objetivo | responsable | depende_de | entregable | criterio_de_finalización | estado_inicial |
 | --- | --- | --- | --- | --- | --- | --- |
-| `I16-S1` | Inventariar vistas/zonas de UI y sus necesidades mínimas de lectura | `Codex` | `#9`, `tdd.md` (referencia de producto) | Inventario de vistas y lecturas | Cada zona de UI tiene necesidades mínimas identificadas | `draftable` |
+| `I16-S1` | Inventariar superficies/estados de pantalla y sus necesidades mínimas de lectura | `Codex` | `#9`, `#14`, Figma (canon de layout para `#16`) | Inventario de superficies y lecturas | Cada superficie/estado visible tiene necesidades mínimas identificadas | `draftable` |
 | `I16-S2` | Definir consultas mínimas y campos requeridos por consulta | `Codex` | `I16-S1` | Lista de consultas + campos | Inventario de consultas mínimo y suficiente | `draftable` |
 | `I16-S3` | Definir orden, paginación y estabilidad visual (compatibilidad con `#18`) | `Codex+Kiko` | `I16-S2`, `#18` | Reglas de orden/paginación | Orden estable y criterios de paginación documentados | `draftable` |
 | `I16-S4` | Documentar riesgos de coste/latencia y límites aceptables del MVP | `Codex` | `I16-S2`, `I16-S3` | Sección de riesgos/rendimiento | Riesgos y límites quedan explícitos y trazables | `draftable` |
 
 #### Riesgos y bloqueos
 
+- Riesgo de usar `tdd.md` como canon de layout en lugar del Figma acordado.
 - Riesgo de cerrar consultas antes de fijar orden estable (`#18`).
 - Riesgo de sobrecarga de lecturas por no recortar campos mínimos.
 
 #### Criterio de cierre de la issue
 
-- Conjunto mínimo de lecturas y reglas de orden/paginación documentado, con
-  límites de rendimiento y coherencia con `#9`.
+- Conjunto mínimo de lecturas de pantalla principal documentado (superficies,
+  triggers, orden y no paginación), con límites de rendimiento y coherencia con
+  `#9`, `#14`, `#15` y `#18`.
 
 #### Notas de secuencia / paralelización
 
@@ -548,14 +550,13 @@ No incluye:
 - [x] `#18` Timestamps y orden estable (`draftable`)
 - [x] `#14` Flujo de sesión activa y `auto-stop` (`draftable`)
 - [x] `#15` Validación y recálculo de recursos (`draftable`)
-- [ ] `#16` Consultas mínimas para timeline/foco (`draftable`)
+- [x] `#16` Consultas mínimas para timeline/foco (`draftable`)
 - [ ] `#17` Matriz de edge cases (`draftable`)
 - [ ] `#19` Plan de pruebas de invariantes (`draftable`)
 - [ ] `#20` Gate de listo para codificar (`final_gate`)
 
 ### Próxima secuencia técnica esperada (según orden actual)
 
-1. `#16`
 1. `#17`
 1. `#19`
 1. `#20`

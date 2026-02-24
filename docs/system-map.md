@@ -43,6 +43,9 @@ Este documento permite que una persona o agente nuevo entienda rápidamente:
   - Política de timestamps de auditoría y orden estable entre dispositivos.
 - `docs/active-session-flow.md`
   - Flujo de sesión activa (`start/stop/auto-stop`) y separación foco/activo.
+- `docs/minimal-read-queries.md`
+  - Consultas mínimas para pantalla principal (superficies, triggers, orden y
+    límites de carga) del MVP.
 - `docs/campaign-temporal-controls.md`
   - Controles temporales de campaña y provisión/extensión de años del MVP.
 - `docs/campaign-temporal-initialization.md`
@@ -104,6 +107,7 @@ Este documento permite que una persona o agente nuevo entienda rápidamente:
 - Validación y recálculo de recursos -> `docs/resource-validation-recalculation.md`
 - Timestamps y orden estable -> `docs/timestamp-order-policy.md`
 - Flujo de sesión activa y `auto-stop` -> `docs/active-session-flow.md`
+- Consultas mínimas de pantalla principal -> `docs/minimal-read-queries.md`
 - Controles temporales de campaña -> `docs/campaign-temporal-controls.md`
 - Inicialización temporal técnica -> `docs/campaign-temporal-initialization.md`
 - Editabilidad manual MVP -> `docs/editability-policy.md`

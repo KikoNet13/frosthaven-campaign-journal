@@ -71,6 +71,10 @@ este checklist:
   `docs/resource-validation-recalculation.md`
   - reglas por operación (`adjust/set/clear`), recálculo de `campaign.resource_totals`
     y clasificación de rechazos de recursos.
+- **Consultas mínimas para pantalla principal** (Issue #16):
+  `docs/minimal-read-queries.md`
+  - inventario mínimo de lecturas por superficie/estado, triggers de carga y
+    refresh, orden compatible con `#18` y sin paginación en MVP.
 
 ## Corte de responsabilidades entre `#10`, `#11` y `#20`
 
@@ -222,7 +226,7 @@ Usar esta plantilla mínima en cada issue/bloque del checklist:
 - [x] Política de timestamps y orden estable (Issue #18)
 - [x] Flujo de sesión activa y `auto-stop` (Issue #14)
 - [x] Reglas de validación y recálculo de recursos (Issue #15)
-- [ ] Consultas mínimas para timeline/foco (Issue #16)
+- [x] Consultas mínimas para timeline/foco (Issue #16)
 - [ ] Matriz de edge cases de concurrencia y sincronización (Issue #17)
 - [ ] Plan de pruebas para invariantes (Issue #19)
 - [ ] Gate de listo para codificar (Issue #20)

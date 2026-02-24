@@ -142,7 +142,7 @@ desempate estable, no como reemplazo del orden funcional del dominio.
 | `week_selector_list` | Selector temporal de semana (UI) | `week_number ASC` | `(week_number ASC)` | `N/A` | `N/A` | `N/A` | Lista de dominio |
 | `timeline_week_groups` | Grupos/secciones de week en timeline | `week_number ASC` | `(week_number ASC)` | `N/A` | `N/A` | `N/A` | Compatible con `#16` |
 | `week_entries_list` | Lista de entries de una `Week` (panel foco / selector de entry) | `order_index ASC` | `(order_index ASC, created_at_utc ASC, entry_id ASC)` | Fallback/desempate | `N/A` | `created_at_utc` pendiente puede dar orden provisional hasta `refresh` | `updated_at_utc` no se usa para evitar drift visual por ediciones no relacionadas con orden |
-| `timeline_entries_flat` | Timeline aplanado multi-week (si `#16` lo define) | Prefijo máximo posible según query de `#16` | `(week_number ASC, order_index ASC, created_at_utc ASC, entry_id ASC)` | Fallback/desempate | `N/A` | `created_at_utc` pendiente => orden provisional | Lista condicional según diseño de `#16` |
+| `timeline_entries_flat` | Timeline aplanado multi-week (si `#16` lo define) | Prefijo máximo posible según query de `#16` | `(week_number ASC, order_index ASC, created_at_utc ASC, entry_id ASC)` | Fallback/desempate | `N/A` | `created_at_utc` pendiente => orden provisional | Lista condicional; `#16` cerrada no la activa en el MVP actual |
 | `entry_sessions_combined_list` | Sesiones de una `Entry` (activa + histórico) | `started_at_utc DESC` | `(is_active DESC, started_at_utc DESC, updated_at_utc DESC, session_id ASC)` | Principal + desempate | `ended_at_utc = null` => `is_active=1` | timestamps pendientes => orden provisional hasta `refresh` | Activa primero por regla de dominio |
 | `entry_sessions_history_list` | Histórico de sesiones (sin activa o filtrando activas) | `started_at_utc DESC` | `(started_at_utc DESC, updated_at_utc DESC, session_id ASC)` | Principal + desempate | `N/A` | timestamps pendientes => orden provisional hasta `refresh` | Histórico descendente |
 
@@ -160,6 +160,8 @@ desempate estable, no como reemplazo del orden funcional del dominio.
 - `#16` queda desbloqueada con una matriz de orden explícita por lista.
 - `#16` puede centrarse en inventario de consultas, paginación y coste,
   reutilizando las tuplas canónicas definidas aquí.
+- `#16` adopta `timeline_week_groups` (weeks) y deja `timeline_entries_flat`
+  fuera del MVP actual.
 
 ### `#40` (modelo de recursos por `Entry`)
 

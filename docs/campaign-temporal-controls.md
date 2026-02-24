@@ -96,6 +96,9 @@ No incluye:
 1. El marcador visual de `current week` (derivado de `week_cursor`) y la
    selección `Week`/`Entry` usada por el flujo de sesión se tratan como
    conceptos separados (ver `docs/active-session-flow.md`, Issue `#14`).
+1. Default de arranque de pantalla principal (`#16`): la barra superior se
+   sitúa en el año de `current week`, pero la selección inicial de `Week` y
+   `Entry` es vacía (`none`).
 
 ## Click en semana y selector de entry (patrón + intención)
 
@@ -116,6 +119,9 @@ No incluye:
 - **Issue #14** (o equivalente): detalle del popover de entries y flujo de
   selección/creación de entry desde semana, incluyendo flujo de sesión activa y
   separación entre `current week`, foco y activo (`docs/active-session-flow.md`).
+- **Issue #16**: inventario mínimo de lecturas/consultas de pantalla principal
+  (arranque sin selección, cargas por selección de week/entry y triggers de
+  refresh on-demand).
 - **Issue #12**: contrato de operaciones Firestore por agregado (implementación
   técnica de operaciones como provisión/extensión/cambio de cursor).
 - **Issue #37**: política de editabilidad manual del MVP y semántica derivada de
@@ -129,9 +135,11 @@ No incluye:
 - `docs/decision-log.md`
 - `docs/editability-policy.md`
 - `docs/active-session-flow.md`
+- `docs/minimal-read-queries.md`
 - `tdd.md` (legado temporal, alineado con referencia oficial)
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/9`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/12`
+- `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/16`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/13`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/14`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/37`

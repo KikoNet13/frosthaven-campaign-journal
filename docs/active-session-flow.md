@@ -46,6 +46,7 @@ No incluye:
 - `docs/firestore-operation-contract.md` (Issue `#12`)
 - `docs/editability-policy.md` (Issue `#37`)
 - `docs/timestamp-order-policy.md` (Issue `#18`)
+- `docs/minimal-read-queries.md` (Issue `#16`)
 - `docs/mvp-implementation-checklist.md`
 - `docs/mvp-implementation-blocks.md`
 
@@ -222,6 +223,17 @@ No incluye:
 1. Cuando el flujo requiere refrescar listas/estado de sesiones tras acciones o
    conflictos, el orden visible se rige por `docs/timestamp-order-policy.md`.
 
+### `#16` — Consultas mínimas de pantalla principal
+
+1. `#14` define el comportamiento observable del flujo (`start/stop/auto-stop`,
+   separación foco/activo y recuperación de errores).
+1. `#16` define las lecturas mínimas que soportan ese flujo en pantalla:
+   - `Q6 active_session_global`;
+   - `Q7 active_entry_doc_if_needed` (condicional);
+   - `Q8 sessions_selected_entry_combined`.
+1. El arranque sin selección (`selected_week`/`selected_entry` vacíos) y la
+   carga diferida de sesiones hasta seleccionar `Entry` se documentan en `#16`.
+
 ## Casos de aceptación / verificación documental
 
 1. `Start` sobre `selected_entry` sin sesión activa global crea sesión activa y
@@ -261,6 +273,7 @@ No incluye:
 - `docs/firestore-operation-contract.md`
 - `docs/editability-policy.md`
 - `docs/timestamp-order-policy.md`
+- `docs/minimal-read-queries.md`
 - `docs/decision-log.md`
 - `docs/mvp-implementation-checklist.md`
 - `docs/mvp-implementation-blocks.md`

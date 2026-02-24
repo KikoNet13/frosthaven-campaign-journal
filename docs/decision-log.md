@@ -455,3 +455,42 @@
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/40`,
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/12`,
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/18`
+
+### DEC-0025
+
+- `date`: 2026-02-24
+- `status`: accepted
+- `problem`: faltaba una política oficial de timestamps de auditoría y
+  desempate de orden estable entre dispositivos para evitar divergencias
+  visuales en listas del MVP (timeline, sesiones y selectores), y seguían
+  abiertas decisiones sobre `deleted_at_utc`, orden canónico y reparto
+  query/cliente.
+- `decision`: aceptar `docs/timestamp-order-policy.md` como política oficial de
+  timestamps y orden estable del MVP; usar `created_at_utc` y `updated_at_utc`
+  como timestamps de auditoría **server-only**; eliminar `deleted_at_utc` del
+  MVP (hard delete real); ampliar auditoría temporal a
+  `campaign/year/season/week/entry/session`; actualizar `updated_at_utc` en
+  toda escritura persistida, también derivada/sistémica; definir una matriz de
+  orden canónico por lista (alcance UI + `#16`) con prefijo de query + orden
+  canónico final en cliente; usar desempate final por `document_id`
+  lexicográfico ascendente; priorizar orden de dominio (`week_number`,
+  `order_index`) sobre timestamps cuando exista; y considerar que el orden final
+  con `serverTimestamp` pendiente solo se garantiza tras `refresh`.
+- `rationale`: separa claramente auditoría/orden estable de los contratos por
+  operación (`#12`), reduce ambigüedad para `#16/#17/#19`, y deja reglas
+  trazables para listas de dominio y listas temporales sin adelantar técnica
+  Firestore específica.
+- `impact`: añade `docs/timestamp-order-policy.md` como fuente oficial;
+  actualiza `docs/domain-glossary.md` (auditoría y eliminación de
+  `deleted_at_utc`), `docs/firestore-operation-contract.md` (referencia a la
+  política final de `#18`), y el seguimiento técnico en
+  `docs/mvp-implementation-checklist.md` / `docs/mvp-implementation-blocks.md`;
+  deja `#14` como siguiente paso técnico tras cerrar `#18`.
+- `references`: `docs/timestamp-order-policy.md`, `docs/domain-glossary.md`,
+  `docs/firestore-operation-contract.md`, `docs/conflict-policy.md`,
+  `docs/resource-delta-model.md`, `docs/mvp-implementation-checklist.md`,
+  `docs/mvp-implementation-blocks.md`, `AGENTS.md`, `docs/system-map.md`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/18`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/12`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/16`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/40`

@@ -32,7 +32,8 @@ No incluye:
 - implementación concreta en Firestore (transacciones, batch, técnica de
   precondiciones);
 - consultas/lecturas (`#16`);
-- timestamps/desempates de orden estable (`#18`);
+- timestamps/desempates de orden estable (se definen en
+  `docs/timestamp-order-policy.md`, Issue `#18`);
 - diseño de UI o flujos de pantalla (`#14`, `#16`);
 - código de app.
 
@@ -44,6 +45,7 @@ No incluye:
 - `docs/campaign-temporal-initialization.md` (Issue `#13`)
 - `docs/editability-policy.md` (Issue `#37`)
 - `docs/resource-delta-model.md` (Issue `#40`, supersesión parcial de recursos)
+- `docs/timestamp-order-policy.md` (Issue `#18`)
 - `docs/domain-glossary.md`
 
 ## Convenciones del contrato
@@ -230,7 +232,9 @@ Operaciones compuestas mínimas:
 
 - La técnica exacta para garantizar atomicidad en Firestore queda diferida a la
   implementación.
-- La política de timestamps y desempate estable sigue diferida a `#18`.
+- La política de timestamps y desempate estable se define en
+  `docs/timestamp-order-policy.md` (Issue `#18`) y este contrato no la
+  reespecifica.
 - El contrato no define lecturas ni consultas (`#16`).
 - La parte de recursos de este contrato fue parcialmente supersedida por
   `docs/resource-delta-model.md` (Issue `#40`) y parcheada con operaciones
@@ -247,6 +251,7 @@ Operaciones compuestas mínimas:
 - `docs/campaign-temporal-initialization.md`
 - `docs/editability-policy.md`
 - `docs/resource-delta-model.md`
+- `docs/timestamp-order-policy.md`
 - `docs/decision-log.md`
 - `docs/mvp-implementation-checklist.md`
 - `docs/mvp-implementation-blocks.md`
@@ -254,3 +259,4 @@ Operaciones compuestas mínimas:
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/13`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/37`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/40`
+- `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/18`

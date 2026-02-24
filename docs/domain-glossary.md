@@ -25,10 +25,12 @@ entidad `Entry` (`scenario|outpost`) y jerarquía temporal explícita:
     y se recalcula tras operaciones que cambian el estado de `Week`.
 - `resource_totals`: mapa `resource_key -> int` derivado de la suma de
   `Entry.resource_deltas` en la campaña.
+- `created_at_utc`, `updated_at_utc`: auditoría mínima (server-only).
 
 ### Year
 
 - `year_number`: entero positivo.
+- `created_at_utc`, `updated_at_utc`: auditoría mínima (server-only).
 
 ### Season
 
@@ -36,13 +38,14 @@ entidad `Entry` (`scenario|outpost`) y jerarquía temporal explícita:
 - `year_number`: entero positivo.
 - En castellano, `season` se traduce como **estación** (`verano|invierno`), no
   “temporada”.
+- `created_at_utc`, `updated_at_utc`: auditoría mínima (server-only).
 
 ### Week
 
 - `week_number`: entero global `1..N`, inmutable y trazable.
 - `status`: `open|closed`.
 - `notes`: texto opcional.
-- `created_at_utc`, `updated_at_utc`, `deleted_at_utc`: auditoría mínima.
+- `created_at_utc`, `updated_at_utc`: auditoría mínima (server-only).
 
 ### Entry
 
@@ -54,14 +57,14 @@ entidad `Entry` (`scenario|outpost`) y jerarquía temporal explícita:
 - `scenario_ref`: entero positivo obligatorio cuando `type=scenario`.
 - `resource_deltas`: mapa `resource_key -> int` (delta neto por recurso en la
   `Entry`; solo claves con delta `!= 0`, ausencia de clave = `0`).
-- `created_at_utc`, `updated_at_utc`, `deleted_at_utc`: auditoría mínima.
+- `created_at_utc`, `updated_at_utc`: auditoría mínima (server-only).
 
 ### Session
 
 - Cuelga de una `Entry` (owner implícito por ruta, sin `owner_type`).
 - `started_at_utc`: timestamp UTC.
 - `ended_at_utc`: timestamp UTC o `null` si está activa.
-- `created_at_utc`, `updated_at_utc`, `deleted_at_utc`: auditoría mínima.
+- `created_at_utc`, `updated_at_utc`: auditoría mínima (server-only).
 
 ## Recursos MVP (`resource_key`)
 
@@ -102,6 +105,8 @@ entidad `Entry` (`scenario|outpost`) y jerarquía temporal explícita:
   semanas por estación se define en `docs/campaign-temporal-initialization.md`.
 - La política de editabilidad manual y correcciones de estado/sesiones se define
   en `docs/editability-policy.md`.
+- La política de timestamps de auditoría y orden estable se define en
+  `docs/timestamp-order-policy.md`.
 
 ## Invariantes operativas cerradas
 
@@ -132,6 +137,8 @@ entidad `Entry` (`scenario|outpost`) y jerarquía temporal explícita:
 ## Casos borde y validación
 
 1. Se reconstruye owner de `Session` únicamente por ruta.
+1. `created_at_utc` y `updated_at_utc` son server-only en las entidades
+   auditadas del MVP; no se usa `deleted_at_utc`.
 1. Cambios en semanas históricas no alteran `week_number`.
 1. Crear `Entry` tipo `scenario` sin `scenario_ref` debe rechazarse.
 1. Crear `Entry` tipo `outpost` sin campos extra debe aceptarse.

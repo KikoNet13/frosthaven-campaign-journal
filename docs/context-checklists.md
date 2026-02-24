@@ -105,6 +105,9 @@
      cerrable (end-to-end por defecto).
   1. Si no existe unidad pendiente de cierre, aplicar la regla normal de
      priorización (`PRs` -> orden técnico -> `siguiente pendiente`).
+  1. Si la ejecución ocurre en `Plan Mode` y se identifica una Issue/unidad
+     prioritaria, abrir al menos una ronda de decisiones de esa unidad antes de
+     emitir `<proposed_plan>` (sin meta-plan de "iniciar el plan").
   1. Reportar unidad priorizada, estado de cierre, bloqueo (si existe) y si se
      puede pasar a la siguiente unidad.
 
@@ -112,6 +115,8 @@
 
   1. No se inicia una unidad nueva mientras exista una unidad pendiente de
      cierre no bloqueada.
+  1. En `Plan Mode`, no se devuelve un `<proposed_plan>` cuyo siguiente paso sea
+     empezar a planificar la misma unidad ya priorizada.
   1. El reporte final explicita el estado de cierre alcanzado.
   1. Si la unidad es `type:decision`, queda claro si falta aprobación explícita
      de Kiko o si se cerró en el mismo turno.

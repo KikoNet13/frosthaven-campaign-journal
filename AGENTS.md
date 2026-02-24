@@ -96,6 +96,10 @@ sencillo.
      deja bloqueada por aprobación y sigue siendo prioritaria en el siguiente
      `siguiente paso`; si Kiko aprueba explícitamente en el mismo turno, Codex
      completa el cierre en esa misma pasada;
+   - en `Plan Mode`, si `siguiente paso` identifica una Issue/unidad
+     prioritaria (no una unidad pendiente de cierre), Codex debe entrar en las
+     decisiones de esa unidad en ese mismo turno; no debe cerrar con un
+     meta-plan cuyo siguiente paso sea "iniciar el plan" de esa misma unidad;
    - tras cada `siguiente paso`, Codex reporta: unidad priorizada, estado de
      cierre alcanzado (`local`, `push`, `PR`, `merge`, `issue`, `cleanup`),
      bloqueo (si existe) y si puede pasar o no a la siguiente unidad;

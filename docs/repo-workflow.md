@@ -114,6 +114,11 @@ Aplicar un flujo profesional, simple y mantenible para un solo desarrollador.
 - Regla en `Plan Mode`:
   - `siguiente paso` identifica la unidad pendiente de cierre (si existe) y
     planifica su cierre end-to-end, sin ejecutar mutaciones.
+  - Si `siguiente paso` identifica una issue/unidad prioritaria (sin mutaciones
+    pendientes previas), Codex debe entrar en las decisiones de esa unidad en
+    ese mismo turno antes de emitir el `<proposed_plan>`.
+  - No se admite cerrar con un meta-plan cuyo siguiente paso sea iniciar el
+    plan de la misma unidad ya priorizada.
   - Debe dejar explícito cuál sería el siguiente acto mutante al salir de
     `Plan Mode`.
 - Reporte obligatorio tras `siguiente paso`:

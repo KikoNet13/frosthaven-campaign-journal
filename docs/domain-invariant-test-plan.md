@@ -302,6 +302,7 @@ Plantilla mínima clara (campos obligatorios + ejemplo breve).
 - `docs/editability-policy.md`
 - `docs/mvp-implementation-checklist.md`
 - `docs/mvp-implementation-blocks.md`
+- `docs/coding-readiness-gate.md`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/19`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/17`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/20`

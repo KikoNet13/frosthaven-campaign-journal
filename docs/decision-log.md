@@ -695,3 +695,35 @@
   `AGENTS.md`, `docs/system-map.md`,
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/19`,
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/20`
+
+### DEC-0032
+
+- `date`: 2026-02-24
+- `status`: accepted
+- `problem`: faltaba un gate final operativo y trazable que definiera cuándo se
+  puede empezar a codificar tras cerrar la preparación documental del MVP, y
+  persistía una contradicción en `AGENTS.md`/`context-governance` (reglas de
+  Fase 0 y prohibición de código) una vez alcanzado el readiness.
+- `decision`: aceptar `docs/coding-readiness-gate.md` como gate oficial de
+  entrada a implementación (`#20`), con resultado documental en 3 estados
+  (`apto`, `apto_con_diferidos_aceptados`, `no_apto`), checklist de
+  bloqueo/desbloqueo, evidencia mínima, diferidos aceptados explícitos y
+  resultado aplicado al estado actual del repo. Se actualizan `AGENTS.md`,
+  `docs/context-governance.md` y `CHK-GATE-CODE` para permitir implementación
+  tras gate válido y registrar el estado de fase `implementation_enabled`.
+- `rationale`: evita ambigüedad sobre el inicio de código, conserva rigor del
+  gate de calidad, distingue bloqueantes reales de diferidos aceptados (como la
+  concurrencia multi-device real diferida en `#19`) y deja una transición
+  documental consistente sin reabrir contratos de dominio.
+- `impact`: cierra `#20`; habilita inicio de implementación con resultado
+  `apto_con_diferidos_aceptados`; actualiza gobierno de contexto y reglas
+  operativas; y deja recomendación explícita del primer slice de código
+  (infraestructura/base app).
+- `references`: `docs/coding-readiness-gate.md`, `AGENTS.md`,
+  `docs/context-governance.md`, `docs/context-checklists.md`,
+  `docs/domain-invariant-test-plan.md`,
+  `docs/concurrency-sync-edge-case-matrix.md`,
+  `docs/mvp-implementation-checklist.md`, `docs/mvp-implementation-blocks.md`,
+  `docs/system-map.md`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/20`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/19`

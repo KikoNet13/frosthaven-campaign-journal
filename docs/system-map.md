@@ -52,6 +52,9 @@ Este documento permite que una persona o agente nuevo entienda rápidamente:
 - `docs/domain-invariant-test-plan.md`
   - Plan de pruebas por invariantes del dominio, con trazabilidad a `#17` y
     priorización para el gate `#20`.
+- `docs/coding-readiness-gate.md`
+  - Gate final de listo para codificar, con bloqueantes, diferidos aceptados y
+    recomendación del primer slice de código.
 - `docs/campaign-temporal-controls.md`
   - Controles temporales de campaña y provisión/extensión de años del MVP.
 - `docs/campaign-temporal-initialization.md`
@@ -116,6 +119,7 @@ Este documento permite que una persona o agente nuevo entienda rápidamente:
 - Consultas mínimas de pantalla principal -> `docs/minimal-read-queries.md`
 - Edge cases de concurrencia/sincronización -> `docs/concurrency-sync-edge-case-matrix.md`
 - Plan de pruebas de invariantes -> `docs/domain-invariant-test-plan.md`
+- Gate de listo para codificar -> `docs/coding-readiness-gate.md`
 - Controles temporales de campaña -> `docs/campaign-temporal-controls.md`
 - Inicialización temporal técnica -> `docs/campaign-temporal-initialization.md`
 - Editabilidad manual MVP -> `docs/editability-policy.md`

@@ -6,8 +6,8 @@
 - `purpose`: Gobierno de contexto, gate de calidad y estado verificable.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-02-23
-- `next_review`: 2026-03-09
+- `last_updated`: 2026-02-24
+- `next_review`: 2026-03-10
 
 ## Alcance de Fase 0
 
@@ -85,6 +85,19 @@ Se valida:
 - Verificación B: aprobado
 - Evidencia: decisiones y checklists registradas.
 
+### Hito H0-03
+
+- Fecha: 2026-02-24
+- Objetivo: ejecutar y registrar gate final de listo para codificar (Issue #20).
+- Resultado: aprobado con diferidos aceptados
+- Verificación A: aprobado
+- Verificación B: aprobado
+- Evidencia:
+  - `docs/coding-readiness-gate.md` (resultado `apto_con_diferidos_aceptados`)
+  - `docs/domain-invariant-test-plan.md` (`#19`, `P0` definidos y trazados)
+  - `docs/context-checklists.md` (`CHK-GATE-CODE` actualizado)
+  - `AGENTS.md` y `docs/system-map.md` alineados con transición a implementación.
+
 ## Conocimiento migrado desde legado
 
 - `important.txt`
@@ -109,6 +122,8 @@ Se valida:
 
 ## Estado actual de fase
 
-- Estado: active
-- Criterio de aceptación de Fase 0: cubierto a nivel documental.
-- Siguiente paso: validación final de Kiko y transición a Fase 1.
+- Estado: implementation_enabled
+- Criterio de aceptación de Fase 0: cubierto a nivel documental y gate `#20`
+  validado.
+- Siguiente paso: iniciar implementación (slice recomendado de
+  infraestructura/base app).

@@ -542,7 +542,7 @@ No incluye:
 
 ## Seguimiento de bloques
 
-### Estado de bloques (actualizado tras cerrar #13, #37, #12, #40, #18, #14, #15, #16, #17 y #19)
+### Estado de bloques (actualizado tras cerrar #13, #37, #12, #40, #18, #14, #15, #16, #17, #19 y #20)
 
 - [x] `#11` Desglose en bloques ejecutables (este documento)
 - [x] `#13` Inicialización temporal detallada (`ready`)
@@ -555,11 +555,11 @@ No incluye:
 - [x] `#16` Consultas mínimas para timeline/foco (`draftable`)
 - [x] `#17` Matriz de edge cases (`draftable`)
 - [x] `#19` Plan de pruebas de invariantes (`draftable`)
-- [ ] `#20` Gate de listo para codificar (`final_gate`)
+- [x] `#20` Gate de listo para codificar (`final_gate`)
 
 ### Próxima secuencia técnica esperada (según orden actual)
 
-1. `#20`
+1. Inicio de implementación (slice recomendado por `#20`: infraestructura/base app)
 
 ## Referencias
 

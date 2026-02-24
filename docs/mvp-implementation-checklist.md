@@ -197,7 +197,7 @@ Usar esta plantilla mínima en cada issue/bloque del checklist:
 - [x] Desglose en bloques ejecutables (Issue #11)
 - [x] Inicialización temporal detallada (Issue #13)
 - [x] Política de editabilidad manual y correcciones de dominio (Issue #37)
-- [ ] Contrato de operaciones Firestore por agregado (Issue #12)
+- [x] Contrato de operaciones Firestore por agregado (Issue #12)
 - [ ] Política de timestamps y orden estable (Issue #18)
 - [ ] Flujo de sesión activa y `auto-stop` (Issue #14)
 - [ ] Reglas de validación y recálculo de recursos (Issue #15)
@@ -214,6 +214,7 @@ Usar esta plantilla mínima en cada issue/bloque del checklist:
 - `docs/mvp-implementation-blocks.md`
 - `docs/sync-strategy.md`
 - `docs/conflict-policy.md`
+- `docs/firestore-operation-contract.md`
 - `docs/campaign-temporal-controls.md`
 - `docs/campaign-temporal-initialization.md`
 - `docs/editability-policy.md`

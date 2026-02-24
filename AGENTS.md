@@ -153,6 +153,7 @@ Cada interacción termina con un menú numerado fijo de 3 a 5 siguientes pasos.
 - Checklists operativas: `docs/context-checklists.md`
 - Estrategia de sincronización MVP: `docs/sync-strategy.md`
 - Política de conflictos concurrentes MVP: `docs/conflict-policy.md`
+- Contrato de operaciones Firestore por agregado (MVP): `docs/firestore-operation-contract.md`
 - Controles temporales de campaña: `docs/campaign-temporal-controls.md`
 - Inicialización temporal de campaña (técnica): `docs/campaign-temporal-initialization.md`
 - Política de editabilidad manual MVP: `docs/editability-policy.md`

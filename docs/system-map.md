@@ -33,6 +33,8 @@ Este documento permite que una persona o agente nuevo entienda rápidamente:
   - Estrategia de sincronización multidispositivo del MVP.
 - `docs/conflict-policy.md`
   - Política de conflictos concurrentes del MVP.
+- `docs/firestore-operation-contract.md`
+  - Contrato de operaciones de escritura por agregado del MVP.
 - `docs/campaign-temporal-controls.md`
   - Controles temporales de campaña y provisión/extensión de años del MVP.
 - `docs/campaign-temporal-initialization.md`
@@ -89,6 +91,7 @@ Este documento permite que una persona o agente nuevo entienda rápidamente:
 - Modelo de dominio -> `docs/domain-glossary.md`
 - Sincronización MVP -> `docs/sync-strategy.md`
 - Conflictos concurrentes MVP -> `docs/conflict-policy.md`
+- Contrato Firestore por agregado -> `docs/firestore-operation-contract.md`
 - Controles temporales de campaña -> `docs/campaign-temporal-controls.md`
 - Inicialización temporal técnica -> `docs/campaign-temporal-initialization.md`
 - Editabilidad manual MVP -> `docs/editability-policy.md`

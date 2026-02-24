@@ -62,6 +62,8 @@
   1. Ejecutar verificación B de criterios y edge cases.
      - Si existe matriz oficial de edge cases (`#17`), usarla como insumo
        principal de cobertura/riesgo.
+     - Si existe plan oficial de pruebas de invariantes (`#19`), usarlo para
+       distinguir bloqueantes (`P0`) y diferidos aceptados antes del gate.
   1. Registrar evidencia en `docs/context-governance.md`.
 
 - `validation`:

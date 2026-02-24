@@ -45,6 +45,9 @@ No incluye:
   - jerarquía `campaign > year > season > week > entry`;
   - `week_number` global inmutable;
   - `week_cursor` separado de la navegación de semana.
+- `docs/editability-policy.md` (Issue #37):
+  - `week_cursor` = primera `Week` abierta;
+  - recálculo tras cambios de `Week.status`.
 - Aclaración de Kiko (fuente de verdad para `#13`):
   - `season` = **estación** (`summer|winter`);
   - orden fijo: `summer` -> `winter`;
@@ -176,7 +179,8 @@ Por cada `year_number`:
 
 - Navegar o seleccionar una semana en el control temporal superior **no**
   cambia automáticamente `campaign.week_cursor`.
-- `week_cursor` sigue siendo una acción separada y explícita del flujo temporal.
+- La política de recálculo de `week_cursor` (primera `Week` abierta) se define
+  en `docs/editability-policy.md` (Issue #37).
 - Esta especificación (#13) define la estructura temporal creada; no redefine la
   semántica funcional de navegación/cursor ya cerrada en `#9`.
 
@@ -188,7 +192,8 @@ contrato de operaciones Firestore por agregado:
 - qué crea la provisión inicial (`4` años, `80` semanas, orden fijo);
 - qué crea la extensión `+1` (un año completo, `20` semanas);
 - qué validaciones mínimas temporales deben respetarse;
-- qué no cambia (`week_cursor` por navegación de semana).
+- qué no cambia (navegación de semana no altera `week_cursor`);
+- que la semántica de recálculo de `week_cursor` se alinea con `#37`.
 
 `#13` no define:
 
@@ -233,10 +238,12 @@ contrato de operaciones Firestore por agregado:
 - `docs/campaign-temporal-controls.md`
 - `docs/domain-glossary.md`
 - `docs/conflict-policy.md`
+- `docs/editability-policy.md`
 - `docs/mvp-implementation-checklist.md`
 - `docs/mvp-implementation-blocks.md`
 - `docs/decision-log.md`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/9`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/12`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/13`
+- `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/37`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/18`

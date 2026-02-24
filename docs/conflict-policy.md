@@ -6,8 +6,8 @@
 - `purpose`: Definir la política de resolución de conflictos concurrentes del MVP.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-02-23
-- `next_review`: 2026-03-09
+- `last_updated`: 2026-02-24
+- `next_review`: 2026-03-10
 
 ## Objetivo
 
@@ -39,8 +39,8 @@ No incluye:
    `refresco` y `reintento`.
 1. Se mantiene la recomendación operativa de `single writer` definida en
    `docs/sync-strategy.md`.
-1. No se usa `last-write-wins` para operaciones de estado, edición de notas ni
-   `ResourceChange`.
+1. No se usa `last-write-wins` para operaciones de estado, edición de notas,
+   reordenación manual ni `ResourceChange`.
 1. La política define comportamiento esperado; el mecanismo técnico exacto de
    detección queda para la Issue #12.
 
@@ -52,7 +52,10 @@ No incluye:
 | `Session.stop` | `campaign` + `entry` + `session` | Alto | `rechazar` | `refrescar` + `reintentar` | Rechazar si la sesión activa cambió o ya fue cerrada |
 | `auto-stop` por nuevo `start` | `campaign` + `session` | Alto | `rechazar` | `refrescar` + `reintentar` | No usar LWW sobre estado de sesión |
 | `Week.close` | `week` + `campaign` | Alto | `rechazar` | `refrescar` + `reintentar` | Rechazar si `week.status` o `week_cursor` cambió |
-| `Campaign.set_week_cursor` (acción manual) | `campaign` | Alto | `rechazar` | `refrescar` + `reintentar` | Cambio de estado de campaña; sin `last-write-wins` |
+| `Week.reopen` | `week` + `campaign` | Alto | `rechazar` | `refrescar` + `reintentar` | Recalcula `week_cursor`; política de editabilidad en #37 |
+| `Week.reclose` | `week` + `campaign` | Alto | `rechazar` | `refrescar` + `reintentar` | Recalcula `week_cursor`; rechazar si dejaría cursor inválido |
+| `Entry.reorder_within_week` | `week` + `entry` | Medio/Alto | `rechazar` | `refrescar` + `reintentar` | Resecuencia densa `1..N`; detalle contractual en #12 |
+| `Session.manual_create/update/delete` | `session` + `campaign` | Alto | `rechazar` | `refrescar` + `reintentar` | Mantener `0..1` sesión activa global; detalle contractual en #12 |
 | Borrado de `Entry` activa (con cascada) | `entry` + `session` + `resource_change` | Alto | `rechazar` | `refrescar` + `reintentar` | Incluye auto-stop y borrado en cascada; contratos técnicos en #12 |
 | Edición de `Week.notes` | `week` | Medio | `rechazar` | `refrescar` + reingresar cambios | No usar `last-write-wins` en MVP |
 | Crear `ResourceChange` | `resource_change` (+ totales derivados) | Medio/Alto | `rechazar` | `refrescar` + `reintentar` | Política estricta para evitar inconsistencias silenciosas |
@@ -65,15 +68,17 @@ No incluye:
    cliente, la operación se **rechaza por conflicto**.
 1. Si una entidad fue borrada (o marcada como borrada) concurrentemente,
    prevalece el estado remoto actual y la operación local se **rechaza**.
-1. Si una operación depende de `Week.status=open` y la semana ya fue cerrada,
-   la operación se **rechaza**.
+1. Si una operación específica define como precondición `Week.status=open` y la
+   semana ya fue cerrada, la operación se **rechaza**.
 1. Si una operación depende de la sesión activa global y esa condición cambió,
    la operación se **rechaza**.
-1. Si una operación de ajuste manual de `week_cursor` encuentra que el cursor
-   cambió concurrentemente, la operación se **rechaza** y requiere `refresco`.
+1. Si una operación de cambio de estado de `Week` (`close`, `reopen`,
+   `reclose`) encuentra que `week.status` o el recálculo de `week_cursor`
+   quedó invalidado por cambios concurrentes, la operación se **rechaza** y
+   requiere `refresco`.
 1. Si el rechazo ocurre durante una operación compuesta (por ejemplo `auto-stop`
-   + `start`, cierre de semana, borrado con cascada), se considera fallo de la
-   operación completa y se requiere `refresco`.
+   + `start`, cierre/reapertura de semana, borrado con cascada), se considera
+   fallo de la operación completa y se requiere `refresco`.
 1. La precedencia de orden temporal fino y desempates entre eventos casi
    simultáneos queda fuera de esta issue y se define en la Issue #18.
 
@@ -94,6 +99,16 @@ No incluye:
 - Un dispositivo cierra una `Week` mientras otro edita `Week.notes`.
   - Resultado MVP: la edición depende del estado actual; si el estado cambió de
     forma incompatible, se rechaza y se refresca.
+- Un dispositivo reabre una `Week` mientras otro la re-cierra o cierra una week
+  distinta que afecta al `week_cursor`.
+  - Resultado MVP: una de las operaciones puede quedar obsoleta; se rechaza y
+    requiere `refresco`.
+- Dos dispositivos reordenan entries de la misma `Week` a la vez.
+  - Resultado MVP: rechazo en conflicto y reintento; no se aplica LWW.
+- Corrección manual de sesión mientras otro dispositivo ejecuta `Session.start`
+  o `Session.stop`.
+  - Resultado MVP: rechazo en conflicto si cambia la condición de sesión activa
+    global.
 - Un dispositivo borra una `Entry` activa mientras otro registra recursos sobre
   esa `Entry`.
   - Resultado MVP: una de las operaciones quedará inválida; se rechaza la que
@@ -108,6 +123,9 @@ No incluye:
 - **Issue #8**: esta política de conflictos concurrentes.
 - **Issue #12**: define el contrato técnico por agregado y el mecanismo de
   detección/validación de conflictos.
+- **Issue #37**: actualiza la política de editabilidad manual del MVP y la
+  semántica de `week_cursor`, añadiendo operaciones de corrección manual
+  que deben respetar esta política de conflictos.
 - **Issue #18**: define timestamps y desempates de orden estable entre
   dispositivos, compatibles con esta política.
 
@@ -119,4 +137,5 @@ No incluye:
 - `tdd.md` (legado temporal, alineado con referencia oficial)
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/8`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/12`
+- `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/37`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/18`

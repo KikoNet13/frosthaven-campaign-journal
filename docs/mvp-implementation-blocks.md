@@ -3,7 +3,7 @@
 ## Metadatos
 
 - `doc_id`: DOC-MVP-IMPLEMENTATION-BLOCKS
-- `purpose`: Desglosar el checklist técnico base de implementación MVP en bloques y subbloques ejecutables con trazabilidad.
+- `purpose`: Desglosar el checklist técnico base de implementación MVP en bloques y subbloques ejecutables con trazabilidad, incluyendo decisiones marco posteriores que alteren el orden técnico.
 - `status`: active
 - `source_of_truth`: official
 - `last_updated`: 2026-02-24
@@ -19,7 +19,8 @@ la preparación de implementación del MVP, sin codificar todavía.
 
 Incluye:
 
-- desglose detallado de las Issues `#12`–`#20` por subbloques ejecutables;
+- desglose detallado de las Issues `#12`–`#20` y decisiones marco intermedias
+  que afecten su secuencia (actualmente `#37`) por subbloques ejecutables;
 - responsables por rol (`Codex`, `Kiko`, `Codex+Kiko`);
 - entregables, dependencias y criterios de finalización por subbloque;
 - riesgos y bloqueos por issue;
@@ -28,7 +29,8 @@ Incluye:
 No incluye:
 
 - implementación de código de app;
-- cierre de las Issues `#12`–`#20` en este documento;
+- cierre de las Issues `#12`–`#20` (ni de decisiones marco intermedias como
+  `#37`) en este documento;
 - gate final de “listo para codificar” (solo su desglose planificado);
 - redefinir por sí mismo reglas globales de repo (eso se formaliza en la issue
   de proceso correspondiente).
@@ -92,17 +94,18 @@ No incluye:
 
 | Issue | Tipo | Estado inicial | Orden técnico recomendado | ¿Puede iniciar borrador? | Cierre condicionado por | Entregable principal |
 | --- | --- | --- | --- | --- | --- | --- |
-| #12 | `decision` | `draftable` | 2.º dentro del bloque B | Sí | Alineación con #13 (cierre recomendado con #13 cerrada) | Contrato de operaciones Firestore por agregado |
-| #13 | `task` | `ready` | 2.º del bloque B (1.º dentro de B) | Sí | Coherencia con #9 y dominio | Estrategia técnica de inicialización/extensión temporal |
+| #13 | `task` | `ready` | 1.º dentro del bloque B | Sí | Coherencia con #9 y dominio | Estrategia técnica de inicialización/extensión temporal |
+| #37 | `decision` | `ready` | 2.º dentro del bloque B | Sí | Coherencia con #8/#9/#13 y dominio | Política de editabilidad manual y correcciones de dominio |
+| #12 | `decision` | `draftable` | 3.º dentro del bloque B | Sí | Alineación con #13 y #37 (cierre recomendado con ambas cerradas) | Contrato de operaciones Firestore por agregado |
 | #14 | `task` | `draftable` | 1.º del bloque C | Sí | Alineación con #12 para cierre | Flujo de sesión activa y `auto-stop` |
 | #15 | `task` | `draftable` | 2.º del bloque C | Sí | Alineación con #12 para cierre | Reglas de validación y recálculo de recursos |
 | #16 | `task` | `draftable` | 1.º del bloque D | Sí | Compatibilidad con #18 para cierre | Inventario mínimo de consultas y orden/paginación |
 | #17 | `task` | `draftable` | 2.º del bloque D | Sí | Mayor valor tras #12/#14/#15/#18 | Matriz de edge cases de concurrencia/sincronización |
-| #18 | `decision` | `draftable` | 3.º dentro del bloque B | Sí | Compatibilidad con #12 y lecturas | Política de timestamps y desempate estable |
+| #18 | `decision` | `draftable` | 4.º dentro del bloque B | Sí | Compatibilidad con #12 y lecturas | Política de timestamps y desempate estable |
 | #19 | `task` | `draftable` | 3.º del bloque D | Sí | Insumos suficientes de contratos/flows | Plan de pruebas de invariantes |
 | #20 | `task` | `final_gate` | Último (bloque E) | No (cierre final) | Base de #10 + derivadas relevantes | Gate de listo para codificar |
 
-## Detalle por issue (`#12`–`#20`)
+## Detalle por issue (`#12`–`#20`) y decisión marco intermedia (`#37`)
 
 ### Issue #12 — Definir contrato de operaciones Firestore por agregado de dominio
 
@@ -111,33 +114,36 @@ No incluye:
 - `tipo`: `decision`
 - `estado_inicial`: `draftable`
 - `responsable_de_coordinación`: `Codex+Kiko`
-- `dependencias_de_cierre`: `#13` (alineación temporal estable), más coherencia
-  con `#7`, `#8`, `#9` (ya resueltas)
+- `dependencias_de_cierre`: `#13` (alineación temporal estable), `#37`
+  (editabilidad e invariantes actualizadas), más coherencia con `#7`, `#8`,
+  `#9` (ya resueltas)
 - `impacta_a`: `#14`, `#15`, `#16`, `#17`, `#18`, `#19`, `#20`
 
 #### Subbloques ejecutables
 
 | subbloque_id | objetivo | responsable | depende_de | entregable | criterio_de_finalización | estado_inicial |
 | --- | --- | --- | --- | --- | --- | --- |
-| `I12-S1` | Inventariar operaciones por agregado (`campaign`, `week`, `entry`, `session`, `resource_change`) y casos de uso | `Codex` | `#7`, `#8`, `#9` | Tabla de operaciones por agregado | Inventario completo y sin solapes obvios | `draftable` |
+| `I12-S1` | Inventariar operaciones por agregado (`campaign`, `week`, `entry`, `session`, `resource_change`) y casos de uso | `Codex` | `#7`, `#8`, `#9`, `#37` | Tabla de operaciones por agregado | Inventario completo y sin solapes obvios con mutabilidad vigente | `draftable` |
 | `I12-S2` | Definir contrato por agregado (precondiciones, postcondiciones, validaciones, rechazo por conflicto, atomicidad esperada) | `Codex` | `I12-S1` | Tabla de contrato por agregado | Cada agregado tiene contrato explícito y coherente con `#8` | `draftable` |
-| `I12-S3` | Alinear operaciones temporales con la especificación de `#13` (provisión/extensión/cambio de `week_cursor`) | `Codex+Kiko` | `I12-S2`, `#13` | Nota/tabla de alineación `#12` ↔ `#13` | No quedan contradicciones con flujo temporal | `draftable` |
+| `I12-S3` | Alinear operaciones temporales y de cursor con `#13` y `#37` (provisión/extensión/`week_cursor` derivado) | `Codex+Kiko` | `I12-S2`, `#13`, `#37` | Nota/tabla de alineación `#12` ↔ (`#13`, `#37`) | No quedan contradicciones con flujo temporal ni editabilidad | `draftable` |
 | `I12-S4` | Cerrar la decisión (revisión interactiva, trazabilidad y referencias) | `Codex+Kiko` | `I12-S3` | Documento final + registro de decisión | Aprobación explícita de Kiko y PR mergeada | `draftable` |
 
 #### Riesgos y bloqueos
 
-- Riesgo de cerrar contrato desalineado con `#13` si se adelanta demasiado.
+- Riesgo de cerrar contrato desalineado con `#13` y/o `#37` si se adelanta demasiado.
 - Riesgo de duplicar lógica ya fijada por `#8` (conflictos) y `#9` (temporal).
 
 #### Criterio de cierre de la issue
 
 - Existe contrato de operaciones por agregado con pre/postcondiciones,
-  validaciones y reglas de rechazo, alineado con `#13` y consistente con `#8`.
+  validaciones y reglas de rechazo, alineado con `#13`, `#37` y consistente con
+  `#8`.
 
 #### Notas de secuencia / paralelización
 
-- Puede iniciarse en borrador antes de cerrar `#13`.
-- El cierre se recomienda después de `#13` para reducir retrabajo.
+- Puede iniciarse en borrador con base en `#7/#8/#9`, pero requiere alineación
+  con `#37` para cerrar.
+- El cierre se recomienda después de `#13` y `#37` para reducir retrabajo.
 
 ### Issue #13 — Especificar estrategia de inicialización de años, estaciones (`season`) y semanas
 
@@ -174,6 +180,47 @@ No incluye:
 - Es el primer candidato técnico recomendado tras `#11`.
 - Su cierre reduce incertidumbre para `#12`.
 
+### Issue #37 — Definir política de editabilidad manual y correcciones de estado/sesiones (MVP)
+
+#### Ficha de bloque
+
+- `tipo`: `decision`
+- `estado_inicial`: `ready`
+- `responsable_de_coordinación`: `Codex+Kiko`
+- `dependencias_de_cierre`: coherencia con `#8`, `#9`, `#13` y
+  `docs/domain-glossary.md`
+- `impacta_a`: `#12`, `#14`, `#15`, `#17`, `#19`, `#20`
+
+#### Subbloques ejecutables
+
+| subbloque_id | objetivo | responsable | depende_de | entregable | criterio_de_finalización | estado_inicial |
+| --- | --- | --- | --- | --- | --- | --- |
+| `I37-S1` | Definir matriz de operaciones manuales permitidas (editabilidad "como papel") y límites | `Codex+Kiko` | `#8`, `#9`, `docs/domain-glossary.md` | Matriz de mutabilidad por agregado | Quedan cerradas operaciones manuales permitidas y su alcance MVP | `ready` |
+| `I37-S2` | Formalizar reglas de `Entry.reorder`, `Week.reopen/reclose` y correcciones manuales de `Session` | `Codex+Kiko` | `I37-S1` | Reglas por agregado e invariantes | No quedan ambigüedades funcionales sobre mutabilidad de orden/estado/sesiones | `ready` |
+| `I37-S3` | Redefinir semántica de `week_cursor` (primera `Week` abierta) y su recálculo | `Codex+Kiko` | `I37-S2`, `#13` | Reglas de cursor y alineación temporal | `week_cursor` queda coherente con temporalidad y editabilidad | `ready` |
+| `I37-S4` | Actualizar trazabilidad (`glossary`, conflictos, checklist/bloques) y cerrar decisión | `Codex+Kiko` | `I37-S3` | Documento final + referencias + registro de decisión | Aprobación explícita de Kiko y PR mergeada | `ready` |
+
+#### Riesgos y bloqueos
+
+- Riesgo de dejar `#12` parcialmente redactada con invariantes viejas si `#37`
+  no se cierra antes.
+- Riesgo de contradicción entre semántica de `week_cursor` en temporal (#9/#13)
+  y mutabilidad de estado si no se alinea explícitamente.
+
+#### Criterio de cierre de la issue
+
+- Existe una decisión marco de editabilidad manual del MVP ("como papel") que
+  fija reordenación manual de `Entry` (intra-`Week`), `Week.reopen/reclose`,
+  correcciones manuales completas de `Session` y `week_cursor` como primera
+  `Week` abierta, con trazabilidad a `#12/#14/#15/#17/#19`.
+
+#### Notas de secuencia / paralelización
+
+- Debe cerrarse antes de `#12` para evitar retrabajo inmediato del contrato por
+  agregado.
+- Comparte naturaleza `type:decision`; requiere revisión interactiva con Kiko
+  para cierre.
+
 ### Issue #14 — Diseñar flujo de sesión activa y reglas de auto-stop
 
 #### Ficha de bloque
@@ -181,7 +228,7 @@ No incluye:
 - `tipo`: `task`
 - `estado_inicial`: `draftable`
 - `responsable_de_coordinación`: `Codex+Kiko`
-- `dependencias_de_cierre`: coherencia con `#8` y alineación con `#12`
+- `dependencias_de_cierre`: coherencia con `#8`, `#37` y alineación con `#12`
 - `impacta_a`: `#17`, `#19`, `#20`
 
 #### Subbloques ejecutables
@@ -191,7 +238,7 @@ No incluye:
 | `I14-S1` | Definir diagrama/tabla de estados y transiciones (`start`, `stop`, `auto-stop`) | `Codex` | `#8`, `docs/domain-glossary.md` | Diagrama/tabla de estados | Todas las transiciones principales están cubiertas | `draftable` |
 | `I14-S2` | Especificar reglas operativas por evento y errores esperados | `Codex` | `I14-S1` | Reglas por evento | Se cubren `start`, `stop`, `auto-stop` y errores esperables | `draftable` |
 | `I14-S3` | Definir interacción con cierre de semana y efectos sobre sesión activa | `Codex` | `I14-S2`, `#8` | Reglas de cierre de semana + sesión | No rompe invariante `0..1` sesión activa global | `draftable` |
-| `I14-S4` | Alinear comportamiento con contrato de operaciones (`#12`) para cierre | `Codex+Kiko` | `I14-S3`, `#12` | Alineación final `#14` ↔ `#12` | No quedan ambigüedades operativas/atómicas para implementar | `draftable` |
+| `I14-S4` | Alinear comportamiento con editabilidad (`#37`) y contrato de operaciones (`#12`) para cierre | `Codex+Kiko` | `I14-S3`, `#37`, `#12` | Alineación final `#14` ↔ (`#37`, `#12`) | No quedan ambigüedades operativas/atómicas para implementar | `draftable` |
 
 #### Riesgos y bloqueos
 
@@ -206,7 +253,7 @@ No incluye:
 #### Notas de secuencia / paralelización
 
 - Puede iniciarse en borrador con `#8` ya resuelta.
-- Conviene cerrar tras avances sustanciales en `#12`.
+- Conviene cerrar tras avances sustanciales en `#37` y `#12`.
 
 ### Issue #15 — Diseñar reglas de validación y recálculo de recursos
 
@@ -215,7 +262,7 @@ No incluye:
 - `tipo`: `task`
 - `estado_inicial`: `draftable`
 - `responsable_de_coordinación`: `Codex+Kiko`
-- `dependencias_de_cierre`: coherencia con `#8` y alineación con `#12`
+- `dependencias_de_cierre`: coherencia con `#8`, `#37` y alineación con `#12`
 - `impacta_a`: `#17`, `#19`, `#20`
 
 #### Subbloques ejecutables
@@ -225,7 +272,7 @@ No incluye:
 | `I15-S1` | Inventariar operaciones sobre `ResourceChange` (crear, editar, borrar, corregir) | `Codex` | `#8`, `docs/domain-glossary.md` | Inventario de operaciones de recursos | Operaciones y efectos quedan enumerados | `draftable` |
 | `I15-S2` | Definir reglas de validación de `delta` y restricción de totales no negativos | `Codex` | `I15-S1` | Reglas de validación | Casos válidos/inválidos y rechazos quedan cerrados | `draftable` |
 | `I15-S3` | Definir estrategia de recálculo y consistencia de totales globales | `Codex` | `I15-S2` | Estrategia de recálculo | Se documenta consistencia y comportamiento esperado tras correcciones | `draftable` |
-| `I15-S4` | Alinear matriz de rechazos con `#8` y contrato de operaciones (`#12`) | `Codex+Kiko` | `I15-S3`, `#12` | Alineación final de rechazos y operaciones | No quedan contradicciones con concurrencia ni contrato | `draftable` |
+| `I15-S4` | Alinear matriz de rechazos con `#8`, editabilidad (`#37`) y contrato de operaciones (`#12`) | `Codex+Kiko` | `I15-S3`, `#37`, `#12` | Alineación final de rechazos y operaciones | No quedan contradicciones con concurrencia ni contrato | `draftable` |
 
 #### Riesgos y bloqueos
 
@@ -240,7 +287,7 @@ No incluye:
 #### Notas de secuencia / paralelización
 
 - Puede avanzar en borrador antes de `#12`.
-- Conviene cerrar después de aclarar contrato por agregado en `#12`.
+- Conviene cerrar después de aclarar editabilidad (`#37`) y contrato por agregado en `#12`.
 
 ### Issue #16 — Definir consultas mínimas para timeline y panel de foco
 
@@ -284,7 +331,7 @@ No incluye:
 - `tipo`: `task`
 - `estado_inicial`: `draftable`
 - `responsable_de_coordinación`: `Codex+Kiko`
-- `dependencias_de_cierre`: mayor valor con `#12`, `#14`, `#15`, `#18`
+- `dependencias_de_cierre`: mayor valor con `#37`, `#12`, `#14`, `#15`, `#18`
 - `impacta_a`: `#19`, `#20`
 
 #### Subbloques ejecutables
@@ -294,7 +341,7 @@ No incluye:
 | `I17-S1` | Definir taxonomía de casos (sesiones, entries, recursos, temporales, lecturas) | `Codex` | `#7`, `#8` | Taxonomía de edge cases | Taxonomía cubre las familias críticas del MVP | `draftable` |
 | `I17-S2` | Construir matriz caso → resultado esperado → severidad → prioridad | `Codex` | `I17-S1` | Matriz de edge cases | Cada caso tiene expectativa y prioridad verificable | `draftable` |
 | `I17-S3` | Seleccionar casos críticos de verificación del MVP | `Codex+Kiko` | `I17-S2` | Lista priorizada de casos críticos | Quedan definidos casos críticos mínimos a validar | `draftable` |
-| `I17-S4` | Alinear matriz con contratos y flujos (`#12`, `#14`, `#15`, `#18`) antes de cierre | `Codex+Kiko` | `I17-S2`, `#12`, `#14`, `#15`, `#18` | Revisión final de consistencia | No hay expectativas en conflicto con docs previas | `draftable` |
+| `I17-S4` | Alinear matriz con mutabilidad y contratos/flujos (`#37`, `#12`, `#14`, `#15`, `#18`) antes de cierre | `Codex+Kiko` | `I17-S2`, `#37`, `#12`, `#14`, `#15`, `#18` | Revisión final de consistencia | No hay expectativas en conflicto con docs previas | `draftable` |
 
 #### Riesgos y bloqueos
 
@@ -310,7 +357,7 @@ No incluye:
 #### Notas de secuencia / paralelización
 
 - Puede arrancar con taxonomía y borrador de matriz.
-- Su cierre gana calidad después de `#12`, `#14`, `#15` y `#18`.
+- Su cierre gana calidad después de `#37`, `#12`, `#14`, `#15` y `#18`.
 
 ### Issue #18 — Definir política de timestamps y orden estable entre dispositivos
 
@@ -365,7 +412,7 @@ No incluye:
 | `I19-S1` | Seleccionar invariantes críticas del dominio (a partir de `docs/domain-glossary.md` y decisiones cerradas) | `Codex` | `docs/domain-glossary.md`, `#7`, `#8`, `#9` | Lista priorizada de invariantes | Invariantes críticas quedan seleccionadas y justificadas | `draftable` |
 | `I19-S2` | Diseñar casos de prueba por invariante (precondición, acción, resultado esperado) | `Codex` | `I19-S1` | Matriz de casos por invariante | Cada invariante tiene casos verificables | `draftable` |
 | `I19-S3` | Definir estrategia de evidencia y repetibilidad | `Codex` | `I19-S2` | Estrategia de evidencia | Queda claro cómo registrar y repetir validaciones | `draftable` |
-| `I19-S4` | Priorizar ejecución de pruebas para soportar `#20` | `Codex+Kiko` | `I19-S2`, `I19-S3`, `#12`, `#14`, `#15`, `#18` | Priorización para readiness | El plan sirve como insumo directo para el gate de `#20` | `draftable` |
+| `I19-S4` | Priorizar ejecución de pruebas para soportar `#20` | `Codex+Kiko` | `I19-S2`, `I19-S3`, `#37`, `#12`, `#14`, `#15`, `#18` | Priorización para readiness | El plan sirve como insumo directo para el gate de `#20` | `draftable` |
 
 #### Riesgos y bloqueos
 
@@ -381,7 +428,7 @@ No incluye:
 #### Notas de secuencia / paralelización
 
 - Puede comenzar con selección de invariantes y estructura de casos.
-- El cierre se fortalece con `#12`, `#14`, `#15` y `#18` resueltas.
+- El cierre se fortalece con `#37`, `#12`, `#14`, `#15` y `#18` resueltas.
 
 ### Issue #20 — Definir criterios de listo para codificar en Fase 1
 
@@ -391,14 +438,14 @@ No incluye:
 - `estado_inicial`: `final_gate`
 - `responsable_de_coordinación`: `Codex+Kiko`
 - `dependencias_de_cierre`: checklist base (`#10`) y derivados relevantes
-  (`#11`–`#19`) según criterios definidos
+  (`#11`–`#19`, más `#37`) según criterios definidos
 - `impacta_a`: paso a implementación
 
 #### Subbloques ejecutables
 
 | subbloque_id | objetivo | responsable | depende_de | entregable | criterio_de_finalización | estado_inicial |
 | --- | --- | --- | --- | --- | --- | --- |
-| `I20-S1` | Inventariar precondiciones y dependencias críticas de readiness | `Codex` | `#10`, `#11` y estado de `#12`–`#19` | Inventario de precondiciones | Dependencias críticas quedan listadas y clasificadas | `final_gate` |
+| `I20-S1` | Inventariar precondiciones y dependencias críticas de readiness | `Codex` | `#10`, `#11` y estado de `#12`–`#19` + `#37` | Inventario de precondiciones | Dependencias críticas quedan listadas y clasificadas | `final_gate` |
 | `I20-S2` | Definir checklist de bloqueo/desbloqueo para entrada a codificación | `Codex` | `I20-S1` | Checklist de readiness | El gate de entrada es explícito y verificable | `final_gate` |
 | `I20-S3` | Definir evidencia mínima exigida (documental y trazabilidad) | `Codex` | `I20-S2` | Reglas de evidencia | Queda claro qué evidencia se exige para habilitar código | `final_gate` |
 | `I20-S4` | Definir flujo de validación final (Codex prepara, Kiko valida) y criterio de cierre | `Codex+Kiko` | `I20-S3` | Protocolo de validación final | El cierre de `#20` queda operable y sin ambigüedades | `final_gate` |
@@ -406,7 +453,7 @@ No incluye:
 #### Riesgos y bloqueos
 
 - Riesgo de cerrar `#20` demasiado pronto y convertirlo en gate vacío.
-- Riesgo de duplicar detalle de `#11` o reabrir decisiones de `#12`/`#18`.
+- Riesgo de duplicar detalle de `#11` o reabrir decisiones de `#12`/`#18`/`#37`.
 
 #### Criterio de cierre de la issue
 
@@ -432,9 +479,12 @@ No incluye:
 
 ### Reglas de ejecución (operativas)
 
-1. Priorizar PRs abiertas antes de iniciar trabajo nuevo.
+1. Priorizar primero **unidad pendiente de cierre** (trabajo local/rama/PR/issue
+   pendiente de cierre) antes de iniciar trabajo nuevo.
+1. Si no existe unidad pendiente de cierre, priorizar PRs abiertas.
 1. Usar el **orden técnico recomendado** del documento más específico disponible
-   para elegir el siguiente trabajo cuando no haya PRs abiertas.
+   para elegir el siguiente trabajo cuando no haya unidad pendiente de cierre
+   ni PRs abiertas.
 1. Si el siguiente item técnico no es cerrable, saltar al siguiente cerrable.
 1. Si no hay cerrables, avanzar en el primer `draftable`.
 1. Si no existe orden técnico aplicable, usar la issue abierta con número más
@@ -442,12 +492,13 @@ No incluye:
 1. Mantener trazabilidad de estado (`ready`, `draftable`, `blocked`,
    `final_gate`) al revisar el plan.
 
-## Seguimiento inicial de bloques
+## Seguimiento de bloques
 
-### Estado de bloques (tras cerrar #11)
+### Estado de bloques (actualizado tras cerrar #13 y #37)
 
 - [x] `#11` Desglose en bloques ejecutables (este documento)
-- [ ] `#13` Inicialización temporal detallada (`ready`)
+- [x] `#13` Inicialización temporal detallada (`ready`)
+- [x] `#37` Política de editabilidad manual y correcciones de dominio (`ready`)
 - [ ] `#12` Contrato Firestore por agregado (`draftable`)
 - [ ] `#18` Timestamps y orden estable (`draftable`)
 - [ ] `#14` Flujo de sesión activa y `auto-stop` (`draftable`)
@@ -459,8 +510,7 @@ No incluye:
 
 ### Próxima secuencia técnica esperada (según orden actual)
 
-1. `#13` (cerrable)
-1. `#12` (borrador/cierre condicionado por alineación con `#13`)
+1. `#12` (borrador/cierre condicionado por alineación con `#13` y `#37`)
 1. `#18`
 1. `#14`
 1. `#15`
@@ -479,12 +529,14 @@ No incluye:
 - `docs/conflict-policy.md`
 - `docs/campaign-temporal-controls.md`
 - `docs/campaign-temporal-initialization.md`
+- `docs/editability-policy.md`
 - `docs/domain-glossary.md`
 - `docs/context-checklists.md`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/10`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/11`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/12`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/13`
+- `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/37`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/14`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/15`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/16`

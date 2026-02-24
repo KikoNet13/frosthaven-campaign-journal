@@ -6,8 +6,8 @@
 - `purpose`: Checklist técnico base para preparar la implementación del MVP con orden, dependencias y verificación mínima.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-02-23
-- `next_review`: 2026-03-09
+- `last_updated`: 2026-02-24
+- `next_review`: 2026-03-10
 
 ## Objetivo
 
@@ -46,6 +46,15 @@ este checklist:
   `docs/campaign-temporal-controls.md`
   - selector temporal superior, provisión inicial de 4 años, extensión manual
     `+1`, separación entre navegación de semana y `week_cursor`.
+- **Inicialización temporal de campaña (técnica)** (Issue #13):
+  `docs/campaign-temporal-initialization.md`
+  - estructura temporal fija del MVP (`summer -> winter`, 10 semanas por
+    estación), provisión inicial y extensión `+1`.
+- **Política de editabilidad manual MVP** (Issue #37):
+  `docs/editability-policy.md`
+  - editabilidad amplia ("como papel"), reordenación manual de `Entry`,
+    `Week.reopen/reclose`, correcciones manuales de `Session` y semántica
+    derivada de `week_cursor`.
 
 ## Corte de responsabilidades entre `#10`, `#11` y `#20`
 
@@ -84,14 +93,18 @@ este checklist:
 
 ### Bloque B — Contratos de dominio para implementación (núcleo)
 
-- **Issues**: #13, #12, #18
+- **Issues**: #13, #37, #12, #18
 - **Orden recomendado**:
   1. #13 — inicialización temporal detallada.
-  1. #12 — contrato de operaciones Firestore por agregado, alineado con #13.
+  1. #37 — política de editabilidad manual y correcciones de dominio (marco).
+  1. #12 — contrato de operaciones Firestore por agregado, alineado con #13 y #37.
   1. #18 — timestamps y orden estable entre dispositivos.
 - **Justificación**:
   - #13 concreta la provisión/extensión temporal decidida en #9.
-  - #12 necesita alineación con provisión temporal (#9) y detalle técnico (#13).
+  - #37 actualiza invariantes/mutabilidad del dominio antes de cerrar contratos
+    por agregado.
+  - #12 necesita alineación con provisión temporal (#9), detalle técnico (#13)
+    y política de editabilidad (#37).
   - #18 cierra orden estable para lecturas y logs entre dispositivos.
 
 ### Bloque C — Flujos funcionales e invariantes de operación
@@ -127,11 +140,12 @@ este checklist:
 | Bloque / Issue | Tipo | Depende de | ¿Puede empezar en paralelo? | Condición de cierre | Impacta a |
 | --- | --- | --- | --- | --- | --- |
 | Bloque A / #11 | `task` | #10 | Sí, como borrador parcial; no cerrar antes de #10 | Desglose completo y trazable | #12, #13, #14, #15, #16, #17, #19, #20 |
-| Bloque B / #13 | `task` | #9 (resuelta) | Sí | Flujo temporal detallado sin contradicciones | #12, #16, #20 |
-| Bloque B / #12 | `decision` | #7, #8, #9 (resueltas) + alineación con #13 | Borrador sí; cierre recomendado tras #13 | Contrato por agregado con pre/postcondiciones | #14, #15, #16, #17, #18, #19, #20 |
+| Bloque B / #13 | `task` | #9 (resuelta) | Sí | Flujo temporal detallado sin contradicciones | #37, #12, #16, #20 |
+| Bloque B / #37 | `decision` | #8, #9 (resueltas) + coherencia con #13 | Borrador sí; cierre recomendado tras #13 | Política de editabilidad manual e invariantes actualizadas | #12, #14, #15, #17, #19, #20 |
+| Bloque B / #12 | `decision` | #7, #8, #9 (resueltas) + alineación con #13 y #37 | Borrador sí; cierre recomendado tras #13 y #37 | Contrato por agregado con pre/postcondiciones | #14, #15, #16, #17, #18, #19, #20 |
 | Bloque B / #18 | `decision` | #7, #8 (resueltas) | Sí, pero cierre recomendado tras #12 | Política de timestamps y desempate estable | #16, #17, #19, #20 |
-| Bloque C / #14 | `task` | #8 (resuelta) | Sí, parcial | Flujo de sesión + `auto-stop` sin romper invariantes | #17, #19, #20 |
-| Bloque C / #15 | `task` | #8 (resuelta) | Sí, parcial | Reglas de validación y recálculo trazables | #17, #19, #20 |
+| Bloque C / #14 | `task` | #8 (resuelta) + alineación con #37 | Sí, parcial | Flujo de sesión + `auto-stop` sin romper invariantes | #17, #19, #20 |
+| Bloque C / #15 | `task` | #8 (resuelta) + alineación con #37 | Sí, parcial | Reglas de validación y recálculo trazables | #17, #19, #20 |
 | Bloque D / #16 | `task` | #7, #9 (resueltas) | Sí | Inventario mínimo de consultas y orden estable | #19, #20 |
 | Bloque D / #17 | `task` | #7, #8 (resueltas) | Sí, pero gana valor tras #12/#14/#15/#18 | Matriz de edge cases con expectativa verificable | #19, #20 |
 | Bloque D / #19 | `task` | #7, #8, #9 (resueltas) | Sí, parcial | Plan de pruebas de invariantes con evidencia repetible | #20 |
@@ -160,12 +174,12 @@ Usar esta plantilla mínima en cada issue/bloque del checklist:
 
 - **Solape #10 / #11 / #20**: evitar que #10 se convierta en desglose fino (#11)
   o en gate definitivo (#20).
-- **Cerrar #12 antes de #13**: puede introducir contrato Firestore desalineado
-  con provisión temporal detallada.
+- **Cerrar #12 antes de #13/#37**: puede introducir contrato Firestore
+  desalineado con provisión temporal y/o mutabilidad real del dominio.
 - **Cerrar #16 sin #18**: riesgo de definir orden de lectura sin desempate
   estable documentado.
-- **Matriz #17 demasiado temprana**: puede quedar incompleta si faltan contratos
-  y flujos clave (#12, #14, #15, #18).
+- **Matriz #17 demasiado temprana**: puede quedar incompleta si faltan
+  contratos, flujos y mutabilidad clave (#37, #12, #14, #15, #18).
 
 ### Reglas de paralelización (recomendadas)
 
@@ -176,12 +190,13 @@ Usar esta plantilla mínima en cada issue/bloque del checklist:
 - Las issues `type:decision` (#12, #18) requieren revisión interactiva con Kiko
   antes de cerrar.
 
-## Checklist de seguimiento (estado inicial)
+## Checklist de seguimiento (estado actual)
 
 - [x] Prerrequisitos base resueltos: #7, #8, #9
 - [x] Checklist técnico base definido (Issue #10)
 - [x] Desglose en bloques ejecutables (Issue #11)
-- [ ] Inicialización temporal detallada (Issue #13)
+- [x] Inicialización temporal detallada (Issue #13)
+- [x] Política de editabilidad manual y correcciones de dominio (Issue #37)
 - [ ] Contrato de operaciones Firestore por agregado (Issue #12)
 - [ ] Política de timestamps y orden estable (Issue #18)
 - [ ] Flujo de sesión activa y `auto-stop` (Issue #14)
@@ -200,12 +215,15 @@ Usar esta plantilla mínima en cada issue/bloque del checklist:
 - `docs/sync-strategy.md`
 - `docs/conflict-policy.md`
 - `docs/campaign-temporal-controls.md`
+- `docs/campaign-temporal-initialization.md`
+- `docs/editability-policy.md`
 - `docs/domain-glossary.md`
 - `docs/context-checklists.md`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/10`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/11`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/12`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/13`
+- `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/37`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/14`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/15`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/16`

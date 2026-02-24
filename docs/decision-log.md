@@ -324,3 +324,32 @@
   `docs/campaign-temporal-initialization.md`, `docs/domain-glossary.md`,
   `docs/mvp-implementation-blocks.md`,
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/13`
+
+### DEC-0021
+
+- `date`: 2026-02-24
+- `status`: accepted
+- `problem`: la regla de `siguiente paso` priorizaba PRs abiertas y orden
+  técnico, pero no contemplaba explícitamente unidades ya iniciadas con trabajo
+  local/remoto pendiente de cierre (por ejemplo commits sin `push` o rama sin
+  PR), lo que podía dejar tareas a medias y permitir avanzar al siguiente
+  trabajo.
+- `decision`: redefinir `siguiente paso` para que primero detecte y resuelva una
+  **unidad pendiente de cierre** antes de iniciar trabajo nuevo; adoptar por
+  defecto un cierre end-to-end (commit, `push`, PR, merge/cierre, cierre de
+  Issue y limpieza de rama cuando aplique); y documentar el manejo de
+  bloqueos por aprobación en `type:decision` y el comportamiento específico en
+  `Plan Mode`.
+- `rationale`: alinea la ejecución con la expectativa de cierre real por unidad,
+  reduce riesgo de trabajo huérfano en ramas locales/remotas y corrige el hueco
+  observado en el caso de la Issue `#13` antes de su PR `#34`.
+- `impact`: se actualizan `AGENTS.md`, `docs/repo-workflow.md` y
+  `docs/context-checklists.md`; `siguiente paso` pasa a priorizar pendientes de
+  cierre (incluyendo trabajo local sin publicar) antes de PRs abiertas y orden
+  técnico; el reporte de sesión debe indicar estado de cierre alcanzado y
+  bloqueo si existe.
+- `references`: `AGENTS.md`, `docs/repo-workflow.md`,
+  `docs/context-checklists.md`, `docs/decision-log.md`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/35`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/13`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/pull/34`

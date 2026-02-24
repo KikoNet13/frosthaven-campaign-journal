@@ -6,8 +6,8 @@
 - `purpose`: Checklists operativas para calidad y trazabilidad.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-02-23
-- `next_review`: 2026-03-09
+- `last_updated`: 2026-02-24
+- `next_review`: 2026-03-10
 
 ## Formato canónico por checklist
 
@@ -84,6 +84,37 @@
 
   1. Alcance nuevo documentado.
   1. No hay trabajo oculto fuera de fase.
+
+- `owner`: IA ejecuta, Kiko valida.
+
+## CHK-NEXT-STEP
+
+- `trigger`: comando conversacional `siguiente paso`.
+- `steps`:
+
+  1. Verificar si existe **unidad pendiente de cierre** antes de buscar trabajo
+     nuevo.
+  1. Revisar en orden:
+     - trabajo local sin commit;
+     - commits locales sin `push`;
+     - rama publicada sin PR (si aplica);
+     - PR abierta (`draft` o no);
+     - Issue abierta tras merge;
+     - limpieza de rama pendiente.
+  1. Si existe unidad pendiente de cierre, resolver esa unidad hasta el máximo
+     cerrable (end-to-end por defecto).
+  1. Si no existe unidad pendiente de cierre, aplicar la regla normal de
+     priorización (`PRs` -> orden técnico -> `siguiente pendiente`).
+  1. Reportar unidad priorizada, estado de cierre, bloqueo (si existe) y si se
+     puede pasar a la siguiente unidad.
+
+- `validation`:
+
+  1. No se inicia una unidad nueva mientras exista una unidad pendiente de
+     cierre no bloqueada.
+  1. El reporte final explicita el estado de cierre alcanzado.
+  1. Si la unidad es `type:decision`, queda claro si falta aprobación explícita
+     de Kiko o si se cerró en el mismo turno.
 
 - `owner`: IA ejecuta, Kiko valida.
 

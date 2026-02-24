@@ -6,8 +6,8 @@
 - `purpose`: Definir el flujo Git y GitHub adoptado.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-02-23
-- `next_review`: 2026-03-09
+- `last_updated`: 2026-02-24
+- `next_review`: 2026-03-10
 
 ## Objetivo
 
@@ -58,7 +58,11 @@ Aplicar un flujo profesional, simple y mantenible para un solo desarrollador.
 
 #### Regla de `siguiente paso`
 
-- Codex revisa primero las PRs abiertas del repo (incluyendo `draft`).
+- Codex revisa primero si existe una **unidad pendiente de cierre**.
+- Si existe una unidad pendiente de cierre, el siguiente paso es resolver esa
+  unidad antes de iniciar trabajo nuevo.
+- Solo si no existe una unidad pendiente de cierre, Codex revisa las PRs
+  abiertas del repo (incluyendo `draft`).
 - Si hay varias PRs abiertas, prioriza la PR con número más bajo.
 - Si existe al menos una PR abierta, el siguiente paso es llevar esa PR a
   cierre (merge o cierre explícito si se descarta).
@@ -73,6 +77,16 @@ Aplicar un flujo profesional, simple y mantenible para un solo desarrollador.
 - Si no existe orden técnico aplicable, el siguiente paso es resolver la
   `siguiente pendiente` (`siguiente issue pendiente`).
 - Definición operativa para esta regla:
+  - `unidad pendiente de cierre`: unidad ya iniciada (issue/rama/PR asociada)
+    que todavía no completó su pipeline de cierre. Se detecta en este orden de
+    prioridad:
+    1. trabajo local sin commit relacionado con la unidad activa;
+    1. commit(s) locales en rama sin `push`;
+    1. rama publicada con trabajo de la unidad pero sin PR (cuando corresponde
+       PR por reglas del repo);
+    1. PR abierta (incluyendo `draft`);
+    1. PR mergeada pero Issue asociada aún abierta;
+    1. rama local/remota mergeada pendiente de limpieza.
   - `cerrable`: Issue abierta con dependencias de cierre satisfechas según la
     documentación oficial vigente.
   - `draftable`: Issue abierta que puede iniciarse en borrador, pero cuyo cierre
@@ -81,10 +95,45 @@ Aplicar un flujo profesional, simple y mantenible para un solo desarrollador.
     faltantes.
 - Cuando Kiko pide `siguiente paso`, Codex identifica el paso prioritario y lo
   ejecuta en la misma sesión/pasada por defecto.
+- En trabajo no trivial con rama, el objetivo por defecto es completar el
+  **cierre end-to-end** de la unidad, hasta donde sea posible en la misma
+  pasada:
+  1. implementar/cerrar cambios pendientes de la unidad;
+  1. commit;
+  1. `push` de rama;
+  1. abrir PR;
+  1. llevar PR a cierre (merge o cierre explícito si se descarta);
+  1. cerrar la Issue asociada tras integración en `main`;
+  1. limpiar rama local/remota (si aplica).
+- Regla específica para `type:decision`:
+  - Codex llega hasta el máximo cerrable.
+  - Si falta aprobación explícita de Kiko, deja la unidad bloqueada por
+    aprobación y no salta a otra unidad por defecto.
+  - Si Kiko aprueba explícitamente en el mismo turno, Codex completa
+    merge/cierre/limpieza en esa misma pasada.
+- Regla en `Plan Mode`:
+  - `siguiente paso` identifica la unidad pendiente de cierre (si existe) y
+    planifica su cierre end-to-end, sin ejecutar mutaciones.
+  - Debe dejar explícito cuál sería el siguiente acto mutante al salir de
+    `Plan Mode`.
+- Reporte obligatorio tras `siguiente paso`:
+  - unidad priorizada;
+  - estado de cierre alcanzado (`local`, `push`, `PR`, `merge`, `issue`,
+    `cleanup`);
+  - bloqueo (si existe) y su motivo;
+  - confirmación explícita de si puede o no pasar a la siguiente unidad.
 - Excepciones explícitas:
   - `Plan Mode` (se planifica y no se ejecuta).
   - Bloqueo real que impida continuar.
   - Petición explícita de solo plan o solo análisis.
+
+##### Nota de aplicación (caso #13)
+
+- El caso de la Issue `#13` (especificación temporal) dejó documentado el hueco
+  de comportamiento: había commit local en rama sin `push`/sin PR y, aun así,
+  se llegó a evaluar trabajo nuevo.
+- Con esta regla, ese estado se clasifica como `unidad pendiente de cierre` y el
+  siguiente `siguiente paso` correcto es publicar/cerrar esa unidad primero.
 
 ## Reglas de commits
 

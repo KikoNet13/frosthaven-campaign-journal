@@ -72,9 +72,16 @@ sencillo.
    `main` (merge/PR), salvo instrucción explícita de Kiko.
 1. Comandos conversacionales de priorización:
    - `siguiente pendiente` y `siguiente issue pendiente` son equivalentes;
-   - `siguiente paso` revisa primero PRs pendientes (incluyendo `draft`);
-   - si no hay PRs pendientes, `siguiente paso` usa orden técnico recomendado
-     (si existe) tomando la fuente oficial más específica (detalle > macro);
+   - `siguiente paso` revisa primero si existe una **unidad pendiente de
+     cierre** (trabajo local sin commit, commits sin `push`, rama sin PR cuando
+     aplica, PR abierta, Issue abierta tras merge o limpieza de rama pendiente);
+   - si existe unidad pendiente de cierre, `siguiente paso` resuelve esa unidad
+     antes de iniciar trabajo nuevo;
+   - solo si no existe unidad pendiente de cierre, `siguiente paso` revisa PRs
+     pendientes (incluyendo `draft`);
+   - si no hay PRs pendientes ni unidad pendiente de cierre, `siguiente paso`
+     usa orden técnico recomendado (si existe) tomando la fuente oficial más
+     específica (detalle > macro);
    - si no existe orden técnico aplicable, `siguiente paso` pasa a resolver la
      siguiente Issue pendiente;
    - si el siguiente item técnico no es cerrable, salta al siguiente cerrable;
@@ -82,6 +89,16 @@ sencillo.
 1. Ejecución por defecto de `siguiente paso`:
    - `siguiente paso` implica identificar el trabajo prioritario y ejecutarlo
      en la misma pasada por defecto;
+   - en trabajo no trivial con rama, el objetivo por defecto es **cierre
+     end-to-end** de la unidad: cambios -> commit -> `push` -> PR -> merge/cierre
+     -> cierre de Issue -> limpieza de rama (cuando aplique);
+   - en `type:decision`, si falta aprobación explícita de Kiko, la unidad se
+     deja bloqueada por aprobación y sigue siendo prioritaria en el siguiente
+     `siguiente paso`; si Kiko aprueba explícitamente en el mismo turno, Codex
+     completa el cierre en esa misma pasada;
+   - tras cada `siguiente paso`, Codex reporta: unidad priorizada, estado de
+     cierre alcanzado (`local`, `push`, `PR`, `merge`, `issue`, `cleanup`),
+     bloqueo (si existe) y si puede pasar o no a la siguiente unidad;
    - excepciones: `Plan Mode`, bloqueo real o petición explícita de solo plan/
      análisis.
 1. Redacción en castellano:

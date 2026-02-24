@@ -67,6 +67,10 @@ este checklist:
   `docs/active-session-flow.md`
   - separación entre `current week`, selección y `Entry` activa; reglas de
     `start/stop/auto-stop` y recuperación por `conflicto`/`transicion_invalida`.
+- **Validación y recálculo de recursos** (Issue #15):
+  `docs/resource-validation-recalculation.md`
+  - reglas por operación (`adjust/set/clear`), recálculo de `campaign.resource_totals`
+    y clasificación de rechazos de recursos.
 
 ## Corte de responsabilidades entre `#10`, `#11` y `#20`
 
@@ -217,7 +221,7 @@ Usar esta plantilla mínima en cada issue/bloque del checklist:
 - [x] Modelo de recursos por `Entry` (delta neto; Issue #40)
 - [x] Política de timestamps y orden estable (Issue #18)
 - [x] Flujo de sesión activa y `auto-stop` (Issue #14)
-- [ ] Reglas de validación y recálculo de recursos (Issue #15)
+- [x] Reglas de validación y recálculo de recursos (Issue #15)
 - [ ] Consultas mínimas para timeline/foco (Issue #16)
 - [ ] Matriz de edge cases de concurrencia y sincronización (Issue #17)
 - [ ] Plan de pruebas para invariantes (Issue #19)
@@ -233,6 +237,7 @@ Usar esta plantilla mínima en cada issue/bloque del checklist:
 - `docs/conflict-policy.md`
 - `docs/firestore-operation-contract.md`
 - `docs/resource-delta-model.md`
+- `docs/resource-validation-recalculation.md`
 - `docs/timestamp-order-policy.md`
 - `docs/active-session-flow.md`
 - `docs/campaign-temporal-controls.md`

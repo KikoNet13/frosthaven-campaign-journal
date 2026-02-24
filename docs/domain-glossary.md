@@ -25,6 +25,7 @@ entidad `Entry` (`scenario|outpost`) y jerarquía temporal explícita:
     y se recalcula tras operaciones que cambian el estado de `Week`.
 - `resource_totals`: mapa `resource_key -> int` derivado de la suma de
   `Entry.resource_deltas` en la campaña.
+  - Ausencia de clave = total `0` (normalización de claves `0` fuera del mapa).
 - `created_at_utc`, `updated_at_utc`: auditoría mínima (server-only).
 
 ### Year
@@ -107,6 +108,8 @@ entidad `Entry` (`scenario|outpost`) y jerarquía temporal explícita:
   en `docs/editability-policy.md`.
 - La política de timestamps de auditoría y orden estable se define en
   `docs/timestamp-order-policy.md`.
+- Las reglas de validación y recálculo de recursos se definen en
+  `docs/resource-validation-recalculation.md`.
 
 ## Invariantes operativas cerradas
 

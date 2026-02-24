@@ -142,7 +142,8 @@ Se sustituyen operaciones `ResourceChange.*` por operaciones sobre
 ## Impacto en issues downstream (`#15`, `#17`, `#18`, `#19`)
 
 - `#15`: debe definir reglas de validación y recálculo sobre
-  `Entry.resource_deltas`, no sobre `ResourceChange`.
+  `Entry.resource_deltas`, no sobre `ResourceChange` (cerrado en
+  `docs/resource-validation-recalculation.md`).
 - `#17`: sustituir edge cases de concurrencia sobre `ResourceChange` por casos
   de edición concurrente de `Entry.resource_deltas`.
 - `#18`: se simplifica el inventario de eventos/listas ordenables al eliminar el
@@ -179,6 +180,7 @@ Se sustituyen operaciones `ResourceChange.*` por operaciones sobre
 - `docs/domain-glossary.md`
 - `docs/conflict-policy.md`
 - `docs/firestore-operation-contract.md`
+- `docs/resource-validation-recalculation.md`
 - `docs/editability-policy.md`
 - `docs/timestamp-order-policy.md`
 - `docs/decision-log.md`

@@ -529,3 +529,42 @@
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/12`,
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/37`,
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/18`
+
+### DEC-0027
+
+- `date`: 2026-02-24
+- `status`: accepted
+- `problem`: faltaban reglas documentales explícitas para validar operaciones
+  sobre `Entry.resource_deltas` y recalcular `campaign.resource_totals` de forma
+  consistente, con clasificación clara de rechazos (`validacion` vs
+  `conflicto`) y manejo de correcciones/borrados tras el cambio de modelo de
+  recursos de `#40`.
+- `decision`: aceptar `docs/resource-validation-recalculation.md` como contrato
+  oficial de validación y recálculo de recursos del MVP; cubrir
+  `Entry.adjust_resource_delta`, `Entry.set_resource_delta`,
+  `Entry.clear_resource_delta` y el impacto de recursos de `Entry.delete`;
+  validar `resource_key` contra catálogo MVP, deltas enteros y no negatividad
+  de totales finales; definir equivalencia de resultado con recálculo desde
+  `Entry.resource_deltas`; normalizar claves con valor `0` fuera de
+  `entry.resource_deltas` y `campaign.resource_totals`; aceptar `clear` de clave
+  inexistente y no-ops triviales (`adjust=0`, `set` al mismo valor) como
+  idempotentes; y clasificar inconsistencias detectadas de base/totales como
+  `conflicto` para forzar `refrescar + reintentar`.
+- `rationale`: completa el detalle que `#12` dejó a nivel de contrato de
+  comportamiento y que `#40` dejó a nivel de modelo, reduce ambigüedad para
+  `#17/#19/#20` y mantiene coherencia con la política estricta de conflictos de
+  `#8`.
+- `impact`: añade `docs/resource-validation-recalculation.md` como fuente
+  oficial; actualiza referencias en glosario, conflictos, contrato Firestore y
+  modelo de recursos; actualiza tracking en `docs/mvp-implementation-checklist.md`
+  y `docs/mvp-implementation-blocks.md`; deja `#16` como siguiente paso técnico.
+- `references`: `docs/resource-validation-recalculation.md`,
+  `docs/domain-glossary.md`, `docs/conflict-policy.md`,
+  `docs/firestore-operation-contract.md`, `docs/resource-delta-model.md`,
+  `docs/editability-policy.md`, `docs/mvp-implementation-checklist.md`,
+  `docs/mvp-implementation-blocks.md`, `AGENTS.md`, `docs/system-map.md`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/15`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/8`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/12`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/37`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/40`

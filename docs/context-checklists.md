@@ -60,6 +60,8 @@
   1. Registrar decisiones en `docs/decision-log.md`.
   1. Ejecutar verificación A de estructura.
   1. Ejecutar verificación B de criterios y edge cases.
+     - Si existe matriz oficial de edge cases (`#17`), usarla como insumo
+       principal de cobertura/riesgo.
   1. Registrar evidencia en `docs/context-governance.md`.
 
 - `validation`:

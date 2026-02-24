@@ -244,6 +244,9 @@ Operaciones compuestas mínimas:
   (Issue `#15`).
 - La UX exacta para errores de conflicto vs transición inválida se concreta en
   issues de flujo (`#14`) y UI.
+- La matriz transversal de edge cases de concurrencia/sincronización se
+  documenta en `docs/concurrency-sync-edge-case-matrix.md` (Issue `#17`) como
+  traducción verificable de este contrato y otras políticas.
 
 ## Referencias
 
@@ -256,6 +259,7 @@ Operaciones compuestas mínimas:
 - `docs/resource-delta-model.md`
 - `docs/resource-validation-recalculation.md`
 - `docs/timestamp-order-policy.md`
+- `docs/concurrency-sync-edge-case-matrix.md`
 - `docs/decision-log.md`
 - `docs/mvp-implementation-checklist.md`
 - `docs/mvp-implementation-blocks.md`
@@ -265,3 +269,4 @@ Operaciones compuestas mínimas:
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/40`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/15`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/18`
+- `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/17`

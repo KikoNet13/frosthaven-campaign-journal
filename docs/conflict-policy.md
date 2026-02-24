@@ -145,6 +145,8 @@ No incluye:
   recursos con esta política.
 - **Issue #18**: define timestamps y desempates de orden estable entre
   dispositivos, compatibles con esta política.
+- **Issue #17**: traduce esta política y los contratos/flows relacionados a una
+  matriz verificable de edge cases de concurrencia/sincronización del MVP.
 
 ## Referencias
 
@@ -155,6 +157,7 @@ No incluye:
 - `docs/resource-delta-model.md`
 - `docs/resource-validation-recalculation.md`
 - `docs/timestamp-order-policy.md`
+- `docs/concurrency-sync-edge-case-matrix.md`
 - `tdd.md` (legado temporal, alineado con referencia oficial)
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/8`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/12`
@@ -162,3 +165,4 @@ No incluye:
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/40`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/15`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/18`
+- `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/17`

@@ -631,3 +631,35 @@
   `docs/mvp-implementation-checklist.md`, `docs/mvp-implementation-blocks.md`,
   `AGENTS.md`, `docs/system-map.md`,
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/16`
+
+### DEC-0030
+
+- `date`: 2026-02-24
+- `status`: accepted
+- `problem`: faltaba una matriz oficial de edge cases que tradujera los
+  contratos y flujos ya cerrados (`#12`, `#14`, `#15`, `#16`, `#18`) a
+  escenarios verificables para concurrencia/sincronización, con severidad y
+  prioridad trazables hacia `#19` / `#20`.
+- `decision`: aceptar `docs/concurrency-sync-edge-case-matrix.md` como matriz
+  oficial de edge cases del MVP (`#17`), con alcance mixto (concurrencia/sync +
+  `transicion_invalida`/`validacion` cuando afectan el mismo flujo), cobertura
+  de lecturas críticas solamente, formato en 2 capas (escenarios canónicos +
+  variantes por operación/evento), y esquema de riesgo en 3 campos
+  (`severidad`, `impacto`, `prioridad_verificacion`).
+- `rationale`: reduce ambigüedad antes del plan de pruebas (`#19`), evita
+  duplicar diseño de pruebas en `#17`, y crea una base única para priorizar
+  verificación de invariantes/recuperación sin reabrir decisiones de dominio.
+- `impact`: cierra `#17`; añade una fuente oficial de edge cases reutilizable
+  por `#19/#20`; actualiza tracking en checklist/bloques; y conecta
+  sincronización, conflictos, contrato por agregado, flujo de sesión, lecturas
+  mínimas y política de orden mediante referencias cruzadas.
+- `references`: `docs/concurrency-sync-edge-case-matrix.md`,
+  `docs/sync-strategy.md`, `docs/conflict-policy.md`,
+  `docs/firestore-operation-contract.md`, `docs/active-session-flow.md`,
+  `docs/resource-validation-recalculation.md`, `docs/minimal-read-queries.md`,
+  `docs/timestamp-order-policy.md`, `docs/editability-policy.md`,
+  `docs/mvp-implementation-checklist.md`, `docs/mvp-implementation-blocks.md`,
+  `AGENTS.md`, `docs/system-map.md`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/17`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/19`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/20`

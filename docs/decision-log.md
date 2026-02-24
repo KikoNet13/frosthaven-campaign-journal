@@ -494,3 +494,38 @@
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/12`,
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/16`,
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/40`
+
+### DEC-0026
+
+- `date`: 2026-02-24
+- `status`: accepted
+- `problem`: faltaba una especificación oficial del flujo cliente/UI de sesión
+  activa (`start/stop/auto-stop`) que cerrara la separación entre `current
+  week`, selección (`Week`/`Entry`) y `Entry` activa, además de la recuperación
+  esperada ante `conflicto` vs `transicion_invalida`.
+- `decision`: aceptar `docs/active-session-flow.md` como contrato oficial del
+  flujo de sesión activa del MVP; ubicar `Iniciar/Parar sesión` en el bloque de
+  la `Entry` seleccionada (no en barra inferior global); separar explícitamente
+  `current week` (marcador derivado de `week_cursor`) de selección/foco y de
+  `Entry` activa; definir que cambiar foco no hace `auto-stop`; clasificar
+  `Session.start` sobre la misma `Entry` activa como `transicion_invalida`
+  (error local); mantener `auto-stop` como side-effect sin confirmación extra;
+  y fijar recuperación de `conflicto` como `refresh` manual + reintentar.
+- `rationale`: reduce ambigüedad de implementación para `#17/#19/#20`, alinea
+  el comportamiento observable del cliente con `#12` (contrato por operación),
+  `#37` (editabilidad e invariantes) y `#18` (refresh/orden estable), y evita
+  confundir navegación/foco con estado activo global.
+- `impact`: añade `docs/active-session-flow.md` como fuente oficial; actualiza
+  `docs/campaign-temporal-controls.md` para reforzar la separación entre
+  `week_cursor/current week` y selección; actualiza tracking en
+  `docs/mvp-implementation-checklist.md` y `docs/mvp-implementation-blocks.md`;
+  deja `#15` como siguiente paso técnico tras cerrar `#14`.
+- `references`: `docs/active-session-flow.md`,
+  `docs/firestore-operation-contract.md`, `docs/editability-policy.md`,
+  `docs/timestamp-order-policy.md`, `docs/campaign-temporal-controls.md`,
+  `docs/domain-glossary.md`, `docs/mvp-implementation-checklist.md`,
+  `docs/mvp-implementation-blocks.md`, `AGENTS.md`, `docs/system-map.md`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/14`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/12`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/37`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/18`

@@ -568,3 +568,37 @@
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/12`,
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/37`,
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/40`
+
+### DEC-0028
+
+- `date`: 2026-02-24
+- `status`: accepted
+- `problem`: tras cerrar `#15` se detectó que se habían documentado defaults de
+  representación de `campaign.resource_totals` sin revisión explícita de Kiko,
+  dejando una normalización de claves `0` que no coincidía con la intención
+  final del dominio.
+- `decision`: corregir parcialmente `DEC-0027` (sin reabrir `#15`) para que
+  `campaign.resource_totals` conserve claves materializadas con valor `0` cuando
+  una operación las deja en `0`, permitiendo a la vez ausencia de clave para
+  recursos nunca usados; confirmar como contrato oficial que
+  `Entry.adjust_resource_delta(adjustment_delta=0)`, `Entry.set_resource_delta`
+  al mismo valor y `Entry.clear_resource_delta` sobre clave inexistente son
+  no-ops idempotentes; y mantener la clasificación de drift/inconsistencia de
+  base/totales como `conflicto` con `refrescar + reintentar`.
+- `rationale`: preserva la trazabilidad del cierre de `#15` sin reescribir su
+  historial, alinea la representación de totales con la revisión posterior de
+  Kiko y mantiene consistencia con `#8`, `#12` y `#40`.
+- `impact`: actualiza `docs/resource-validation-recalculation.md` y
+  `docs/domain-glossary.md` para reflejar la nueva regla de claves `0` en
+  `campaign.resource_totals`; deja `Entry.resource_deltas` sin cambios
+  (claves `0` no persistidas); y documenta explícitamente la supersesión parcial
+  de `DEC-0027` en este punto.
+- `references`: `docs/resource-validation-recalculation.md`,
+  `docs/domain-glossary.md`, `docs/decision-log.md`,
+  `docs/firestore-operation-contract.md`, `docs/conflict-policy.md`,
+  `docs/resource-delta-model.md`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/45`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/15`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/8`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/12`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/40`

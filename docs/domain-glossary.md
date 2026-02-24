@@ -25,7 +25,10 @@ entidad `Entry` (`scenario|outpost`) y jerarquía temporal explícita:
     y se recalcula tras operaciones que cambian el estado de `Week`.
 - `resource_totals`: mapa `resource_key -> int` derivado de la suma de
   `Entry.resource_deltas` en la campaña.
-  - Ausencia de clave = total `0` (normalización de claves `0` fuera del mapa).
+  - Ausencia de clave = total `0` para cálculo (las claves nunca usadas pueden
+    permanecer ausentes).
+  - Si una clave materializada queda en `0` tras una operación, se conserva
+    explícitamente con valor `0`.
 - `created_at_utc`, `updated_at_utc`: auditoría mínima (server-only).
 
 ### Year

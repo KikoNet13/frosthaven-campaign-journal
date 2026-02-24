@@ -49,11 +49,11 @@ No incluye:
 | Operación | Agregado principal | Riesgo de conflicto | Política MVP | Acción cliente | Notas / dependencias |
 | --- | --- | --- | --- | --- | --- |
 | `Session.start` | `campaign` + `entry` + `session` | Alto | `rechazar` | `refrescar` + `reintentar` | Depende de unicidad de sesión activa global; detalle técnico en #12 |
-| `Session.stop` | `campaign` + `entry` + `session` | Alto | `rechazar` | `refrescar` + `reintentar` | Rechazar si la sesión activa cambió o ya fue cerrada |
+| `Session.stop` | `campaign` + `entry` + `session` | Alto | `rechazar` | `refrescar` + `reintentar` (conflicto) / error local (transición inválida) | Distinguir sesión ya cerrada (transición inválida) de base obsoleta; contrato en #12 |
 | `auto-stop` por nuevo `start` | `campaign` + `session` | Alto | `rechazar` | `refrescar` + `reintentar` | No usar LWW sobre estado de sesión |
-| `Week.close` | `week` + `campaign` | Alto | `rechazar` | `refrescar` + `reintentar` | Rechazar si `week.status` o `week_cursor` cambió |
-| `Week.reopen` | `week` + `campaign` | Alto | `rechazar` | `refrescar` + `reintentar` | Recalcula `week_cursor`; política de editabilidad en #37 |
-| `Week.reclose` | `week` + `campaign` | Alto | `rechazar` | `refrescar` + `reintentar` | Recalcula `week_cursor`; rechazar si dejaría cursor inválido |
+| `Week.close` | `week` + `campaign` | Alto | `rechazar` | `refrescar` + `reintentar` (conflicto) / error local (transición inválida) | Distinguir `close` sobre `closed` (transición inválida) de base obsoleta; contrato en #12 |
+| `Week.reopen` | `week` + `campaign` | Alto | `rechazar` | `refrescar` + `reintentar` (conflicto) / error local (transición inválida) | Recalcula `week_cursor`; `reopen` sobre `open` es transición inválida |
+| `Week.reclose` | `week` + `campaign` | Alto | `rechazar` | `refrescar` + `reintentar` (conflicto) / error local (transición inválida/validación) | Recalcula `week_cursor`; rechazar si dejaría cursor inválido |
 | `Entry.reorder_within_week` | `week` + `entry` | Medio/Alto | `rechazar` | `refrescar` + `reintentar` | Resecuencia densa `1..N`; detalle contractual en #12 |
 | `Session.manual_create/update/delete` | `session` + `campaign` | Alto | `rechazar` | `refrescar` + `reintentar` | Mantener `0..1` sesión activa global; detalle contractual en #12 |
 | Borrado de `Entry` activa (con cascada) | `entry` + `session` + `resource_change` | Alto | `rechazar` | `refrescar` + `reintentar` | Incluye auto-stop y borrado en cascada; contratos técnicos en #12 |
@@ -76,6 +76,10 @@ No incluye:
    `reclose`) encuentra que `week.status` o el recálculo de `week_cursor`
    quedó invalidado por cambios concurrentes, la operación se **rechaza** y
    requiere `refresco`.
+1. Si una transición de estado solicitada ya no corresponde al estado actual
+   (por ejemplo `Week.close` sobre `closed` o `Session.stop` sobre una sesión no
+   activa), el rechazo puede clasificarse como **transición inválida** (no
+   conflicto concurrente), con error local sin `refresco` por defecto.
 1. Si el rechazo ocurre durante una operación compuesta (por ejemplo `auto-stop`
    + `start`, cierre/reapertura de semana, borrado con cascada), se considera
    fallo de la operación completa y se requiere `refresco`.
@@ -90,6 +94,12 @@ No incluye:
 1. Permitir `reintentar` manualmente si la acción sigue siendo válida.
 1. No reintentar automáticamente en el MVP (para evitar efectos duplicados y
    comportamiento opaco).
+
+## Flujo esperado tras rechazo funcional (transición inválida / validación)
+
+1. Mostrar error local en castellano (transición inválida o validación).
+1. No forzar `refresco` por defecto si el problema es puramente funcional.
+1. Permitir corregir la acción y volver a intentar manualmente.
 
 ## Edge cases documentados
 
@@ -122,7 +132,8 @@ No incluye:
   (`single writer`, `online-only writes`, `on-demand refresh`).
 - **Issue #8**: esta política de conflictos concurrentes.
 - **Issue #12**: define el contrato técnico por agregado y el mecanismo de
-  detección/validación de conflictos.
+  detección/validación de conflictos, además de la distinción documental entre
+  conflicto y transición inválida para operaciones de estado.
 - **Issue #37**: actualiza la política de editabilidad manual del MVP y la
   semántica de `week_cursor`, añadiendo operaciones de corrección manual
   que deben respetar esta política de conflictos.
@@ -134,6 +145,7 @@ No incluye:
 - `docs/domain-glossary.md`
 - `docs/sync-strategy.md`
 - `docs/decision-log.md`
+- `docs/firestore-operation-contract.md`
 - `tdd.md` (legado temporal, alineado con referencia oficial)
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/8`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/12`

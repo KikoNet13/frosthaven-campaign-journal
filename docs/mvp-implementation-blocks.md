@@ -112,7 +112,7 @@ No incluye:
 #### Ficha de bloque
 
 - `tipo`: `decision`
-- `estado_inicial`: `draftable`
+- `estado_inicial`: `draftable` (cerrada en seguimiento; este bloque conserva el estado inicial del plan)
 - `responsable_de_coordinación`: `Codex+Kiko`
 - `dependencias_de_cierre`: `#13` (alineación temporal estable), `#37`
   (editabilidad e invariantes actualizadas), más coherencia con `#7`, `#8`,
@@ -124,7 +124,7 @@ No incluye:
 | subbloque_id | objetivo | responsable | depende_de | entregable | criterio_de_finalización | estado_inicial |
 | --- | --- | --- | --- | --- | --- | --- |
 | `I12-S1` | Inventariar operaciones por agregado (`campaign`, `week`, `entry`, `session`, `resource_change`) y casos de uso | `Codex` | `#7`, `#8`, `#9`, `#37` | Tabla de operaciones por agregado | Inventario completo y sin solapes obvios con mutabilidad vigente | `draftable` |
-| `I12-S2` | Definir contrato por agregado (precondiciones, postcondiciones, validaciones, rechazo por conflicto, atomicidad esperada) | `Codex` | `I12-S1` | Tabla de contrato por agregado | Cada agregado tiene contrato explícito y coherente con `#8` | `draftable` |
+| `I12-S2` | Definir contrato por agregado (precondiciones, postcondiciones, validaciones, rechazo por conflicto/transición inválida, atomicidad esperada) | `Codex` | `I12-S1` | Tabla de contrato por agregado | Cada agregado tiene contrato explícito y coherente con `#8` y `#37` | `draftable` |
 | `I12-S3` | Alinear operaciones temporales y de cursor con `#13` y `#37` (provisión/extensión/`week_cursor` derivado) | `Codex+Kiko` | `I12-S2`, `#13`, `#37` | Nota/tabla de alineación `#12` ↔ (`#13`, `#37`) | No quedan contradicciones con flujo temporal ni editabilidad | `draftable` |
 | `I12-S4` | Cerrar la decisión (revisión interactiva, trazabilidad y referencias) | `Codex+Kiko` | `I12-S3` | Documento final + registro de decisión | Aprobación explícita de Kiko y PR mergeada | `draftable` |
 
@@ -499,7 +499,7 @@ No incluye:
 - [x] `#11` Desglose en bloques ejecutables (este documento)
 - [x] `#13` Inicialización temporal detallada (`ready`)
 - [x] `#37` Política de editabilidad manual y correcciones de dominio (`ready`)
-- [ ] `#12` Contrato Firestore por agregado (`draftable`)
+- [x] `#12` Contrato Firestore por agregado (`draftable`)
 - [ ] `#18` Timestamps y orden estable (`draftable`)
 - [ ] `#14` Flujo de sesión activa y `auto-stop` (`draftable`)
 - [ ] `#15` Validación y recálculo de recursos (`draftable`)
@@ -510,7 +510,6 @@ No incluye:
 
 ### Próxima secuencia técnica esperada (según orden actual)
 
-1. `#12` (borrador/cierre condicionado por alineación con `#13` y `#37`)
 1. `#18`
 1. `#14`
 1. `#15`
@@ -527,6 +526,7 @@ No incluye:
 - `docs/mvp-implementation-checklist.md`
 - `docs/sync-strategy.md`
 - `docs/conflict-policy.md`
+- `docs/firestore-operation-contract.md`
 - `docs/campaign-temporal-controls.md`
 - `docs/campaign-temporal-initialization.md`
 - `docs/editability-policy.md`

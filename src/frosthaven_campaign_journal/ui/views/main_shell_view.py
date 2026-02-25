@@ -52,6 +52,8 @@ def build_main_shell_view(
     viewer_sessions: list[ViewerSessionItem],
     entries_panel_error_message: str | None,
     viewer_sessions_error_message: str | None,
+    session_write_error_message: str | None,
+    session_write_pending: bool,
     active_entry_ref: EntryRef | None,
     active_entry_label: str | None,
     active_status_error_message: str | None,
@@ -65,6 +67,11 @@ def build_main_shell_view(
     on_select_week: Callable[[int], None],
     on_select_entry: Callable[[EntryRef], None],
     on_manual_refresh: Callable[[], None],
+    on_start_session: Callable[[], None],
+    on_stop_session: Callable[[], None],
+    on_open_manual_create_session: Callable[[], None],
+    on_open_manual_edit_session: Callable[[str], None],
+    on_open_manual_delete_session: Callable[[str], None],
 ) -> ft.Control:
     return ft.Container(
         expand=True,
@@ -96,10 +103,17 @@ def build_main_shell_view(
                     viewer_entry=viewer_entry,
                     viewer_sessions=viewer_sessions,
                     viewer_sessions_error_message=viewer_sessions_error_message,
+                    session_write_error_message=session_write_error_message,
+                    session_write_pending=session_write_pending,
                     active_entry_ref=active_entry_ref,
                     active_entry_label=active_entry_label,
                     read_error_message=read_error_message,
                     read_warning_message=read_warning_message,
+                    on_start_session=on_start_session,
+                    on_stop_session=on_stop_session,
+                    on_open_manual_create_session=on_open_manual_create_session,
+                    on_open_manual_edit_session=on_open_manual_edit_session,
+                    on_open_manual_delete_session=on_open_manual_delete_session,
                 ),
                 _build_bottom_status_bar(
                     env_name=env_name,
@@ -369,10 +383,17 @@ def _build_center_focus_panel(
     viewer_entry: MockEntry | None,
     viewer_sessions: list[ViewerSessionItem],
     viewer_sessions_error_message: str | None,
+    session_write_error_message: str | None,
+    session_write_pending: bool,
     active_entry_ref: EntryRef | None,
     active_entry_label: str | None,
     read_error_message: str | None,
     read_warning_message: str | None,
+    on_start_session: Callable[[], None],
+    on_stop_session: Callable[[], None],
+    on_open_manual_create_session: Callable[[], None],
+    on_open_manual_edit_session: Callable[[str], None],
+    on_open_manual_delete_session: Callable[[str], None],
 ) -> ft.Control:
     selected_week = _find_selected_week(state, weeks_for_selected_year)
 
@@ -382,8 +403,15 @@ def _build_center_focus_panel(
             viewer_entry=viewer_entry,
             viewer_sessions=viewer_sessions,
             viewer_sessions_error_message=viewer_sessions_error_message,
+            session_write_error_message=session_write_error_message,
+            session_write_pending=session_write_pending,
             active_entry_ref=active_entry_ref,
             active_entry_label=active_entry_label,
+            on_start_session=on_start_session,
+            on_stop_session=on_stop_session,
+            on_open_manual_create_session=on_open_manual_create_session,
+            on_open_manual_edit_session=on_open_manual_edit_session,
+            on_open_manual_delete_session=on_open_manual_delete_session,
         )
     elif selected_week is not None:
         primary_content = _build_focus_week_mode(selected_week)
@@ -499,8 +527,15 @@ def _build_focus_entry_mode(
     viewer_entry: MockEntry,
     viewer_sessions: list[ViewerSessionItem],
     viewer_sessions_error_message: str | None,
+    session_write_error_message: str | None,
+    session_write_pending: bool,
     active_entry_ref: EntryRef | None,
     active_entry_label: str | None,
+    on_start_session: Callable[[], None],
+    on_stop_session: Callable[[], None],
+    on_open_manual_create_session: Callable[[], None],
+    on_open_manual_edit_session: Callable[[str], None],
+    on_open_manual_delete_session: Callable[[str], None],
 ) -> ft.Control:
     viewer_matches_selected_week = _entry_ref_matches_selected_week(state, viewer_entry.ref)
     active_here = active_entry_ref is not None and active_entry_ref == viewer_entry.ref
@@ -550,7 +585,14 @@ def _build_focus_entry_mode(
     sessions_card = _build_sessions_card(
         viewer_sessions=viewer_sessions,
         viewer_sessions_error_message=viewer_sessions_error_message,
+        session_write_error_message=session_write_error_message,
+        session_write_pending=session_write_pending,
         session_status_text=session_status_text,
+        on_start_session=on_start_session,
+        on_stop_session=on_stop_session,
+        on_open_manual_create_session=on_open_manual_create_session,
+        on_open_manual_edit_session=on_open_manual_edit_session,
+        on_open_manual_delete_session=on_open_manual_delete_session,
     )
 
     resources_note_card = _build_placeholder_card(
@@ -596,40 +638,184 @@ def _build_sessions_card(
     *,
     viewer_sessions: list[ViewerSessionItem],
     viewer_sessions_error_message: str | None,
+    session_write_error_message: str | None,
+    session_write_pending: bool,
     session_status_text: str,
+    on_start_session: Callable[[], None],
+    on_stop_session: Callable[[], None],
+    on_open_manual_create_session: Callable[[], None],
+    on_open_manual_edit_session: Callable[[str], None],
+    on_open_manual_delete_session: Callable[[str], None],
 ) -> ft.Control:
-    if viewer_sessions_error_message:
-        body = (
-            session_status_text
-            + "\n"
-            + "Error local Q8: "
-            + _truncate(viewer_sessions_error_message, 220)
-        )
-        return _build_placeholder_card(
-            title="Bloque de sesión (Q8 con error parcial)",
-            body=body,
-            min_height=96,
-        )
-
     total_duration = _sum_finished_sessions_duration(viewer_sessions)
     total_text = _format_duration(total_duration) if total_duration is not None else "0 min"
     has_active_session = any(session.ended_at_utc is None for session in viewer_sessions)
+    body_controls: list[ft.Control] = [
+        ft.Text(session_status_text, size=13, color=COLOR_TEXT_MUTED),
+        ft.Text(f"Total jugado (Q8): {total_text}", size=13, color=COLOR_TEXT_MUTED),
+        ft.Row(
+            spacing=8,
+            wrap=True,
+            controls=[
+                ft.FilledButton(
+                    "Start",
+                    on_click=lambda _e: on_start_session(),
+                    disabled=session_write_pending,
+                    height=32,
+                ),
+                ft.OutlinedButton(
+                    "Stop",
+                    on_click=lambda _e: on_stop_session(),
+                    disabled=session_write_pending,
+                    height=32,
+                ),
+                ft.OutlinedButton(
+                    "Nueva sesión",
+                    on_click=lambda _e: on_open_manual_create_session(),
+                    disabled=session_write_pending,
+                    height=32,
+                ),
+            ],
+        ),
+    ]
 
-    lines: list[str] = [session_status_text, f"Total jugado (Q8): {total_text}"]
+    if session_write_pending:
+        body_controls.append(
+            ft.Text(
+                "Procesando acción de sesión…",
+                size=12,
+                color=COLOR_TEXT_MUTED,
+                italic=True,
+            )
+        )
+
+    if session_write_error_message:
+        body_controls.append(
+            ft.Container(
+                padding=ft.Padding.all(8),
+                bgcolor="#FFE7E7",
+                border=ft.Border.all(1, "#D87A7A"),
+                border_radius=6,
+                content=ft.Text(
+                    _truncate(session_write_error_message, 220),
+                    size=12,
+                    color=COLOR_ERROR_TEXT,
+                ),
+            )
+        )
+
+    if viewer_sessions_error_message:
+        body_controls.append(
+            ft.Container(
+                padding=ft.Padding.all(8),
+                bgcolor="#FFE7E7",
+                border=ft.Border.all(1, "#D87A7A"),
+                border_radius=6,
+                content=ft.Text(
+                    "Error local Q8: " + _truncate(viewer_sessions_error_message, 220),
+                    size=12,
+                    color=COLOR_ERROR_TEXT,
+                ),
+            )
+        )
+
     if not viewer_sessions:
-        lines.append("Sin sesiones para la entry visible.")
+        body_controls.append(
+            ft.Text(
+                "Sin sesiones para la entry visible.",
+                size=12,
+                color=COLOR_TEXT_MUTED,
+                italic=True,
+            )
+        )
     else:
-        for index, session in enumerate(viewer_sessions[:5], start=1):
-            lines.append(f"{index}. {_format_session_line(session)}")
-        if len(viewer_sessions) > 5:
-            lines.append(f"… y {len(viewer_sessions) - 5} sesión(es) más")
+        rows: list[ft.Control] = []
+        for index, session in enumerate(viewer_sessions[:8], start=1):
+            rows.append(
+                ft.Container(
+                    padding=ft.Padding(left=8, top=6, right=8, bottom=6),
+                    bgcolor="#FFFFFF",
+                    border=ft.Border.all(1, "#E2E2E2"),
+                    border_radius=6,
+                    content=ft.Row(
+                        alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                        controls=[
+                            ft.Column(
+                                expand=True,
+                                spacing=2,
+                                controls=[
+                                    ft.Text(
+                                        f"{index}. {_format_session_line(session)}",
+                                        size=12,
+                                        color=COLOR_TEXT_PRIMARY,
+                                    ),
+                                    ft.Text(
+                                        "Activa" if session.ended_at_utc is None else "Histórica",
+                                        size=11,
+                                        color=COLOR_TEXT_MUTED,
+                                    ),
+                                ],
+                            ),
+                            ft.Row(
+                                spacing=4,
+                                controls=[
+                                    ft.TextButton(
+                                        "Editar",
+                                        on_click=lambda _e, sid=session.session_id: on_open_manual_edit_session(sid),
+                                        disabled=session_write_pending,
+                                    ),
+                                    ft.TextButton(
+                                        "Borrar",
+                                        on_click=lambda _e, sid=session.session_id: on_open_manual_delete_session(sid),
+                                        disabled=session_write_pending,
+                                    ),
+                                ],
+                            ),
+                        ],
+                    ),
+                )
+            )
+        body_controls.extend(rows)
+        if len(viewer_sessions) > 8:
+            body_controls.append(
+                ft.Text(
+                    f"… y {len(viewer_sessions) - 8} sesión(es) más",
+                    size=11,
+                    color=COLOR_TEXT_MUTED,
+                )
+            )
     if has_active_session:
-        lines.append("Hay una sesión activa en la lista (ended_at_utc = null).")
+        body_controls.append(
+            ft.Text(
+                "Hay una sesión activa en la lista (ended_at_utc = null).",
+                size=11,
+                color=COLOR_TEXT_MUTED,
+            )
+        )
 
-    return _build_placeholder_card(
-        title="Bloque de sesión (Q8)",
-        body="\n".join(lines),
-        min_height=120,
+    return ft.Container(
+        padding=ft.Padding.all(12),
+        bgcolor="#F6F6F6",
+        border_radius=8,
+        border=ft.Border.all(1, "#D6D6D6"),
+        content=ft.Column(
+            spacing=8,
+            controls=[
+                ft.Text(
+                    "Bloque de sesión (Q8 + acciones #62)",
+                    size=14,
+                    weight=ft.FontWeight.BOLD,
+                    color=COLOR_TEXT_PRIMARY,
+                ),
+                ft.Container(
+                    padding=ft.Padding.all(8),
+                    bgcolor="#FFFFFF",
+                    border_radius=6,
+                    content=ft.Column(spacing=8, controls=body_controls),
+                ),
+            ],
+        ),
     )
 
 

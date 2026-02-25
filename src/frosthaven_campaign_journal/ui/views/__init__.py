@@ -1,5 +1,13 @@
-"""UI views used by the app bootstrap."""
+"""UI views used by the app."""
 
-from .bootstrap_view import build_bootstrap_view
+from .main_shell_view import (
+    DEFAULT_SHELL_PREVIEW_STATE,
+    ShellPreviewState,
+    build_main_shell_view,
+)
 
-__all__ = ["build_bootstrap_view"]
+__all__ = [
+    "DEFAULT_SHELL_PREVIEW_STATE",
+    "ShellPreviewState",
+    "build_main_shell_view",
+]

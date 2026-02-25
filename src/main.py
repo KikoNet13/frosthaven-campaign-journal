@@ -10,14 +10,14 @@ APP_TITLE = "Frosthaven Campaign Journal"
 
 def main(page: ft.Page) -> None:
     page.title = APP_TITLE
-    page.padding = 16
+    page.padding = 0
     page.horizontal_alignment = ft.CrossAxisAlignment.STRETCH
     page.vertical_alignment = ft.MainAxisAlignment.START
     page.add(build_app_root())
 
 
 def run() -> None:
-    ft.app(target=main)
+    ft.run(main)
 
 
 if __name__ == "__main__":

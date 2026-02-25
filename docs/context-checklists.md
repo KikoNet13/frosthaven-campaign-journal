@@ -6,8 +6,8 @@
 - `purpose`: Checklists operativas para calidad y trazabilidad.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-02-24
-- `next_review`: 2026-03-10
+- `last_updated`: 2026-02-25
+- `next_review`: 2026-03-11
 
 ## Formato canónico por checklist
 
@@ -147,6 +147,31 @@
   1. El estado final de la PR/Issue asociada es trazable.
 
 - `owner`: IA ejecuta, Kiko valida.
+
+## CHK-FLET-UI-VALIDATION
+
+- `trigger`: validación visual/técnica de una tarea de implementación en Flet.
+- `steps`:
+
+  1. Confirmar que Kiko lanzó el servidor Flet web (por defecto en
+     `http://127.0.0.1:8550`) o comunicó la URL alternativa.
+  1. Confirmar si hubo warnings relevantes al arranque.
+  1. Validar la UI con Playwright/DevTools en la URL activa.
+  1. Elegir evidencia adecuada al caso (ligera/media/alta).
+  1. Registrar en el reporte:
+     - qué se comprobó;
+     - evidencia usada;
+     - resultado (`ok`, `problema`, `bloqueado`);
+     - siguiente acción si aplica (`refresh`, relanzar, ajustar).
+  1. Si el puerto por defecto está ocupado, dejar trazada la URL alternativa.
+
+- `validation`:
+
+  1. La URL validada queda explícita en la sesión (por defecto o alternativa).
+  1. La evidencia es suficiente para el tipo de cambio.
+  1. El reporte final de la tarea incluye el resultado de validación y límites.
+
+- `owner`: Kiko lanza servidor; IA valida y reporta.
 
 ## CHK-GATE-CODE
 

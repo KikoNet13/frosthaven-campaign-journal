@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 
 import flet as ft
 
@@ -9,14 +10,22 @@ from frosthaven_campaign_journal.data import (
     EntryRead,
     EntrySessionRead,
     FirestoreConfigError,
+    FirestoreConflictError,
     FirestoreReadError,
+    FirestoreTransitionInvalidError,
+    FirestoreValidationError,
     WeekRead,
     build_firestore_client,
     derive_year_from_week_cursor,
     load_main_screen_snapshot,
+    manual_create_session,
+    manual_delete_session,
+    manual_update_session,
     read_entry_by_ref,
     read_q5_entries_for_selected_week,
     read_q8_sessions_for_entry,
+    start_session,
+    stop_session,
 )
 from frosthaven_campaign_journal.state.placeholders import (
     EntryRef,
@@ -50,6 +59,8 @@ class EntryPanelReadState:
     viewer_entry_snapshot: MockEntry | None = None
     viewer_sessions: list[ViewerSessionItem] = field(default_factory=list)
     viewer_sessions_error_message: str | None = None
+    session_write_error_message: str | None = None
+    session_write_pending: bool = False
 
 
 def build_app_root(page: ft.Page) -> ft.Control:
@@ -83,6 +94,8 @@ def build_app_root(page: ft.Page) -> ft.Control:
             viewer_sessions=entry_panel_state.viewer_sessions,
             entries_panel_error_message=entry_panel_state.entries_panel_error_message,
             viewer_sessions_error_message=entry_panel_state.viewer_sessions_error_message,
+            session_write_error_message=entry_panel_state.session_write_error_message,
+            session_write_pending=entry_panel_state.session_write_pending,
             active_entry_ref=read_state.active_entry_ref,
             active_entry_label=read_state.active_entry_label,
             active_status_error_message=read_state.active_status_error_message,
@@ -96,6 +109,11 @@ def build_app_root(page: ft.Page) -> ft.Control:
             on_select_week=handle_select_week,
             on_select_entry=handle_select_entry,
             on_manual_refresh=handle_manual_refresh,
+            on_start_session=handle_start_session,
+            on_stop_session=handle_stop_session,
+            on_open_manual_create_session=handle_open_create_session_modal,
+            on_open_manual_edit_session=handle_open_edit_session_modal,
+            on_open_manual_delete_session=handle_open_delete_session_confirm,
         )
 
     def _build_client():
@@ -245,6 +263,7 @@ def build_app_root(page: ft.Page) -> ft.Control:
 
         local_state.selected_year = read_state.years[current_index - 1]
         local_state.selected_week = None
+        _clear_session_write_error()
         entry_panel_state.entries_for_selected_week = []
         entry_panel_state.entries_panel_error_message = None
         refresh_and_render(selected_year_override=local_state.selected_year, reload_q8=False)
@@ -258,6 +277,7 @@ def build_app_root(page: ft.Page) -> ft.Control:
 
         local_state.selected_year = read_state.years[current_index + 1]
         local_state.selected_week = None
+        _clear_session_write_error()
         entry_panel_state.entries_for_selected_week = []
         entry_panel_state.entries_panel_error_message = None
         refresh_and_render(selected_year_override=local_state.selected_year, reload_q8=False)
@@ -269,22 +289,302 @@ def build_app_root(page: ft.Page) -> ft.Control:
         if not any(week.week_number == week_number for week in visible_weeks):
             return
         local_state.selected_week = week_number
+        _clear_session_write_error()
         load_entries_for_selected_week()  # Q5 solo, el visor sticky no recarga Q8 por navegación
         render_shell()
         page.update()
 
     def handle_select_entry(entry_ref: EntryRef) -> None:
         local_state.viewer_entry_ref = entry_ref
+        _clear_session_write_error()
         load_viewer_entry_and_sessions()  # Q8 sigue al visor sticky
         render_shell()
         page.update()
 
     def handle_manual_refresh() -> None:
+        _clear_session_write_error()
         refresh_and_render(
             selected_year_override=local_state.selected_year,
             reload_q5=(local_state.selected_week is not None),
             reload_q8=(local_state.viewer_entry_ref is not None),
         )
+
+    def _clear_session_write_error() -> None:
+        entry_panel_state.session_write_error_message = None
+
+    def _set_session_write_error(message: str) -> None:
+        entry_panel_state.session_write_error_message = message
+
+    def _run_session_write(action) -> bool:
+        if local_state.viewer_entry_ref is None:
+            _set_session_write_error("No hay entry en el visor para ejecutar la acción de sesión.")
+            render_shell()
+            page.update()
+            return False
+
+        entry_panel_state.session_write_pending = True
+        _clear_session_write_error()
+        render_shell()
+        page.update()
+        success = True
+
+        try:
+            client = _build_client()
+            action(client, local_state.viewer_entry_ref)
+        except FirestoreConflictError as exc:
+            _set_session_write_error(str(exc))
+            success = False
+        except (FirestoreTransitionInvalidError, FirestoreValidationError, FirestoreReadError) as exc:
+            _set_session_write_error(str(exc))
+            success = False
+        finally:
+            entry_panel_state.session_write_pending = False
+
+        if not success:
+            render_shell()
+            page.update()
+            return False
+
+        refresh_and_render(
+            selected_year_override=local_state.selected_year,
+            reload_q5=False,
+            reload_q8=(local_state.viewer_entry_ref is not None),
+        )
+        return True
+
+    def handle_start_session() -> None:
+        _run_session_write(lambda client, entry_ref: start_session(client, entry_ref=entry_ref))
+
+    def handle_stop_session() -> None:
+        _run_session_write(lambda client, entry_ref: stop_session(client, entry_ref=entry_ref))
+
+    def _close_dialog() -> None:
+        if page.dialog is not None:
+            page.dialog.open = False
+            page.update()
+        page.dialog = None
+
+    def _show_snack_error(message: str) -> None:
+        page.snack_bar = ft.SnackBar(
+            content=ft.Text(message),
+            bgcolor="#8A1F1F",
+            open=True,
+        )
+        page.update()
+
+    def _to_local_strings(value: object | None) -> tuple[str, str]:
+        if not isinstance(value, datetime):
+            return "", ""
+        dt = value if value.tzinfo is not None else value.replace(tzinfo=timezone.utc)
+        local_dt = dt.astimezone()
+        return local_dt.strftime("%Y-%m-%d"), local_dt.strftime("%H:%M")
+
+    def _parse_local_datetime(date_value: str, time_value: str, *, field_label: str) -> datetime:
+        date_clean = date_value.strip()
+        time_clean = time_value.strip()
+        if not date_clean or not time_clean:
+            raise ValueError(f"{field_label}: fecha y hora son obligatorias.")
+        try:
+            naive = datetime.strptime(f"{date_clean} {time_clean}", "%Y-%m-%d %H:%M")
+        except ValueError as exc:
+            raise ValueError(f"{field_label}: usa formato YYYY-MM-DD y HH:MM.") from exc
+        local_tz = datetime.now().astimezone().tzinfo
+        if local_tz is None:
+            raise ValueError("No se pudo resolver la zona horaria local.")
+        local_dt = naive.replace(tzinfo=local_tz)
+        return local_dt.astimezone(timezone.utc)
+
+    def _parse_optional_local_datetime(
+        date_value: str,
+        time_value: str,
+        *,
+        field_label: str,
+    ) -> datetime | None:
+        if not date_value.strip() and not time_value.strip():
+            return None
+        return _parse_local_datetime(date_value, time_value, field_label=field_label)
+
+    def _show_session_form_dialog(
+        *,
+        mode: str,
+        session_to_edit: ViewerSessionItem | None = None,
+    ) -> None:
+        if local_state.viewer_entry_ref is None:
+            _set_session_write_error("No hay entry en el visor para gestionar sesiones.")
+            render_shell()
+            page.update()
+            return
+
+        started_date_default, started_time_default = _to_local_strings(
+            session_to_edit.started_at_utc if session_to_edit else None
+        )
+        ended_date_default, ended_time_default = _to_local_strings(
+            session_to_edit.ended_at_utc if session_to_edit else None
+        )
+        active_default = bool(session_to_edit and session_to_edit.ended_at_utc is None)
+
+        started_date_field = ft.TextField(
+            label="Inicio (fecha local)",
+            hint_text="YYYY-MM-DD",
+            value=started_date_default,
+            dense=True,
+            width=180,
+        )
+        started_time_field = ft.TextField(
+            label="Inicio (hora local)",
+            hint_text="HH:MM",
+            value=started_time_default,
+            dense=True,
+            width=140,
+        )
+        ended_date_field = ft.TextField(
+            label="Fin (fecha local)",
+            hint_text="YYYY-MM-DD",
+            value=ended_date_default,
+            dense=True,
+            width=180,
+        )
+        ended_time_field = ft.TextField(
+            label="Fin (hora local)",
+            hint_text="HH:MM",
+            value=ended_time_default,
+            dense=True,
+            width=140,
+        )
+        active_checkbox = ft.Checkbox(
+            label="Sesión activa (sin fin)",
+            value=active_default if mode == "edit" else False,
+        )
+        dialog_error = ft.Text("", color="#8A1F1F", size=12, visible=False)
+
+        def _apply_active_checkbox(_e=None) -> None:
+            disable_end = bool(active_checkbox.value)
+            ended_date_field.disabled = disable_end
+            ended_time_field.disabled = disable_end
+            page.update()
+
+        active_checkbox.on_change = _apply_active_checkbox
+
+        def _submit(_e) -> None:
+            try:
+                started_at_utc = _parse_local_datetime(
+                    started_date_field.value or "",
+                    started_time_field.value or "",
+                    field_label="Inicio",
+                )
+                if active_checkbox.value:
+                    ended_at_utc = None
+                else:
+                    ended_at_utc = _parse_optional_local_datetime(
+                        ended_date_field.value or "",
+                        ended_time_field.value or "",
+                        field_label="Fin",
+                    )
+                    if ended_at_utc is None:
+                        raise ValueError(
+                            "Fin: rellena fecha y hora o marca 'Sesión activa (sin fin)'."
+                        )
+            except ValueError as exc:
+                dialog_error.value = str(exc)
+                dialog_error.visible = True
+                page.update()
+                return
+
+            _close_dialog()
+            if mode == "create":
+                _run_session_write(
+                    lambda client, entry_ref: manual_create_session(
+                        client,
+                        entry_ref=entry_ref,
+                        started_at_utc=started_at_utc,
+                        ended_at_utc=ended_at_utc,
+                    )
+                )
+            elif mode == "edit" and session_to_edit is not None:
+                _run_session_write(
+                    lambda client, entry_ref: manual_update_session(
+                        client,
+                        entry_ref=entry_ref,
+                        session_id=session_to_edit.session_id,
+                        started_at_utc=started_at_utc,
+                        ended_at_utc=ended_at_utc,
+                    )
+                )
+
+        title = "Crear sesión manual" if mode == "create" else "Editar sesión"
+        submit_label = "Crear" if mode == "create" else "Guardar"
+
+        dialog = ft.AlertDialog(
+            modal=True,
+            title=ft.Text(title),
+            content=ft.Container(
+                width=420,
+                content=ft.Column(
+                    tight=True,
+                    spacing=8,
+                    controls=[
+                        ft.Row([started_date_field, started_time_field], spacing=8),
+                        ft.Row([ended_date_field, ended_time_field], spacing=8),
+                        active_checkbox,
+                        dialog_error,
+                    ],
+                ),
+            ),
+            actions=[
+                ft.TextButton("Cancelar", on_click=lambda _e: _close_dialog()),
+                ft.FilledButton(submit_label, on_click=_submit),
+            ],
+            actions_alignment=ft.MainAxisAlignment.END,
+        )
+        page.dialog = dialog
+        dialog.open = True
+        _apply_active_checkbox()
+
+    def handle_open_create_session_modal() -> None:
+        _show_session_form_dialog(mode="create")
+
+    def handle_open_edit_session_modal(session_id: str) -> None:
+        session = _find_viewer_session_item(entry_panel_state.viewer_sessions, session_id)
+        if session is None:
+            _set_session_write_error("La sesión seleccionada ya no está visible en el visor.")
+            render_shell()
+            page.update()
+            return
+        _show_session_form_dialog(mode="edit", session_to_edit=session)
+
+    def handle_open_delete_session_confirm(session_id: str) -> None:
+        session = _find_viewer_session_item(entry_panel_state.viewer_sessions, session_id)
+        if session is None:
+            _set_session_write_error("La sesión seleccionada ya no está visible en el visor.")
+            render_shell()
+            page.update()
+            return
+
+        def _confirm(_e) -> None:
+            _close_dialog()
+            _run_session_write(
+                lambda client, entry_ref: manual_delete_session(
+                    client,
+                    entry_ref=entry_ref,
+                    session_id=session_id,
+                )
+            )
+
+        dialog = ft.AlertDialog(
+            modal=True,
+            title=ft.Text("Borrar sesión"),
+            content=ft.Text(
+                f"¿Seguro que quieres borrar la sesión `{session_id}`? Esta acción es irreversible."
+            ),
+            actions=[
+                ft.TextButton("Cancelar", on_click=lambda _e: _close_dialog()),
+                ft.FilledButton("Borrar", on_click=_confirm),
+            ],
+            actions_alignment=ft.MainAxisAlignment.END,
+        )
+        page.dialog = dialog
+        dialog.open = True
+        page.update()
 
     # Carga inicial: si falla, el shell se renderiza con error visible.
     load_readonly_snapshot(selected_year_override=local_state.selected_year)
@@ -340,4 +640,14 @@ def _find_entry_in_list(entries: list[MockEntry], entry_ref: EntryRef) -> MockEn
     for entry in entries:
         if entry.ref == entry_ref:
             return entry
+    return None
+
+
+def _find_viewer_session_item(
+    sessions: list[ViewerSessionItem],
+    session_id: str,
+) -> ViewerSessionItem | None:
+    for session in sessions:
+        if session.session_id == session_id:
+            return session
     return None

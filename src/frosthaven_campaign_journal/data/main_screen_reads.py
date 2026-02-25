@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from typing import Any
 
 from google.cloud import firestore
@@ -27,6 +28,27 @@ class WeekRead:
     week_number: int
     status: str
     notes: str | None
+
+
+@dataclass(frozen=True)
+class EntryRead:
+    ref: EntryRef
+    label: str
+    entry_type: str
+    scenario_ref: int | None
+    order_index: int
+    resource_deltas: dict[str, int]
+    created_at_utc: Any | None
+    updated_at_utc: Any | None
+
+
+@dataclass(frozen=True)
+class EntrySessionRead:
+    session_id: str
+    started_at_utc: Any | None
+    ended_at_utc: Any | None
+    created_at_utc: Any | None
+    updated_at_utc: Any | None
 
 
 @dataclass(frozen=True)
@@ -213,6 +235,130 @@ def read_q6_active_session_global(client: firestore.Client) -> ActiveSessionRead
     )
 
 
+def read_q5_entries_for_selected_week(
+    client: firestore.Client,
+    *,
+    year_number: int,
+    week_number: int,
+) -> list[EntryRead]:
+    season_type = _resolve_season_type_for_week(year_number=year_number, week_number=week_number)
+    entries: list[EntryRead] = []
+    try:
+        query = (
+            client.collection("campaigns")
+            .document(CAMPAIGN_ID)
+            .collection("years")
+            .document(str(year_number))
+            .collection("seasons")
+            .document(season_type)
+            .collection("weeks")
+            .document(str(week_number))
+            .collection("entries")
+            .order_by("order_index")
+        )
+        for snapshot in query.stream():
+            entries.append(_map_entry_snapshot(snapshot, year_number=year_number, week_number=week_number))
+    except FirestoreReadError:
+        raise
+    except Exception as exc:
+        raise FirestoreReadError(
+            f"Error leyendo Q5 (`entries_selected_week`) para week {week_number} (año {year_number}): {exc}"
+        ) from exc
+
+    return sorted(
+        entries,
+        key=lambda entry: (
+            entry.order_index,
+            _sortable_dt_asc(entry.created_at_utc),
+            entry.ref.entry_id,
+        ),
+    )
+
+
+def read_entry_by_ref(client: firestore.Client, entry_ref: EntryRef) -> EntryRead:
+    season_type = _resolve_season_type_for_week(
+        year_number=entry_ref.year_number,
+        week_number=entry_ref.week_number,
+    )
+    entry_doc_ref = (
+        client.collection("campaigns")
+        .document(CAMPAIGN_ID)
+        .collection("years")
+        .document(str(entry_ref.year_number))
+        .collection("seasons")
+        .document(season_type)
+        .collection("weeks")
+        .document(str(entry_ref.week_number))
+        .collection("entries")
+        .document(entry_ref.entry_id)
+    )
+    try:
+        snapshot = entry_doc_ref.get()
+    except Exception as exc:
+        raise FirestoreReadError(
+            f"Error leyendo entry del visor (`{entry_doc_ref.path}`): {exc}"
+        ) from exc
+    if not snapshot.exists:
+        raise FirestoreReadError(f"La entry del visor ya no existe: `{entry_doc_ref.path}`.")
+    return _map_entry_snapshot(
+        snapshot,
+        year_number=entry_ref.year_number,
+        week_number=entry_ref.week_number,
+    )
+
+
+def read_q8_sessions_for_entry(
+    client: firestore.Client,
+    *,
+    entry_ref: EntryRef,
+) -> list[EntrySessionRead]:
+    season_type = _resolve_season_type_for_week(
+        year_number=entry_ref.year_number,
+        week_number=entry_ref.week_number,
+    )
+    sessions: list[EntrySessionRead] = []
+    try:
+        query = (
+            client.collection("campaigns")
+            .document(CAMPAIGN_ID)
+            .collection("years")
+            .document(str(entry_ref.year_number))
+            .collection("seasons")
+            .document(season_type)
+            .collection("weeks")
+            .document(str(entry_ref.week_number))
+            .collection("entries")
+            .document(entry_ref.entry_id)
+            .collection("sessions")
+            .order_by("started_at_utc", direction=firestore.Query.DESCENDING)
+        )
+        for snapshot in query.stream():
+            data = snapshot.to_dict() or {}
+            sessions.append(
+                EntrySessionRead(
+                    session_id=snapshot.id,
+                    started_at_utc=data.get("started_at_utc"),
+                    ended_at_utc=data.get("ended_at_utc"),
+                    created_at_utc=data.get("created_at_utc"),
+                    updated_at_utc=data.get("updated_at_utc"),
+                )
+            )
+    except Exception as exc:
+        raise FirestoreReadError(
+            f"Error leyendo Q8 (`sessions_selected_entry_combined`) para `{entry_ref.entry_id}`: {exc}"
+        ) from exc
+
+    return sorted(
+        sessions,
+        key=lambda session: (
+            0 if session.ended_at_utc is None else 1,
+            _sortable_dt_desc(session.started_at_utc),
+            _sortable_dt_desc(session.updated_at_utc),
+            session.session_id,
+        ),
+    )
+
+
 def read_q7_active_entry_doc_if_needed(
     client: firestore.Client,
     active_session: ActiveSessionRead | None,
@@ -310,6 +456,67 @@ def derive_year_from_week_cursor(week_cursor: int) -> int:
     return ((week_cursor - 1) // WEEKS_PER_YEAR) + 1
 
 
+def _resolve_season_type_for_week(*, year_number: int, week_number: int) -> str:
+    local_week = week_number - ((year_number - 1) * WEEKS_PER_YEAR)
+    if not 1 <= local_week <= WEEKS_PER_YEAR:
+        raise FirestoreReadError(
+            f"Week {week_number} no pertenece al año {year_number} según el template temporal MVP."
+        )
+    return "summer" if local_week <= 10 else "winter"
+
+
+def _map_entry_snapshot(snapshot: Any, *, year_number: int, week_number: int) -> EntryRead:
+    data = snapshot.to_dict() or {}
+    entry_type = data.get("type")
+    if not isinstance(entry_type, str) or not entry_type:
+        raise FirestoreReadError(f"Q5/Q7 inválido: `type` no válido en `{snapshot.reference.path}`.")
+
+    order_index = data.get("order_index")
+    if isinstance(order_index, bool) or not isinstance(order_index, int) or order_index <= 0:
+        raise FirestoreReadError(
+            f"Q5/Q7 inválido: `order_index` no válido en `{snapshot.reference.path}`."
+        )
+
+    scenario_ref_raw = data.get("scenario_ref")
+    scenario_ref: int | None
+    if scenario_ref_raw is None:
+        scenario_ref = None
+    elif isinstance(scenario_ref_raw, bool) or not isinstance(scenario_ref_raw, int):
+        raise FirestoreReadError(
+            f"Q5/Q7 inválido: `scenario_ref` no válido en `{snapshot.reference.path}`."
+        )
+    else:
+        scenario_ref = scenario_ref_raw
+
+    resource_deltas_raw = data.get("resource_deltas") or {}
+    if not isinstance(resource_deltas_raw, dict):
+        raise FirestoreReadError(
+            f"Q5/Q7 inválido: `resource_deltas` debe ser mapa en `{snapshot.reference.path}`."
+        )
+    resource_deltas: dict[str, int] = {}
+    for key, value in resource_deltas_raw.items():
+        if not isinstance(key, str):
+            raise FirestoreReadError(
+                f"Q5/Q7 inválido: clave de `resource_deltas` no string en `{snapshot.reference.path}`."
+            )
+        if isinstance(value, bool) or not isinstance(value, int):
+            raise FirestoreReadError(
+                f"Q5/Q7 inválido: `resource_deltas[{key}]` no entero en `{snapshot.reference.path}`."
+            )
+        resource_deltas[key] = value
+
+    return EntryRead(
+        ref=EntryRef(year_number=year_number, week_number=week_number, entry_id=snapshot.id),
+        label=_build_entry_label(entry_type=entry_type, scenario_ref=scenario_ref, entry_id=snapshot.id),
+        entry_type=entry_type,
+        scenario_ref=scenario_ref,
+        order_index=order_index,
+        resource_deltas=resource_deltas,
+        created_at_utc=data.get("created_at_utc"),
+        updated_at_utc=data.get("updated_at_utc"),
+    )
+
+
 def _entry_ref_from_entry_doc_ref(entry_doc_ref: Any) -> EntryRef:
     try:
         week_doc_ref = entry_doc_ref.parent.parent
@@ -340,3 +547,19 @@ def _build_entry_label(*, entry_type: str, scenario_ref: int | None, entry_id: s
     if entry_type == "outpost":
         return "Puesto fronterizo"
     return f"Entry {entry_id}"
+
+
+def _sortable_dt_asc(value: Any | None) -> tuple[int, datetime]:
+    if value is None:
+        return (1, datetime.min.replace(tzinfo=timezone.utc))
+    return (0, value)
+
+
+def _sortable_dt_desc(value: Any | None) -> tuple[int, float]:
+    if value is None:
+        return (1, 0.0)
+    try:
+        ts = value.timestamp()
+    except Exception:
+        return (1, 0.0)
+    return (0, -ts)

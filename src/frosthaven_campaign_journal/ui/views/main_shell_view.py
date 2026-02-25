@@ -1,5 +1,6 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
+from datetime import datetime, timedelta, timezone
 from typing import Callable
 
 import flet as ft
@@ -9,6 +10,7 @@ from frosthaven_campaign_journal.state.placeholders import (
     MainScreenLocalState,
     MockEntry,
     MockWeek,
+    ViewerSessionItem,
 )
 
 
@@ -47,6 +49,9 @@ def build_main_shell_view(
     weeks_for_selected_year: list[MockWeek],
     entries_for_selected_week: list[MockEntry],
     viewer_entry: MockEntry | None,
+    viewer_sessions: list[ViewerSessionItem],
+    entries_panel_error_message: str | None,
+    viewer_sessions_error_message: str | None,
     active_entry_ref: EntryRef | None,
     active_entry_label: str | None,
     active_status_error_message: str | None,
@@ -82,12 +87,15 @@ def build_main_shell_view(
                     state=state,
                     entries_for_selected_week=entries_for_selected_week,
                     viewer_entry=viewer_entry,
+                    entries_panel_error_message=entries_panel_error_message,
                     on_select_entry=on_select_entry,
                 ),
                 _build_center_focus_panel(
                     state=state,
                     weeks_for_selected_year=weeks_for_selected_year,
                     viewer_entry=viewer_entry,
+                    viewer_sessions=viewer_sessions,
+                    viewer_sessions_error_message=viewer_sessions_error_message,
                     active_entry_ref=active_entry_ref,
                     active_entry_label=active_entry_label,
                     read_error_message=read_error_message,
@@ -128,7 +136,7 @@ def _build_top_temporal_bar(
     else:
         has_prev_year = False
         has_next_year = False
-        year_title = "Año —"
+        year_title = "Año -"
 
     if read_status == "error" and not weeks_for_selected_year:
         week_strip_content: ft.Control = ft.Row(
@@ -253,6 +261,7 @@ def _build_entry_tabs_bar(
     state: MainScreenLocalState,
     entries_for_selected_week: list[MockEntry],
     viewer_entry: MockEntry | None,
+    entries_panel_error_message: str | None,
     on_select_entry: Callable[[EntryRef], None],
 ) -> ft.Control:
     if state.selected_week is None:
@@ -268,13 +277,25 @@ def _build_entry_tabs_bar(
                 )
             ],
         )
+    elif entries_panel_error_message:
+        content = ft.Row(
+            alignment=ft.MainAxisAlignment.CENTER,
+            vertical_alignment=ft.CrossAxisAlignment.CENTER,
+            controls=[
+                ft.Text(
+                    _truncate(f"Error Q5: {entries_panel_error_message}", 140),
+                    size=12,
+                    color=COLOR_ERROR_TEXT,
+                )
+            ],
+        )
     elif not entries_for_selected_week:
         content = ft.Row(
             alignment=ft.MainAxisAlignment.CENTER,
             vertical_alignment=ft.CrossAxisAlignment.CENTER,
             controls=[
                 ft.Text(
-                    f"Week {state.selected_week} sin entries (mock)",
+                    f"Week {state.selected_week} sin entries",
                     size=13,
                     color=COLOR_TEXT_MUTED,
                     italic=True,
@@ -315,7 +336,7 @@ def _build_entry_tab(
 ) -> ft.Control:
     underline_color = COLOR_ENTRY_TAB_SELECTED_UNDERLINE if is_selected else "transparent"
     text_weight = ft.FontWeight.W_600 if is_selected else ft.FontWeight.NORMAL
-    underline_width = max(36, min(120, len(entry.label) * 7))
+    underline_width = max(36, min(140, len(entry.label) * 7))
 
     return ft.Container(
         padding=ft.Padding(left=12, top=6, right=12, bottom=2),
@@ -346,6 +367,8 @@ def _build_center_focus_panel(
     state: MainScreenLocalState,
     weeks_for_selected_year: list[MockWeek],
     viewer_entry: MockEntry | None,
+    viewer_sessions: list[ViewerSessionItem],
+    viewer_sessions_error_message: str | None,
     active_entry_ref: EntryRef | None,
     active_entry_label: str | None,
     read_error_message: str | None,
@@ -357,6 +380,8 @@ def _build_center_focus_panel(
         primary_content = _build_focus_entry_mode(
             state=state,
             viewer_entry=viewer_entry,
+            viewer_sessions=viewer_sessions,
+            viewer_sessions_error_message=viewer_sessions_error_message,
             active_entry_ref=active_entry_ref,
             active_entry_label=active_entry_label,
         )
@@ -414,8 +439,8 @@ def _build_focus_empty_mode(state: MainScreenLocalState) -> ft.Control:
             _build_placeholder_card(
                 title="Visor (sticky) vacío",
                 body=(
-                    "En #53/#54 el visor se mantiene separado de la navegación. "
-                    "Cuando selecciones una entry mock, seguirá visible aunque cambies de año/week."
+                    "El visor se mantiene separado de la navegación. "
+                    "Cuando selecciones una entry, seguirá visible aunque cambies de año o week."
                 ),
                 min_height=108,
             ),
@@ -472,6 +497,8 @@ def _build_focus_entry_mode(
     *,
     state: MainScreenLocalState,
     viewer_entry: MockEntry,
+    viewer_sessions: list[ViewerSessionItem],
+    viewer_sessions_error_message: str | None,
     active_entry_ref: EntryRef | None,
     active_entry_label: str | None,
 ) -> ft.Control:
@@ -495,12 +522,42 @@ def _build_focus_entry_mode(
     elif active_here:
         session_status_text = f"Con sesión activa aquí: {active_entry_label or 'Entry activa'}."
     else:
-        session_status_text = f"Con sesión activa en otra entry: {active_entry_label or 'Entry activa'}."
+        session_status_text = (
+            f"Con sesión activa en otra entry: {active_entry_label or 'Entry activa'}."
+        )
 
-    detail_body = f"Tipo: {viewer_entry.entry_type}"
-    if viewer_entry.scenario_ref:
-        detail_body += f"\nScenario ref: {viewer_entry.scenario_ref}"
-    detail_body += "\nDatos reales de entries/sesiones quedan para Q5/Q8."
+    detail_lines = [f"Tipo: {viewer_entry.entry_type}"]
+    if viewer_entry.scenario_ref is not None:
+        detail_lines.append(f"Scenario ref: {viewer_entry.scenario_ref}")
+    if viewer_entry.order_index is not None:
+        detail_lines.append(f"Order index: {viewer_entry.order_index}")
+    if viewer_entry.resource_deltas:
+        detail_lines.append(
+            "resource_deltas: "
+            + ", ".join(
+                f"{k}={v}" for k, v in sorted(viewer_entry.resource_deltas.items(), key=lambda item: item[0])
+            )
+        )
+    else:
+        detail_lines.append("resource_deltas: sin cambios en esta entry")
+
+    entry_detail_card = _build_placeholder_card(
+        title="Detalle de entry (Q5)",
+        body="\n".join(detail_lines),
+        min_height=120,
+    )
+
+    sessions_card = _build_sessions_card(
+        viewer_sessions=viewer_sessions,
+        viewer_sessions_error_message=viewer_sessions_error_message,
+        session_status_text=session_status_text,
+    )
+
+    resources_note_card = _build_placeholder_card(
+        title="Recursos de la entry",
+        body="En #61 se muestran datos read-only de la entry (Q5). Las mutaciones de recursos llegan en #64.",
+        min_height=68,
+    )
 
     return ft.Column(
         spacing=12,
@@ -528,26 +585,62 @@ def _build_focus_entry_mode(
                 body="\n".join(context_lines),
                 min_height=110,
             ),
-            _build_placeholder_card(
-                title="Detalle de entry (mock hasta Q5)",
-                body=detail_body,
-                min_height=96,
-            ),
-            _build_placeholder_card(
-                title="Bloque de sesión (mock hasta Q8)",
-                body=(
-                    f"{session_status_text}\n"
-                    "Start/Stop reales y sesiones persistidas quedan fuera de #54."
-                ),
-                min_height=84,
-            ),
-            _build_placeholder_card(
-                title="Recursos de la entry (mock)",
-                body="El visor sigue mock en #54; los totales globales sí vienen de Q1.",
-                min_height=72,
-            ),
+            entry_detail_card,
+            sessions_card,
+            resources_note_card,
         ],
     )
+
+
+def _build_sessions_card(
+    *,
+    viewer_sessions: list[ViewerSessionItem],
+    viewer_sessions_error_message: str | None,
+    session_status_text: str,
+) -> ft.Control:
+    if viewer_sessions_error_message:
+        body = (
+            session_status_text
+            + "\n"
+            + "Error local Q8: "
+            + _truncate(viewer_sessions_error_message, 220)
+        )
+        return _build_placeholder_card(
+            title="Bloque de sesión (Q8 con error parcial)",
+            body=body,
+            min_height=96,
+        )
+
+    total_duration = _sum_finished_sessions_duration(viewer_sessions)
+    total_text = _format_duration(total_duration) if total_duration is not None else "0 min"
+    has_active_session = any(session.ended_at_utc is None for session in viewer_sessions)
+
+    lines: list[str] = [session_status_text, f"Total jugado (Q8): {total_text}"]
+    if not viewer_sessions:
+        lines.append("Sin sesiones para la entry visible.")
+    else:
+        for index, session in enumerate(viewer_sessions[:5], start=1):
+            lines.append(f"{index}. {_format_session_line(session)}")
+        if len(viewer_sessions) > 5:
+            lines.append(f"… y {len(viewer_sessions) - 5} sesión(es) más")
+    if has_active_session:
+        lines.append("Hay una sesión activa en la lista (ended_at_utc = null).")
+
+    return _build_placeholder_card(
+        title="Bloque de sesión (Q8)",
+        body="\n".join(lines),
+        min_height=120,
+    )
+
+
+def _format_session_line(session: ViewerSessionItem) -> str:
+    started = _format_dt_short(session.started_at_utc)
+    ended = _format_dt_short(session.ended_at_utc)
+    if session.ended_at_utc is None:
+        return f"{session.session_id}: {started} → activa"
+    duration = _session_duration(session)
+    duration_text = _format_duration(duration) if duration is not None else "duración n/d"
+    return f"{session.session_id}: {started} → {ended} · {duration_text}"
 
 
 def _build_bottom_status_bar(
@@ -791,6 +884,54 @@ def _format_navigation_line(state: MainScreenLocalState) -> str:
     if state.selected_week is None:
         return f"Navegación actual: Año {state.selected_year} · sin week seleccionada"
     return f"Navegación actual: Año {state.selected_year} · Week {state.selected_week}"
+
+
+def _sum_finished_sessions_duration(sessions: list[ViewerSessionItem]) -> timedelta | None:
+    total = timedelta(0)
+    has_any = False
+    for session in sessions:
+        duration = _session_duration(session)
+        if duration is None:
+            continue
+        has_any = True
+        total += duration
+    return total if has_any else timedelta(0)
+
+
+def _session_duration(session: ViewerSessionItem) -> timedelta | None:
+    started = _as_datetime(session.started_at_utc)
+    ended = _as_datetime(session.ended_at_utc)
+    if started is None or ended is None:
+        return None
+    if ended < started:
+        return None
+    return ended - started
+
+
+def _as_datetime(value: object | None) -> datetime | None:
+    if value is None:
+        return None
+    if isinstance(value, datetime):
+        if value.tzinfo is None:
+            return value.replace(tzinfo=timezone.utc)
+        return value
+    return None
+
+
+def _format_dt_short(value: object | None) -> str:
+    dt_value = _as_datetime(value)
+    if dt_value is None:
+        return "n/d"
+    return dt_value.astimezone(timezone.utc).strftime("%Y-%m-%d %H:%MZ")
+
+
+def _format_duration(duration: timedelta) -> str:
+    total_seconds = int(duration.total_seconds())
+    hours, rem = divmod(total_seconds, 3600)
+    minutes, _seconds = divmod(rem, 60)
+    if hours > 0:
+        return f"{hours} h {minutes} min"
+    return f"{minutes} min"
 
 
 def _truncate(value: str, max_length: int) -> str:

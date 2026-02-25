@@ -557,9 +557,16 @@ No incluye:
 - [x] `#19` Plan de pruebas de invariantes (`draftable`)
 - [x] `#20` Gate de listo para codificar (`final_gate`)
 
+### Seguimiento de implementación (post-`#20`)
+
+- [x] `#51` Bootstrap de app Flet y estructura base
+- [x] `#52` Shell de pantalla principal (layout base Figma)
+- [x] `#53` Estado local de navegación/visor sticky/activo mock
+- [ ] `#54` Integración read-only inicial (`Q1/Q2/Q3/Q4/Q6/Q7`)
+
 ### Próxima secuencia técnica esperada (según orden actual)
 
-1. Inicio de implementación (slice recomendado por `#20`: infraestructura/base app)
+1. `#54` Integrar lecturas mínimas read-only para arranque y navegación base
 
 ## Referencias
 

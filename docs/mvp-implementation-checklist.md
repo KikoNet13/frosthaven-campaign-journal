@@ -231,6 +231,13 @@ Usar esta plantilla mínima en cada issue/bloque del checklist:
 - [x] Plan de pruebas para invariantes (Issue #19)
 - [x] Gate de listo para codificar (Issue #20)
 
+## Seguimiento de implementación (post-#20)
+
+- [x] Bootstrap de app Flet y estructura base del proyecto (Issue #51)
+- [x] Shell de pantalla principal con layout base según Figma (Issue #52)
+- [x] Estado local de selección/navegación + visor sticky + activo mock (Issue #53)
+- [ ] Integrar lecturas mínimas read-only para arranque y navegación base (Issue #54)
+
 ## Referencias
 
 - `AGENTS.md`

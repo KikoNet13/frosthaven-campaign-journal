@@ -241,6 +241,14 @@ Estados de pantalla del MVP (canon para lecturas):
 - `selected_week` inicial = `none`
 - `selected_entry` inicial = `none`
 
+Notas de implementación posteriores (`#53+`):
+
+- La UI puede separar **navegación** (`selected_year` / `selected_week`) de la
+  **entry visible en visor** (sticky).
+- En este documento, `selected_entry` se usa como shorthand de la entry cuyo
+  detalle/sesiones se muestran en visor cuando existe; cambiar de year/week de
+  navegación no obliga a limpiar ese visor.
+
 ### Consecuencia de lecturas iniciales
 
 - **Cargar al abrir pantalla**: Q1 + Q2 + Q3 + Q4 + Q6
@@ -252,14 +260,14 @@ Estados de pantalla del MVP (canon para lecturas):
 | --- | --- | --- | --- | --- |
 | `open_main_screen` | Q1, Q2, Q3, Q4, Q6 | Estado inicial mínimo visible | No | Año inicial derivado de `week_cursor` |
 | `ui.manual_refresh` | Q1, Q2, Q3, Q4, Q6 + (Q5/Q7/Q8 si hay selección/activa aplicable) | `on-demand refresh` global del contexto visible | Sí (trigger del usuario) | Sin listeners realtime (`#7`) |
-| `ui.select_year` | Q3, Q4 (+ limpiar selección local de `Week`/`Entry`) | Cambia el conjunto de weeks visibles | No | Q5/Q8 no cargan hasta nueva selección |
-| `ui.select_week` | Q5 | Cargar entries de la week seleccionada | No | No cambia `week_cursor` |
-| `ui.select_entry` | Q8 (+ Q7 solo si sigue activo global en otra entry y la UI lo necesita) | Cargar sesiones de la entry seleccionada | No | Q5 ya aporta datos base de la entry |
+| `ui.select_year` | Q3, Q4 (resetea navegación de `Week`) | Cambia el conjunto de weeks visibles | No | Puede mantenerse una entry en visor sticky; Q5/Q8 no cargan hasta nueva selección de entry |
+| `ui.select_week` | Q5 | Cargar entries de la week seleccionada | No | No cambia `week_cursor` ni obliga a limpiar la entry en visor sticky |
+| `ui.select_entry` | Q8 (+ Q7 solo si sigue activo global en otra entry y la UI lo necesita) | Cargar sesiones de la entry seleccionada para el visor | No | Q5 ya aporta datos base de la entry |
 | `Week.close/reopen/reclose/update_notes` | Q1 (si cambia `week_cursor`), Q3/Q4 (año visible), Q6 (si hubo `auto-stop`) | Reflejar estado de week, cursor y sesión activa | No (post-escritura local) | Si la week afectada no está en año visible, Q3/Q4 puede diferirse a refresh manual |
 | `Campaign.extend_years_plus_one` | Q1, Q2, Q3/Q4 si el año visible queda afectado | Reflejar nuevo año / estado de campaña | No (post-escritura local) | `+` vive en selector de año (`#9`) |
-| `Entry.create/update/delete/reorder` sobre `selected_week` | Q5 (+ Q8 si afecta `selected_entry`) | Actualizar tabs/lista y panel de entry | No (post-escritura local) | `Entry.delete` puede requerir también Q6 si había activa |
-| `Entry.adjust/set/clear_resource_delta` sobre `selected_entry` | Q1, Q5 | Totales globales + `resource_deltas` de entry | No (post-escritura local) | Reglas de recursos en `#15` |
-| `Session.start/stop/auto-stop/manual_*` | Q6, Q8 (si afecta `selected_entry`), Q7 (si aplica) | Reflejar activo global y sesiones de la entry | No (post-escritura local) | Recuperación por conflicto sigue `#14/#8` |
+| `Entry.create/update/delete/reorder` sobre `selected_week` | Q5 (+ Q8 si afecta la entry en visor) | Actualizar tabs/lista y panel de entry | No (post-escritura local) | `Entry.delete` puede requerir también Q6 si había activa |
+| `Entry.adjust/set/clear_resource_delta` sobre la entry en visor | Q1, Q5 | Totales globales + `resource_deltas` de entry | No (post-escritura local) | Reglas de recursos en `#15` |
+| `Session.start/stop/auto-stop/manual_*` | Q6, Q8 (si afecta la entry en visor), Q7 (si aplica) | Reflejar activo global y sesiones de la entry | No (post-escritura local) | Recuperación por conflicto sigue `#14/#8` |
 
 ### Regla de refresh post-escritura (MVP)
 
@@ -333,9 +341,12 @@ se tratará como ampliación posterior (no bloquea `#16`).
    - no hay `Week` ni `Entry` seleccionada;
    - se cargan Q1 + Q2 + Q3 + Q4 + Q6, pero no Q5/Q7/Q8.
 1. Seleccionar una week carga Q5 (`entries_selected_week`) y no dispara Q8
-   hasta seleccionar `Entry`.
+   hasta seleccionar una nueva `Entry` para el visor.
 1. Seleccionar una entry carga Q8 (`sessions_selected_entry_combined`) para
    total jugado y desplegable de sesiones.
+1. La navegación (`selected_year` / `selected_week`) puede cambiar sin limpiar
+   la entry visible en visor (sticky), y eso no cambia qué evento dispara Q8:
+   solo la selección de una nueva `Entry`.
 1. La UI puede distinguir foco vs activo con Q6 (+ Q7 si aplica), alineado con
    `#14`.
 1. Cambiar de año recarga weeks del año seleccionado completo (Q3+Q4), sin

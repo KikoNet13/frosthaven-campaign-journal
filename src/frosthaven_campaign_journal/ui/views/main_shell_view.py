@@ -32,6 +32,12 @@ COLOR_TEXT_PRIMARY = "#111111"
 COLOR_TEXT_MUTED = "#555555"
 COLOR_TEXT_DIMMED = "#7A6E6E"
 COLOR_WHITE = "#FFFFFF"
+COLOR_ERROR_BG = "#FFE7E7"
+COLOR_ERROR_BORDER = "#D87A7A"
+COLOR_ERROR_TEXT = "#8A1F1F"
+COLOR_WARNING_BG = "#FFF4D8"
+COLOR_WARNING_BORDER = "#D0A55E"
+COLOR_WARNING_TEXT = "#7D5700"
 
 
 def build_main_shell_view(
@@ -41,12 +47,19 @@ def build_main_shell_view(
     weeks_for_selected_year: list[MockWeek],
     entries_for_selected_week: list[MockEntry],
     viewer_entry: MockEntry | None,
-    active_entry_mock: MockEntry | None,
+    active_entry_ref: EntryRef | None,
+    active_entry_label: str | None,
+    active_status_error_message: str | None,
+    campaign_resource_totals: dict[str, int] | None,
+    read_status: str,
+    read_error_message: str | None,
+    read_warning_message: str | None,
     env_name: str,
     on_prev_year: Callable[[], None],
     on_next_year: Callable[[], None],
     on_select_week: Callable[[int], None],
     on_select_entry: Callable[[EntryRef], None],
+    on_manual_refresh: Callable[[], None],
 ) -> ft.Control:
     return ft.Container(
         expand=True,
@@ -59,6 +72,8 @@ def build_main_shell_view(
                     state=state,
                     years=years,
                     weeks_for_selected_year=weeks_for_selected_year,
+                    read_status=read_status,
+                    read_error_message=read_error_message,
                     on_prev_year=on_prev_year,
                     on_next_year=on_next_year,
                     on_select_week=on_select_week,
@@ -73,12 +88,19 @@ def build_main_shell_view(
                     state=state,
                     weeks_for_selected_year=weeks_for_selected_year,
                     viewer_entry=viewer_entry,
-                    active_entry_mock=active_entry_mock,
+                    active_entry_ref=active_entry_ref,
+                    active_entry_label=active_entry_label,
+                    read_error_message=read_error_message,
+                    read_warning_message=read_warning_message,
                 ),
                 _build_bottom_status_bar(
                     env_name=env_name,
                     viewer_entry=viewer_entry,
-                    active_entry_mock=active_entry_mock,
+                    active_entry_ref=active_entry_ref,
+                    active_entry_label=active_entry_label,
+                    active_status_error_message=active_status_error_message,
+                    campaign_resource_totals=campaign_resource_totals,
+                    on_manual_refresh=on_manual_refresh,
                 ),
             ],
         ),
@@ -90,17 +112,72 @@ def _build_top_temporal_bar(
     state: MainScreenLocalState,
     years: list[int],
     weeks_for_selected_year: list[MockWeek],
+    read_status: str,
+    read_error_message: str | None,
     on_prev_year: Callable[[], None],
     on_next_year: Callable[[], None],
     on_select_week: Callable[[int], None],
 ) -> ft.Control:
-    has_prev_year = years.index(state.selected_year) > 0
-    has_next_year = years.index(state.selected_year) < len(years) - 1
+    selected_year = state.selected_year
+    has_valid_selected_year = selected_year is not None and selected_year in years
+    if has_valid_selected_year:
+        year_index = years.index(selected_year)
+        has_prev_year = year_index > 0
+        has_next_year = year_index < len(years) - 1
+        year_title = f"Año {selected_year}"
+    else:
+        has_prev_year = False
+        has_next_year = False
+        year_title = "Año —"
+
+    if read_status == "error" and not weeks_for_selected_year:
+        week_strip_content: ft.Control = ft.Row(
+            alignment=ft.MainAxisAlignment.START,
+            vertical_alignment=ft.CrossAxisAlignment.CENTER,
+            controls=[
+                ft.Text(
+                    "Weeks no disponibles (error de lectura)",
+                    size=13,
+                    color=COLOR_ERROR_TEXT,
+                    italic=True,
+                ),
+            ],
+        )
+    elif not weeks_for_selected_year:
+        week_strip_content = ft.Row(
+            alignment=ft.MainAxisAlignment.START,
+            vertical_alignment=ft.CrossAxisAlignment.CENTER,
+            controls=[
+                ft.Text(
+                    "Sin weeks para el año visible",
+                    size=13,
+                    color=COLOR_TEXT_MUTED,
+                    italic=True,
+                ),
+            ],
+        )
+    else:
+        week_strip_content = ft.Row(
+            spacing=6,
+            wrap=False,
+            scroll=ft.ScrollMode.AUTO,
+            controls=[
+                _build_week_tile(
+                    week=week,
+                    is_selected=(week.week_number == state.selected_week),
+                    on_select_week=on_select_week,
+                )
+                for week in weeks_for_selected_year
+            ],
+        )
+
+    tooltip = read_error_message if read_status == "error" else None
 
     return ft.Container(
         height=TOP_BAR_HEIGHT,
         bgcolor=COLOR_TOP_BAR_BG,
         padding=ft.Padding(left=12, top=10, right=12, bottom=10),
+        tooltip=tooltip,
         content=ft.Row(
             spacing=16,
             alignment=ft.MainAxisAlignment.START,
@@ -112,7 +189,7 @@ def _build_top_temporal_bar(
                     controls=[
                         _build_year_nav_button("←", on_prev_year if has_prev_year else None),
                         ft.Text(
-                            f"Año {state.selected_year}",
+                            year_title,
                             size=32,
                             weight=ft.FontWeight.BOLD,
                             color=COLOR_TEXT_PRIMARY,
@@ -120,22 +197,7 @@ def _build_top_temporal_bar(
                         _build_year_nav_button("→", on_next_year if has_next_year else None),
                     ],
                 ),
-                ft.Container(
-                    expand=True,
-                    content=ft.Row(
-                        spacing=6,
-                        wrap=False,
-                        scroll=ft.ScrollMode.AUTO,
-                        controls=[
-                            _build_week_tile(
-                                week=week,
-                                is_selected=(week.week_number == state.selected_week),
-                                on_select_week=on_select_week,
-                            )
-                            for week in weeks_for_selected_year
-                        ],
-                    ),
-                ),
+                ft.Container(expand=True, content=week_strip_content),
             ],
         ),
     )
@@ -284,26 +346,53 @@ def _build_center_focus_panel(
     state: MainScreenLocalState,
     weeks_for_selected_year: list[MockWeek],
     viewer_entry: MockEntry | None,
-    active_entry_mock: MockEntry | None,
+    active_entry_ref: EntryRef | None,
+    active_entry_label: str | None,
+    read_error_message: str | None,
+    read_warning_message: str | None,
 ) -> ft.Control:
     selected_week = _find_selected_week(state, weeks_for_selected_year)
 
     if viewer_entry is not None:
-        content = _build_focus_entry_mode(
+        primary_content = _build_focus_entry_mode(
             state=state,
             viewer_entry=viewer_entry,
-            active_entry_mock=active_entry_mock,
+            active_entry_ref=active_entry_ref,
+            active_entry_label=active_entry_label,
         )
     elif selected_week is not None:
-        content = _build_focus_week_mode(selected_week)
+        primary_content = _build_focus_week_mode(selected_week)
     else:
-        content = _build_focus_empty_mode(state)
+        primary_content = _build_focus_empty_mode(state)
+
+    stacked_controls: list[ft.Control] = []
+    if read_error_message:
+        stacked_controls.append(
+            _build_status_banner(
+                title="Error de lectura (Firestore)",
+                body=read_error_message,
+                background=COLOR_ERROR_BG,
+                border_color=COLOR_ERROR_BORDER,
+                foreground=COLOR_ERROR_TEXT,
+            )
+        )
+    if read_warning_message:
+        stacked_controls.append(
+            _build_status_banner(
+                title="Advertencia de consistencia",
+                body=read_warning_message,
+                background=COLOR_WARNING_BG,
+                border_color=COLOR_WARNING_BORDER,
+                foreground=COLOR_WARNING_TEXT,
+            )
+        )
+    stacked_controls.append(primary_content)
 
     return ft.Container(
         expand=True,
         bgcolor=COLOR_CENTER_BG,
         padding=ft.Padding.all(CENTER_PANEL_PADDING),
-        content=content,
+        content=ft.Column(spacing=12, controls=stacked_controls),
     )
 
 
@@ -325,13 +414,17 @@ def _build_focus_empty_mode(state: MainScreenLocalState) -> ft.Control:
             _build_placeholder_card(
                 title="Visor (sticky) vacío",
                 body=(
-                    "En #53 el visor se mantiene separado de la navegación. "
-                    "Cuando selecciones una entry, seguirá visible aunque cambies de year/week."
+                    "En #53/#54 el visor se mantiene separado de la navegación. "
+                    "Cuando selecciones una entry mock, seguirá visible aunque cambies de año/week."
                 ),
                 min_height=108,
             ),
             _build_placeholder_card(
-                title=f"Navegación actual (mock): Año {state.selected_year}",
+                title=(
+                    f"Navegación actual: Año {state.selected_year}"
+                    if state.selected_year is not None
+                    else "Navegación actual: sin año disponible"
+                ),
                 body="No hay week seleccionada todavía.",
                 min_height=74,
             ),
@@ -360,7 +453,7 @@ def _build_focus_week_mode(week: MockWeek) -> ft.Control:
                 ],
             ),
             _build_placeholder_card(
-                title="Notas de la week (mock)",
+                title="Notas de la week",
                 body=week.notes_preview,
                 min_height=110,
             ),
@@ -379,32 +472,35 @@ def _build_focus_entry_mode(
     *,
     state: MainScreenLocalState,
     viewer_entry: MockEntry,
-    active_entry_mock: MockEntry | None,
+    active_entry_ref: EntryRef | None,
+    active_entry_label: str | None,
 ) -> ft.Control:
     viewer_matches_selected_week = _entry_ref_matches_selected_week(state, viewer_entry.ref)
-    active_here = active_entry_mock is not None and active_entry_mock.ref == viewer_entry.ref
+    active_here = active_entry_ref is not None and active_entry_ref == viewer_entry.ref
 
     context_lines = [
-        f"Viendo: {viewer_entry.label} · Week {viewer_entry.ref.week_number} · Año {viewer_entry.ref.year_number}",
         (
-            f"Navegación actual: Año {state.selected_year}"
-            + (
-                f" · Week {state.selected_week}"
-                if state.selected_week is not None
-                else " · sin week seleccionada"
-            )
+            f"Viendo: {viewer_entry.label} · Week {viewer_entry.ref.week_number} · "
+            f"Año {viewer_entry.ref.year_number}"
         ),
+        _format_navigation_line(state),
     ]
     if not viewer_matches_selected_week:
         context_lines.append(
             "Visor sticky: la entry visible no coincide con la week navegada actualmente."
         )
 
-    session_mock_text = (
-        "Con sesión activa (mock) en esta entry."
-        if active_here
-        else "Sin sesión activa (mock) en esta entry."
-    )
+    if active_entry_ref is None:
+        session_status_text = "Sin sesión activa real."
+    elif active_here:
+        session_status_text = f"Con sesión activa aquí: {active_entry_label or 'Entry activa'}."
+    else:
+        session_status_text = f"Con sesión activa en otra entry: {active_entry_label or 'Entry activa'}."
+
+    detail_body = f"Tipo: {viewer_entry.entry_type}"
+    if viewer_entry.scenario_ref:
+        detail_body += f"\nScenario ref: {viewer_entry.scenario_ref}"
+    detail_body += "\nDatos reales de entries/sesiones quedan para Q5/Q8."
 
     return ft.Column(
         spacing=12,
@@ -421,7 +517,7 @@ def _build_focus_entry_mode(
                     ),
                     _build_badge(viewer_entry.entry_type, "#E7E0FF", "#4F46A5"),
                     _build_badge(
-                        "activo aquí (mock)" if active_here else "visor (mock)",
+                        "activo aquí" if active_here else "visor",
                         "#DFF4FF" if active_here else "#F0F0F0",
                         "#0E5E78" if active_here else "#666666",
                     ),
@@ -433,33 +529,159 @@ def _build_focus_entry_mode(
                 min_height=110,
             ),
             _build_placeholder_card(
-                title="Detalle de entry (mock)",
-                body=(
-                    f"Tipo: {viewer_entry.entry_type}\n"
-                    + (
-                        f"Scenario ref: {viewer_entry.scenario_ref}\n"
-                        if viewer_entry.scenario_ref
-                        else ""
-                    )
-                    + "Datos reales y sincronización llegarán en #54+."
-                ),
+                title="Detalle de entry (mock hasta Q5)",
+                body=detail_body,
                 min_height=96,
             ),
             _build_placeholder_card(
-                title="Bloque de sesión (mock)",
+                title="Bloque de sesión (mock hasta Q8)",
                 body=(
-                    f"{session_mock_text}\n"
-                    "Start/Stop reales y sesiones persistidas quedan fuera de #53."
+                    f"{session_status_text}\n"
+                    "Start/Stop reales y sesiones persistidas quedan fuera de #54."
                 ),
                 min_height=84,
             ),
             _build_placeholder_card(
                 title="Recursos de la entry (mock)",
-                body="Placeholder visual de recursos. Sin datos reales ni mutaciones.",
+                body="El visor sigue mock en #54; los totales globales sí vienen de Q1.",
                 min_height=72,
             ),
         ],
     )
+
+
+def _build_bottom_status_bar(
+    *,
+    env_name: str,
+    viewer_entry: MockEntry | None,
+    active_entry_ref: EntryRef | None,
+    active_entry_label: str | None,
+    active_status_error_message: str | None,
+    campaign_resource_totals: dict[str, int] | None,
+    on_manual_refresh: Callable[[], None],
+) -> ft.Control:
+    active_text, active_detail_text = _active_status_texts(
+        active_entry_ref=active_entry_ref,
+        active_entry_label=active_entry_label,
+        active_status_error_message=active_status_error_message,
+        viewer_entry=viewer_entry,
+    )
+    viewer_text = (
+        f"Viendo: {_entry_short_label(viewer_entry)}"
+        if viewer_entry is not None
+        else "Sin entry en visor"
+    )
+
+    return ft.Container(
+        height=BOTTOM_BAR_HEIGHT,
+        bgcolor=COLOR_BOTTOM_BAR_BG,
+        padding=ft.Padding(left=16, top=12, right=16, bottom=12),
+        content=ft.Row(
+            alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+            vertical_alignment=ft.CrossAxisAlignment.CENTER,
+            controls=[
+                ft.Column(
+                    spacing=2,
+                    horizontal_alignment=ft.CrossAxisAlignment.START,
+                    controls=[
+                        ft.Text(
+                            "Totales (read-only)",
+                            size=16,
+                            weight=ft.FontWeight.BOLD,
+                            color=COLOR_WHITE,
+                        ),
+                        ft.Text(
+                            _format_resource_totals(campaign_resource_totals),
+                            size=12,
+                            color="#EAF9FF",
+                        ),
+                    ],
+                ),
+                ft.Row(
+                    spacing=12,
+                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                    controls=[
+                        ft.Column(
+                            spacing=2,
+                            horizontal_alignment=ft.CrossAxisAlignment.END,
+                            controls=[
+                                ft.Text(
+                                    active_text,
+                                    size=13,
+                                    weight=ft.FontWeight.BOLD,
+                                    color=COLOR_WHITE,
+                                    text_align=ft.TextAlign.RIGHT,
+                                ),
+                                ft.Text(
+                                    active_detail_text or viewer_text,
+                                    size=12,
+                                    color="#EAF9FF",
+                                    text_align=ft.TextAlign.RIGHT,
+                                ),
+                                ft.Text(
+                                    f"{viewer_text} · env={env_name}",
+                                    size=11,
+                                    color="#DDF5FF",
+                                    text_align=ft.TextAlign.RIGHT,
+                                ),
+                            ],
+                        ),
+                        _build_refresh_button(on_manual_refresh),
+                    ],
+                ),
+            ],
+        ),
+    )
+
+
+def _build_refresh_button(on_click: Callable[[], None]) -> ft.Control:
+    return ft.Container(
+        padding=ft.Padding(left=10, top=8, right=10, bottom=8),
+        bgcolor="#21A4D3",
+        border_radius=8,
+        border=ft.Border.all(1, "#BFEFFF"),
+        on_click=lambda _e: on_click(),
+        content=ft.Text(
+            "Refresh",
+            size=12,
+            weight=ft.FontWeight.BOLD,
+            color=COLOR_WHITE,
+        ),
+    )
+
+
+def _active_status_texts(
+    *,
+    active_entry_ref: EntryRef | None,
+    active_entry_label: str | None,
+    active_status_error_message: str | None,
+    viewer_entry: MockEntry | None,
+) -> tuple[str, str]:
+    if active_status_error_message:
+        return (
+            "Estado activo no disponible",
+            _truncate(active_status_error_message, 80),
+        )
+
+    if active_entry_ref is None:
+        return ("Sin sesión activa", "")
+
+    label = active_entry_label or f"Entry {active_entry_ref.entry_id}"
+    if viewer_entry is not None and viewer_entry.ref == active_entry_ref:
+        return (f"Con sesión activa: {label} · aquí", "")
+    return (f"Con sesión activa: {label} · en otra entry", "")
+
+
+def _format_resource_totals(resource_totals: dict[str, int] | None) -> str:
+    if resource_totals is None:
+        return "Totales no disponibles (Q1 no cargado)"
+    if not resource_totals:
+        return "Sin recursos materializados"
+
+    items = sorted(resource_totals.items(), key=lambda item: item[0])
+    visible = [f"{key}={value}" for key, value in items[:4]]
+    suffix = " …" if len(items) > 4 else ""
+    return " · ".join(visible) + suffix
 
 
 def _build_badge(label: str, background: str, foreground: str) -> ft.Control:
@@ -472,6 +694,29 @@ def _build_badge(label: str, background: str, foreground: str) -> ft.Control:
             size=12,
             color=foreground,
             weight=ft.FontWeight.W_500,
+        ),
+    )
+
+
+def _build_status_banner(
+    *,
+    title: str,
+    body: str,
+    background: str,
+    border_color: str,
+    foreground: str,
+) -> ft.Control:
+    return ft.Container(
+        padding=ft.Padding.all(12),
+        bgcolor=background,
+        border=ft.Border.all(1, border_color),
+        border_radius=8,
+        content=ft.Column(
+            spacing=4,
+            controls=[
+                ft.Text(title, size=14, weight=ft.FontWeight.BOLD, color=foreground),
+                ft.Text(body, size=12, color=foreground),
+            ],
         ),
     )
 
@@ -503,91 +748,6 @@ def _build_placeholder_card(title: str, body: str, min_height: int) -> ft.Contro
     )
 
 
-def _build_bottom_status_bar(
-    *,
-    env_name: str,
-    viewer_entry: MockEntry | None,
-    active_entry_mock: MockEntry | None,
-) -> ft.Control:
-    active_text = _active_mock_status_text(active_entry_mock, viewer_entry)
-    viewer_text = (
-        f"Viendo: {_entry_short_label(viewer_entry)}"
-        if viewer_entry is not None
-        else "Sin entry en visor"
-    )
-
-    return ft.Container(
-        height=BOTTOM_BAR_HEIGHT,
-        bgcolor=COLOR_BOTTOM_BAR_BG,
-        padding=ft.Padding(left=16, top=12, right=16, bottom=12),
-        content=ft.Row(
-            alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
-            vertical_alignment=ft.CrossAxisAlignment.CENTER,
-            controls=[
-                ft.Column(
-                    spacing=2,
-                    horizontal_alignment=ft.CrossAxisAlignment.START,
-                    controls=[
-                        ft.Text(
-                            "Totales (placeholder)",
-                            size=16,
-                            weight=ft.FontWeight.BOLD,
-                            color=COLOR_WHITE,
-                        ),
-                        ft.Text(
-                            "Se conectarán con Q1 y reglas de recursos en #54+.",
-                            size=12,
-                            color="#EAF9FF",
-                        ),
-                    ],
-                ),
-                ft.Column(
-                    spacing=2,
-                    horizontal_alignment=ft.CrossAxisAlignment.END,
-                    controls=[
-                        ft.Text(
-                            active_text,
-                            size=13,
-                            weight=ft.FontWeight.BOLD,
-                            color=COLOR_WHITE,
-                            text_align=ft.TextAlign.RIGHT,
-                        ),
-                        ft.Text(
-                            viewer_text,
-                            size=12,
-                            color="#EAF9FF",
-                            text_align=ft.TextAlign.RIGHT,
-                        ),
-                        ft.Text(
-                            f"env={env_name}",
-                            size=11,
-                            color="#DDF5FF",
-                            text_align=ft.TextAlign.RIGHT,
-                        ),
-                    ],
-                ),
-            ],
-        ),
-    )
-
-
-def _active_mock_status_text(
-    active_entry_mock: MockEntry | None,
-    viewer_entry: MockEntry | None,
-) -> str:
-    if active_entry_mock is None:
-        return "Sin sesión activa (mock)"
-
-    base = f"Con sesión activa (mock): {_entry_short_label(active_entry_mock)}"
-    if viewer_entry is not None and viewer_entry.ref == active_entry_mock.ref:
-        return f"{base} · aquí"
-    return f"{base} · en otra entry"
-
-
-def _entry_short_label(entry: MockEntry) -> str:
-    return f"{entry.label} (W{entry.ref.week_number})"
-
-
 def _find_selected_week(
     state: MainScreenLocalState,
     weeks_for_selected_year: list[MockWeek],
@@ -614,7 +774,26 @@ def _entry_ref_matches_selected_week(
     entry_ref: EntryRef,
 ) -> bool:
     return (
-        state.selected_week is not None
+        state.selected_year is not None
+        and state.selected_week is not None
         and entry_ref.year_number == state.selected_year
         and entry_ref.week_number == state.selected_week
     )
+
+
+def _entry_short_label(entry: MockEntry) -> str:
+    return f"{entry.label} (W{entry.ref.week_number})"
+
+
+def _format_navigation_line(state: MainScreenLocalState) -> str:
+    if state.selected_year is None:
+        return "Navegación actual: sin año visible"
+    if state.selected_week is None:
+        return f"Navegación actual: Año {state.selected_year} · sin week seleccionada"
+    return f"Navegación actual: Año {state.selected_year} · Week {state.selected_week}"
+
+
+def _truncate(value: str, max_length: int) -> str:
+    if len(value) <= max_length:
+        return value
+    return value[: max_length - 1] + "…"

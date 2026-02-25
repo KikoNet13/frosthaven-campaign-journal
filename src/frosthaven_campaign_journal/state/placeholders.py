@@ -30,17 +30,15 @@ class MockWeek:
 
 @dataclass
 class MainScreenLocalState:
-    selected_year: int
+    selected_year: int | None
     selected_week: int | None
     viewer_entry_ref: EntryRef | None
-    active_entry_ref_mock: EntryRef | None
 
 
 class MockMainScreenDataset(NamedTuple):
     years: list[int]
     weeks_by_year: dict[int, list[MockWeek]]
     entries_by_week: dict[tuple[int, int], list[MockEntry]]
-    active_entry_ref_mock: EntryRef | None
 
 
 def build_mock_years() -> list[int]:
@@ -142,19 +140,16 @@ def build_mock_main_screen_dataset() -> MockMainScreenDataset:
     years = build_mock_years()
     weeks_by_year = build_mock_weeks_by_year()
     entries_by_week = build_mock_entries_by_week()
-    active_entry_ref_mock = entries_by_week[(2, 36)][0].ref
     return MockMainScreenDataset(
         years=years,
         weeks_by_year=weeks_by_year,
         entries_by_week=entries_by_week,
-        active_entry_ref_mock=active_entry_ref_mock,
     )
 
 
-def build_initial_main_screen_state(active_entry_ref_mock: EntryRef | None) -> MainScreenLocalState:
+def build_initial_main_screen_state() -> MainScreenLocalState:
     return MainScreenLocalState(
-        selected_year=2,
+        selected_year=None,
         selected_week=None,
         viewer_entry_ref=None,
-        active_entry_ref_mock=active_entry_ref_mock,
     )

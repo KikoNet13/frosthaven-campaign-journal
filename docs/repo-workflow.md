@@ -6,8 +6,8 @@
 - `purpose`: Definir el flujo Git y GitHub adoptado.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-02-24
-- `next_review`: 2026-03-10
+- `last_updated`: 2026-02-25
+- `next_review`: 2026-03-11
 
 ## Objetivo
 
@@ -170,6 +170,94 @@ Aplicar un flujo profesional, simple y mantenible para un solo desarrollador.
   - referencia al Issue
   - resumen de alcance
   - checklist de calidad completada
+
+## Patrón operativo de validación UI Flet (web) con Playwright/DevTools
+
+### Objetivo
+
+Definir un patrón simple y repetible para validar UI/flujo visual durante la
+implementación en Flet, evitando bloquear la CLI de Codex con procesos largos.
+
+### Convención por defecto
+
+- Kiko lanza y mantiene el servidor web de Flet cuando haga falta validar UI.
+- Codex usa Playwright/DevTools para inspección visual y técnica.
+- La evidencia se adapta al tipo de tarea (no se fuerza un paquete completo en
+  cada validación).
+
+### Comando estándar de arranque (Kiko)
+
+```powershell
+pipenv run flet run src/main.py --web -d -r --port 8550 --host 127.0.0.1
+```
+
+- `--web`: ejecuta la app como sitio web local.
+- `-d -r`: autoreload recursivo para iteración de UI.
+- `--port 8550`: URL estable para validación repetible.
+- `--host 127.0.0.1`: escucha local explícita.
+
+### Roles y flujo
+
+#### Fase A — Preparación (Kiko)
+
+1. Cambiar a la rama de trabajo de la issue en curso (si aplica).
+1. Lanzar el servidor con el comando estándar.
+1. Confirmar a Codex:
+   - URL activa (por defecto `http://127.0.0.1:8550`);
+   - warnings relevantes al arranque (si existen).
+
+#### Fase B — Validación (Codex)
+
+1. Abrir la URL activa con Playwright.
+1. Verificar el estado esperado según la tarea (layout, navegación,
+   placeholders, etc.).
+1. Inspeccionar según necesidad:
+   - snapshot/captura;
+   - consola del navegador;
+   - requests/red;
+   - observación visual y estados.
+1. Reportar resultado:
+   - qué se comprobó;
+   - evidencia usada;
+   - resultado (`ok`, `problema`, `bloqueado`);
+   - siguiente acción (seguir, ajustar, refresh, relanzar).
+
+#### Fase C — Iteración (Kiko + Codex)
+
+1. Codex implementa cambios de la issue.
+1. Kiko mantiene el servidor en marcha.
+1. Codex revalida en la misma URL.
+1. Repetir hasta aceptación del alcance.
+
+#### Fase D — Cierre de validación de tarea
+
+En el cierre de la unidad (issue/PR), Codex deja una nota breve de validación:
+
+- tipo de evidencia usada;
+- estados/pantallas comprobados;
+- limitaciones o partes no validadas (si las hay).
+
+### Evidencia adaptativa (regla)
+
+- Ligera: observación + snapshot/captura puntual (cambios pequeños).
+- Media: capturas + observaciones + consola si hay warning/error (layout/flujo).
+- Alta: captura + consola + red + pasos de reproducción (fallos raros o bloqueos).
+
+Codex escala el nivel cuando:
+
+- hay errores de consola;
+- el layout no coincide con Figma/contrato;
+- hay comportamiento intermitente;
+- la validación bloquea el cierre de la issue.
+
+### Fallbacks operativos
+
+- Puerto `8550` ocupado:
+  - Kiko relanza en otro puerto (por ejemplo `8551`) y comunica la URL exacta.
+- Autoreload no refleja cambios:
+  - Codex pide refresh manual;
+  - si persiste, Kiko relanza servidor;
+  - registrar incidencia solo si es repetitiva o bloqueante.
 
 ## Limpieza de ramas
 

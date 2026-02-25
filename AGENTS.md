@@ -6,8 +6,8 @@
 - `purpose`: Contrato operativo de trabajo entre IA y humano.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-02-24
-- `next_review`: 2026-03-10
+- `last_updated`: 2026-02-25
+- `next_review`: 2026-03-11
 
 ## Propósito
 
@@ -126,6 +126,13 @@ La prioridad es mantener un flujo profesional, trazable y sencillo.
    propone, luego revisa con Kiko y solo después documenta como cerrado.
 1. Cuando sea necesario responder con interfaz interactiva, Codex debe indicar
    “activa `Plan Mode`” antes de lanzar decisiones.
+1. Validación UI en implementación (Flet web):
+   - Kiko lanza el servidor cuando haga falta validar UI/flujo visual;
+   - comando por defecto: `pipenv run flet run src/main.py --web -d -r --port 8550 --host 127.0.0.1`;
+   - Kiko confirma URL activa y warnings relevantes;
+   - Codex valida con Playwright/DevTools y usa evidencia adaptativa (solo la necesaria según la tarea);
+   - fallback por defecto si `8550` está ocupado: puerto alternativo y URL explícita comunicada por Kiko;
+   - detalles operativos en `docs/repo-workflow.md`.
 1. Al inicio de una sesión, Kiko puede pedir “dame 3-5 tareas recomendadas”
    y Codex propondrá un menú priorizado.
 1. Al cierre de cada sesión, Codex devuelve siguiente menú numerado.

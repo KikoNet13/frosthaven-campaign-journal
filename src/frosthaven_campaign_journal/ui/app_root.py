@@ -14,18 +14,24 @@ from frosthaven_campaign_journal.data import (
     FirestoreReadError,
     FirestoreTransitionInvalidError,
     FirestoreValidationError,
+    FirestoreWriteError,
     WeekRead,
+    WeekWriteResult,
     build_firestore_client,
+    close_week,
     derive_year_from_week_cursor,
     load_main_screen_snapshot,
     manual_create_session,
     manual_delete_session,
     manual_update_session,
+    reopen_week,
     read_entry_by_ref,
     read_q5_entries_for_selected_week,
     read_q8_sessions_for_entry,
+    reclose_week,
     start_session,
     stop_session,
+    update_week_notes,
 )
 from frosthaven_campaign_journal.state.placeholders import (
     EntryRef,
@@ -61,6 +67,8 @@ class EntryPanelReadState:
     viewer_sessions_error_message: str | None = None
     session_write_error_message: str | None = None
     session_write_pending: bool = False
+    week_write_error_message: str | None = None
+    week_write_pending: bool = False
 
 
 def build_app_root(page: ft.Page) -> ft.Control:
@@ -96,6 +104,8 @@ def build_app_root(page: ft.Page) -> ft.Control:
             viewer_sessions_error_message=entry_panel_state.viewer_sessions_error_message,
             session_write_error_message=entry_panel_state.session_write_error_message,
             session_write_pending=entry_panel_state.session_write_pending,
+            week_write_error_message=entry_panel_state.week_write_error_message,
+            week_write_pending=entry_panel_state.week_write_pending,
             active_entry_ref=read_state.active_entry_ref,
             active_entry_label=read_state.active_entry_label,
             active_status_error_message=read_state.active_status_error_message,
@@ -114,6 +124,10 @@ def build_app_root(page: ft.Page) -> ft.Control:
             on_open_manual_create_session=handle_open_create_session_modal,
             on_open_manual_edit_session=handle_open_edit_session_modal,
             on_open_manual_delete_session=handle_open_delete_session_confirm,
+            on_open_week_notes_modal=handle_open_week_notes_modal,
+            on_request_close_week=handle_request_close_week,
+            on_request_reopen_week=handle_request_reopen_week,
+            on_request_reclose_week=handle_request_reclose_week,
         )
 
     def _build_client():
@@ -264,6 +278,7 @@ def build_app_root(page: ft.Page) -> ft.Control:
         local_state.selected_year = read_state.years[current_index - 1]
         local_state.selected_week = None
         _clear_session_write_error()
+        _clear_week_write_error()
         entry_panel_state.entries_for_selected_week = []
         entry_panel_state.entries_panel_error_message = None
         refresh_and_render(selected_year_override=local_state.selected_year, reload_q8=False)
@@ -278,6 +293,7 @@ def build_app_root(page: ft.Page) -> ft.Control:
         local_state.selected_year = read_state.years[current_index + 1]
         local_state.selected_week = None
         _clear_session_write_error()
+        _clear_week_write_error()
         entry_panel_state.entries_for_selected_week = []
         entry_panel_state.entries_panel_error_message = None
         refresh_and_render(selected_year_override=local_state.selected_year, reload_q8=False)
@@ -290,6 +306,7 @@ def build_app_root(page: ft.Page) -> ft.Control:
             return
         local_state.selected_week = week_number
         _clear_session_write_error()
+        _clear_week_write_error()
         load_entries_for_selected_week()  # Q5 solo, el visor sticky no recarga Q8 por navegación
         render_shell()
         page.update()
@@ -297,12 +314,14 @@ def build_app_root(page: ft.Page) -> ft.Control:
     def handle_select_entry(entry_ref: EntryRef) -> None:
         local_state.viewer_entry_ref = entry_ref
         _clear_session_write_error()
+        _clear_week_write_error()
         load_viewer_entry_and_sessions()  # Q8 sigue al visor sticky
         render_shell()
         page.update()
 
     def handle_manual_refresh() -> None:
         _clear_session_write_error()
+        _clear_week_write_error()
         refresh_and_render(
             selected_year_override=local_state.selected_year,
             reload_q5=(local_state.selected_week is not None),
@@ -314,6 +333,74 @@ def build_app_root(page: ft.Page) -> ft.Control:
 
     def _set_session_write_error(message: str) -> None:
         entry_panel_state.session_write_error_message = message
+
+    def _clear_week_write_error() -> None:
+        entry_panel_state.week_write_error_message = None
+
+    def _set_week_write_error(message: str) -> None:
+        entry_panel_state.week_write_error_message = message
+
+    def _get_selected_week_for_write() -> MockWeek | None:
+        if local_state.selected_week is None:
+            return None
+        for week in current_weeks_for_selected_year():
+            if week.week_number == local_state.selected_week:
+                return week
+        return None
+
+    def _viewer_matches_week(year_number: int, week_number: int) -> bool:
+        return (
+            local_state.viewer_entry_ref is not None
+            and local_state.viewer_entry_ref.year_number == year_number
+            and local_state.viewer_entry_ref.week_number == week_number
+        )
+
+    def _run_week_write(action) -> WeekWriteResult | None:
+        target_week = _get_selected_week_for_write()
+        if local_state.selected_year is None or local_state.selected_week is None or target_week is None:
+            _set_week_write_error("No hay week seleccionada para ejecutar la acción.")
+            render_shell()
+            page.update()
+            return None
+
+        year_number = local_state.selected_year
+        week_number = local_state.selected_week
+
+        entry_panel_state.week_write_pending = True
+        _clear_week_write_error()
+        render_shell()
+        page.update()
+
+        result: WeekWriteResult | None = None
+        success = True
+        try:
+            client = _build_client()
+            result = action(client, year_number, week_number)
+        except FirestoreConflictError as exc:
+            _set_week_write_error(str(exc))
+            success = False
+        except (
+            FirestoreTransitionInvalidError,
+            FirestoreValidationError,
+            FirestoreReadError,
+            FirestoreWriteError,
+        ) as exc:
+            _set_week_write_error(str(exc))
+            success = False
+        finally:
+            entry_panel_state.week_write_pending = False
+
+        if not success:
+            render_shell()
+            page.update()
+            return None
+
+        refresh_and_render(
+            selected_year_override=local_state.selected_year,
+            reload_q5=False,
+            reload_q8=_viewer_matches_week(year_number, week_number),
+        )
+        return result
 
     def _run_session_write(action) -> bool:
         if local_state.viewer_entry_ref is None:
@@ -357,6 +444,148 @@ def build_app_root(page: ft.Page) -> ft.Control:
 
     def handle_stop_session() -> None:
         _run_session_write(lambda client, entry_ref: stop_session(client, entry_ref=entry_ref))
+
+    def _show_week_notes_modal() -> None:
+        target_week = _get_selected_week_for_write()
+        if target_week is None:
+            _set_week_write_error("No hay week seleccionada para editar notas.")
+            render_shell()
+            page.update()
+            return
+
+        notes_field = ft.TextField(
+            label=f"Notas week {target_week.week_number}",
+            multiline=True,
+            min_lines=4,
+            max_lines=10,
+            value=target_week.notes_preview or "",
+            autofocus=True,
+            expand=True,
+        )
+
+        def _submit(_e) -> None:
+            notes_value = (notes_field.value or "").strip()
+            _close_dialog()
+            _run_week_write(
+                lambda client, year_number, week_number: update_week_notes(
+                    client,
+                    year_number=year_number,
+                    week_number=week_number,
+                    notes=notes_value,
+                )
+            )
+
+        dialog = ft.AlertDialog(
+            modal=True,
+            title=ft.Text("Editar notas de week"),
+            content=ft.Container(width=520, content=notes_field),
+            actions=[
+                ft.TextButton("Cancelar", on_click=lambda _e: _close_dialog()),
+                ft.FilledButton("Guardar", on_click=_submit),
+            ],
+            actions_alignment=ft.MainAxisAlignment.END,
+        )
+        page.dialog = dialog
+        dialog.open = True
+        page.update()
+
+    def _show_week_state_confirm_dialog(
+        *,
+        title: str,
+        body: str,
+        confirm_label: str,
+        action,
+    ) -> None:
+        def _confirm(_e) -> None:
+            _close_dialog()
+            result = _run_week_write(action)
+            if result is None:
+                return
+            if result.auto_stopped_session_id:
+                page.snack_bar = ft.SnackBar(
+                    content=ft.Text(
+                        f"Week actualizada. Se auto-cerró la sesión {result.auto_stopped_session_id}."
+                    ),
+                    open=True,
+                )
+                page.update()
+
+        dialog = ft.AlertDialog(
+            modal=True,
+            title=ft.Text(title),
+            content=ft.Text(body),
+            actions=[
+                ft.TextButton("Cancelar", on_click=lambda _e: _close_dialog()),
+                ft.FilledButton(confirm_label, on_click=_confirm),
+            ],
+            actions_alignment=ft.MainAxisAlignment.END,
+        )
+        page.dialog = dialog
+        dialog.open = True
+        page.update()
+
+    def handle_open_week_notes_modal() -> None:
+        _show_week_notes_modal()
+
+    def handle_request_close_week() -> None:
+        target_week = _get_selected_week_for_write()
+        if target_week is None:
+            _set_week_write_error("No hay week seleccionada para cerrar.")
+            render_shell()
+            page.update()
+            return
+        _show_week_state_confirm_dialog(
+            title="Cerrar week",
+            body=(
+                f"¿Seguro que quieres cerrar la week {target_week.week_number}? "
+                "Si hay una sesión activa en esta week se auto-cerrará."
+            ),
+            confirm_label="Cerrar",
+            action=lambda client, year_number, week_number: close_week(
+                client,
+                year_number=year_number,
+                week_number=week_number,
+            ),
+        )
+
+    def handle_request_reopen_week() -> None:
+        target_week = _get_selected_week_for_write()
+        if target_week is None:
+            _set_week_write_error("No hay week seleccionada para reabrir.")
+            render_shell()
+            page.update()
+            return
+        _show_week_state_confirm_dialog(
+            title="Reabrir week",
+            body=f"¿Seguro que quieres reabrir la week {target_week.week_number}?",
+            confirm_label="Reabrir",
+            action=lambda client, year_number, week_number: reopen_week(
+                client,
+                year_number=year_number,
+                week_number=week_number,
+            ),
+        )
+
+    def handle_request_reclose_week() -> None:
+        target_week = _get_selected_week_for_write()
+        if target_week is None:
+            _set_week_write_error("No hay week seleccionada para re-cerrar.")
+            render_shell()
+            page.update()
+            return
+        _show_week_state_confirm_dialog(
+            title="Re-cerrar week",
+            body=(
+                f"¿Seguro que quieres re-cerrar la week {target_week.week_number}? "
+                "Si hay una sesión activa en esta week se auto-cerrará."
+            ),
+            confirm_label="Re-cerrar",
+            action=lambda client, year_number, week_number: reclose_week(
+                client,
+                year_number=year_number,
+                week_number=week_number,
+            ),
+        )
 
     def _close_dialog() -> None:
         if page.dialog is not None:
@@ -594,7 +823,7 @@ def build_app_root(page: ft.Page) -> ft.Control:
 
 def _map_week_read_to_mock(week: WeekRead) -> MockWeek:
     is_closed = week.status == "closed"
-    notes_preview = week.notes or f"Sin notas en la week {week.week_number}."
+    notes_preview = week.notes or ""
     return MockWeek(
         year_number=week.year_number,
         week_number=week.week_number,

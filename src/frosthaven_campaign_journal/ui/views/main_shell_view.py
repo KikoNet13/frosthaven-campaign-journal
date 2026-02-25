@@ -109,7 +109,7 @@ def _build_year_nav_button(label: str) -> ft.Control:
         height=42,
         bgcolor=COLOR_TOP_NAV_BUTTON_BG,
         border_radius=999,
-        alignment=ft.alignment.center,
+        alignment=ft.Alignment.CENTER,
         content=ft.Text(
             label,
             size=20,
@@ -128,7 +128,7 @@ def _build_week_tile(week_number: int, is_current: bool, is_selected: bool) -> f
         bgcolor=bgcolor,
         border=border,
         border_radius=2,
-        alignment=ft.alignment.center,
+        alignment=ft.Alignment.CENTER,
         content=ft.Text(
             str(week_number),
             size=13,

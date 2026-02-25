@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import NamedTuple
 
 
@@ -16,7 +16,20 @@ class MockEntry:
     ref: EntryRef
     label: str
     entry_type: str
-    scenario_ref: str | None = None
+    scenario_ref: int | None = None
+    order_index: int | None = None
+    resource_deltas: dict[str, int] = field(default_factory=dict)
+    created_at_utc: object | None = None
+    updated_at_utc: object | None = None
+
+
+@dataclass(frozen=True)
+class ViewerSessionItem:
+    session_id: str
+    started_at_utc: object | None
+    ended_at_utc: object | None
+    created_at_utc: object | None = None
+    updated_at_utc: object | None = None
 
 
 @dataclass(frozen=True)
@@ -85,13 +98,13 @@ def build_mock_entries_by_week() -> dict[tuple[int, int], list[MockEntry]]:
             ref=EntryRef(year_number=2, week_number=35, entry_id="w35-e1"),
             label="Escenario 51",
             entry_type="scenario",
-            scenario_ref="scenario_51",
+            scenario_ref=51,
         ),
         MockEntry(
             ref=EntryRef(year_number=2, week_number=35, entry_id="w35-e2"),
             label="Escenario 42",
             entry_type="scenario",
-            scenario_ref="scenario_42",
+            scenario_ref=42,
         ),
         MockEntry(
             ref=EntryRef(year_number=2, week_number=35, entry_id="w35-e3"),
@@ -107,13 +120,13 @@ def build_mock_entries_by_week() -> dict[tuple[int, int], list[MockEntry]]:
             ref=EntryRef(year_number=2, week_number=36, entry_id="w36-e1"),
             label="Escenario 51",
             entry_type="scenario",
-            scenario_ref="scenario_51",
+            scenario_ref=51,
         ),
         MockEntry(
             ref=EntryRef(year_number=2, week_number=36, entry_id="w36-e2"),
             label="Escenario 42",
             entry_type="scenario",
-            scenario_ref="scenario_42",
+            scenario_ref=42,
         ),
         MockEntry(
             ref=EntryRef(year_number=2, week_number=36, entry_id="w36-e3"),
@@ -129,7 +142,7 @@ def build_mock_entries_by_week() -> dict[tuple[int, int], list[MockEntry]]:
             ref=EntryRef(year_number=2, week_number=34, entry_id="w34-e1"),
             label="Escenario 17",
             entry_type="scenario",
-            scenario_ref="scenario_17",
+            scenario_ref=17,
         )
     ]
 

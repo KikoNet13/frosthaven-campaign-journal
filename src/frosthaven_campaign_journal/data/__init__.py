@@ -28,6 +28,13 @@ from .session_writes import (
     start_session,
     stop_session,
 )
+from .week_writes import (
+    WeekWriteResult,
+    close_week,
+    reopen_week,
+    reclose_week,
+    update_week_notes,
+)
 from .write_errors import (
     FirestoreConflictError,
     FirestoreTransitionInvalidError,
@@ -50,7 +57,9 @@ __all__ = [
     "MainScreenSnapshot",
     "SessionWriteResult",
     "WeekRead",
+    "WeekWriteResult",
     "build_firestore_client",
+    "close_week",
     "derive_year_from_week_cursor",
     "describe_firestore_status",
     "load_main_screen_snapshot",
@@ -60,6 +69,9 @@ __all__ = [
     "read_entry_by_ref",
     "read_q5_entries_for_selected_week",
     "read_q8_sessions_for_entry",
+    "reclose_week",
+    "reopen_week",
     "start_session",
     "stop_session",
+    "update_week_notes",
 ]

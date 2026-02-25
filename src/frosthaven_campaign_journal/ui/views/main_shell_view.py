@@ -54,6 +54,8 @@ def build_main_shell_view(
     viewer_sessions_error_message: str | None,
     session_write_error_message: str | None,
     session_write_pending: bool,
+    week_write_error_message: str | None,
+    week_write_pending: bool,
     active_entry_ref: EntryRef | None,
     active_entry_label: str | None,
     active_status_error_message: str | None,
@@ -72,6 +74,10 @@ def build_main_shell_view(
     on_open_manual_create_session: Callable[[], None],
     on_open_manual_edit_session: Callable[[str], None],
     on_open_manual_delete_session: Callable[[str], None],
+    on_open_week_notes_modal: Callable[[], None],
+    on_request_close_week: Callable[[], None],
+    on_request_reopen_week: Callable[[], None],
+    on_request_reclose_week: Callable[[], None],
 ) -> ft.Control:
     return ft.Container(
         expand=True,
@@ -105,6 +111,8 @@ def build_main_shell_view(
                     viewer_sessions_error_message=viewer_sessions_error_message,
                     session_write_error_message=session_write_error_message,
                     session_write_pending=session_write_pending,
+                    week_write_error_message=week_write_error_message,
+                    week_write_pending=week_write_pending,
                     active_entry_ref=active_entry_ref,
                     active_entry_label=active_entry_label,
                     read_error_message=read_error_message,
@@ -114,6 +122,10 @@ def build_main_shell_view(
                     on_open_manual_create_session=on_open_manual_create_session,
                     on_open_manual_edit_session=on_open_manual_edit_session,
                     on_open_manual_delete_session=on_open_manual_delete_session,
+                    on_open_week_notes_modal=on_open_week_notes_modal,
+                    on_request_close_week=on_request_close_week,
+                    on_request_reopen_week=on_request_reopen_week,
+                    on_request_reclose_week=on_request_reclose_week,
                 ),
                 _build_bottom_status_bar(
                     env_name=env_name,
@@ -385,6 +397,8 @@ def _build_center_focus_panel(
     viewer_sessions_error_message: str | None,
     session_write_error_message: str | None,
     session_write_pending: bool,
+    week_write_error_message: str | None,
+    week_write_pending: bool,
     active_entry_ref: EntryRef | None,
     active_entry_label: str | None,
     read_error_message: str | None,
@@ -394,6 +408,10 @@ def _build_center_focus_panel(
     on_open_manual_create_session: Callable[[], None],
     on_open_manual_edit_session: Callable[[str], None],
     on_open_manual_delete_session: Callable[[str], None],
+    on_open_week_notes_modal: Callable[[], None],
+    on_request_close_week: Callable[[], None],
+    on_request_reopen_week: Callable[[], None],
+    on_request_reclose_week: Callable[[], None],
 ) -> ft.Control:
     selected_week = _find_selected_week(state, weeks_for_selected_year)
 
@@ -414,7 +432,15 @@ def _build_center_focus_panel(
             on_open_manual_delete_session=on_open_manual_delete_session,
         )
     elif selected_week is not None:
-        primary_content = _build_focus_week_mode(selected_week)
+        primary_content = _build_focus_week_mode(
+            selected_week,
+            week_write_error_message=week_write_error_message,
+            week_write_pending=week_write_pending,
+            on_open_week_notes_modal=on_open_week_notes_modal,
+            on_request_close_week=on_request_close_week,
+            on_request_reopen_week=on_request_reopen_week,
+            on_request_reclose_week=on_request_reclose_week,
+        )
     else:
         primary_content = _build_focus_empty_mode(state)
 
@@ -485,9 +511,86 @@ def _build_focus_empty_mode(state: MainScreenLocalState) -> ft.Control:
     )
 
 
-def _build_focus_week_mode(week: MockWeek) -> ft.Control:
+def _build_focus_week_mode(
+    week: MockWeek,
+    *,
+    week_write_error_message: str | None,
+    week_write_pending: bool,
+    on_open_week_notes_modal: Callable[[], None],
+    on_request_close_week: Callable[[], None],
+    on_request_reopen_week: Callable[[], None],
+    on_request_reclose_week: Callable[[], None],
+) -> ft.Control:
     badge_bg = "#EDEDED" if week.is_closed else "#D9F2D9"
     badge_fg = "#6A6A6A" if week.is_closed else "#237A3B"
+    action_buttons: list[ft.Control] = [
+        ft.OutlinedButton(
+            "Editar notas",
+            on_click=lambda _e: on_open_week_notes_modal(),
+            disabled=week_write_pending,
+            height=32,
+        )
+    ]
+    if week.is_closed:
+        action_buttons.append(
+            ft.FilledButton(
+                "Reopen",
+                on_click=lambda _e: on_request_reopen_week(),
+                disabled=week_write_pending,
+                height=32,
+            )
+        )
+    else:
+        action_buttons.extend(
+            [
+                ft.FilledButton(
+                    "Close",
+                    on_click=lambda _e: on_request_close_week(),
+                    disabled=week_write_pending,
+                    height=32,
+                ),
+                ft.OutlinedButton(
+                    "Reclose",
+                    on_click=lambda _e: on_request_reclose_week(),
+                    disabled=week_write_pending,
+                    height=32,
+                ),
+            ]
+        )
+
+    notes_controls: list[ft.Control] = [
+        ft.Row(spacing=8, wrap=True, controls=action_buttons)
+    ]
+    if week_write_pending:
+        notes_controls.append(
+            ft.Text(
+                "Procesando acción de week…",
+                size=12,
+                color=COLOR_TEXT_MUTED,
+                italic=True,
+            )
+        )
+    if week_write_error_message:
+        notes_controls.append(
+            ft.Container(
+                padding=ft.Padding.all(8),
+                bgcolor="#FFE7E7",
+                border=ft.Border.all(1, "#D87A7A"),
+                border_radius=6,
+                content=ft.Text(
+                    _truncate(week_write_error_message, 220),
+                    size=12,
+                    color=COLOR_ERROR_TEXT,
+                ),
+            )
+        )
+    notes_controls.append(
+        _build_placeholder_card(
+            title="Notas de la week",
+            body=week.notes_preview or f"Sin notas en la week {week.week_number}.",
+            min_height=110,
+        )
+    )
 
     return ft.Column(
         spacing=12,
@@ -505,10 +608,12 @@ def _build_focus_week_mode(week: MockWeek) -> ft.Control:
                     _build_badge(week.status_label, badge_bg, badge_fg),
                 ],
             ),
-            _build_placeholder_card(
-                title="Notas de la week",
-                body=week.notes_preview,
-                min_height=110,
+            ft.Container(
+                padding=ft.Padding.all(12),
+                bgcolor="#F6F6F6",
+                border_radius=8,
+                border=ft.Border.all(1, "#D6D6D6"),
+                content=ft.Column(spacing=8, controls=notes_controls),
             ),
             _build_placeholder_card(
                 title="Sin entry en visor",

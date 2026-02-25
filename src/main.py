@@ -13,7 +13,7 @@ def main(page: ft.Page) -> None:
     page.padding = 0
     page.horizontal_alignment = ft.CrossAxisAlignment.STRETCH
     page.vertical_alignment = ft.MainAxisAlignment.START
-    page.add(build_app_root())
+    page.add(build_app_root(page))
 
 
 def run() -> None:

@@ -60,6 +60,9 @@ No incluye:
 1. `selected_entry`:
    - única `Entry` visible/activa en el panel de edición para acciones de
      sesión en el flujo normal del MVP.
+   - una implementación puede materializar esto como **entry visible en visor**
+     separada de la navegación (`selected_week`) mientras preserve el contrato
+     de acciones sobre la entry visible.
 1. `active_entry`:
    - `Entry` que posee la sesión activa global (si existe), derivado de una
      `Session` con `ended_at_utc = null`.
@@ -67,6 +70,9 @@ No incluye:
    `selected_entry` (junto a total jugado y lista de sesiones desplegable).
 1. Cambiar `selected_week` o `selected_entry` no implica por sí mismo cambiar
    `current week` ni cerrar la sesión activa global.
+1. Una implementación puede mantener un **visor sticky** (última entry visible)
+   al navegar por weeks/años; esto no altera la separación de responsabilidades
+   entre navegación, visor y estado activo global.
 
 ## Modelo de estado del flujo de sesión (cliente)
 
@@ -152,6 +158,11 @@ No incluye:
    - `current week` (marcador derivado de `week_cursor`);
    - `selected_week` / `selected_entry` (contexto de edición);
    - `active_entry` (estado activo global).
+1. La implementación puede distinguir internamente entre:
+   - navegación (`selected_week`);
+   - entry visible en visor (sticky);
+   - `active_entry`;
+   siempre que las acciones de sesión sigan actuando sobre la entry visible.
 1. Cambiar de `selected_entry` no implica trasladar automáticamente el estado
    activo ni ejecutar `stop`.
 1. El usuario puede editar otra `Entry`/`Week` mientras existe una sesión activa

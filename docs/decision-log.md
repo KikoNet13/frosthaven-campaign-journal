@@ -727,3 +727,33 @@
   `docs/system-map.md`,
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/20`,
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/19`
+
+### DEC-0033
+
+- `date`: 2026-02-25
+- `status`: accepted
+- `problem`: al implementar el wiring local de la pantalla principal (`#53`)
+  se decidió mantener un visor sticky (última entry visible) al navegar por
+  years/weeks, lo que desalineaba parcialmente la semántica de selección usada
+  en `docs/minimal-read-queries.md` (`#16`) y podía introducir ambigüedad con
+  la separación foco/activo descrita en `docs/active-session-flow.md` (`#14`).
+- `decision`: aceptar en la implementación del shell/local state (`#53`) una
+  separación explícita entre navegación (`selected_year`, `selected_week`),
+  entry visible en visor (sticky) y `active_entry` (sesión activa global). La
+  navegación por year/week puede cambiar sin limpiar la entry visible en visor.
+  En el shell mock de `#53` las weeks cerradas se muestran atenuadas y la week
+  seleccionada se marca visualmente, sin añadir marcador explícito de "current
+  week" (que sigue siendo un concepto derivado de `week_cursor` real).
+- `rationale`: mejora la continuidad visual del panel central al navegar,
+  demuestra mejor la separación foco/activo antes de integrar datos reales
+  (`#54`) y mantiene el contrato de acciones sobre la entry visible sin reabrir
+  las reglas de backend/operaciones.
+- `impact`: ajusta semántica de UI/lecturas en `#16` y aclaraciones de flujo en
+  `#14`; guía la implementación de `#53` y deja preparada la integración
+  read-only de `#54` con distinción navegación/visor/activo.
+- `references`: `docs/minimal-read-queries.md`, `docs/active-session-flow.md`,
+  `docs/mvp-implementation-checklist.md`, `docs/mvp-implementation-blocks.md`,
+  `src/frosthaven_campaign_journal/ui/app_root.py`,
+  `src/frosthaven_campaign_journal/ui/views/main_shell_view.py`,
+  `src/frosthaven_campaign_journal/state/placeholders.py`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/53`

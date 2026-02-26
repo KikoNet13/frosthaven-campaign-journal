@@ -40,6 +40,9 @@ COLOR_ERROR_TEXT = "#8A1F1F"
 COLOR_WARNING_BG = "#FFF4D8"
 COLOR_WARNING_BORDER = "#D0A55E"
 COLOR_WARNING_TEXT = "#7D5700"
+COLOR_WEEK_BLOCK_SUMMER_BG = "#F2ABAB"
+COLOR_WEEK_BLOCK_WINTER_BG = "#E6B3C4"
+COLOR_WEEK_BLOCK_BORDER = "#D98787"
 ENTRY_RESOURCE_KEYS = ("lumber", "metal", "hide")
 
 
@@ -72,6 +75,8 @@ def build_main_shell_view(
     read_status: str,
     read_error_message: str | None,
     read_warning_message: str | None,
+    viewport_width: int | float | None,
+    viewport_height: int | float | None,
     env_name: str,
     on_prev_year: Callable[[], None],
     on_next_year: Callable[[], None],
@@ -108,6 +113,8 @@ def build_main_shell_view(
         on_next_year=on_next_year,
         on_open_extend_year_plus_one_confirm=on_open_extend_year_plus_one_confirm,
         on_select_week=on_select_week,
+        viewport_width=viewport_width,
+        viewport_height=viewport_height,
         embedded_in_appbar=True,
     )
     entry_tabs_bar = _build_entry_tabs_bar(
@@ -211,6 +218,8 @@ def _build_top_temporal_bar(
     on_next_year: Callable[[], None],
     on_open_extend_year_plus_one_confirm: Callable[[], None],
     on_select_week: Callable[[int], None],
+    viewport_width: int | float | None,
+    viewport_height: int | float | None,
     embedded_in_appbar: bool = False,
 ) -> ft.Control:
     selected_year = state.selected_year
@@ -240,6 +249,18 @@ def _build_top_temporal_bar(
         right_year_label = "→"
         right_year_action = on_next_year if has_next_year and not campaign_write_pending else None
 
+    is_mobile_landscape_topbar = _is_mobile_landscape_topbar(
+        viewport_width=viewport_width,
+        viewport_height=viewport_height,
+    )
+    year_group_spacing = 8 if is_mobile_landscape_topbar else 12
+    content_row_spacing = 8 if is_mobile_landscape_topbar else 16
+    year_title_size = 24 if is_mobile_landscape_topbar else 32
+    year_nav_button_size = 38 if is_mobile_landscape_topbar else 42
+    year_nav_font_size = 18 if is_mobile_landscape_topbar else 20
+    week_block_spacing = 6 if is_mobile_landscape_topbar else 8
+    week_tile_gap = 4 if is_mobile_landscape_topbar else 6
+
     if read_status == "error" and not weeks_for_selected_year:
         week_strip_content: ft.Control = ft.Row(
             alignment=ft.MainAxisAlignment.START,
@@ -267,42 +288,75 @@ def _build_top_temporal_bar(
             ],
         )
     else:
-        week_strip_content = ft.Row(
-            spacing=6,
-            wrap=False,
-            scroll=ft.ScrollMode.AUTO,
-            controls=[
-                _build_week_tile(
-                    week=week,
-                    is_selected=(week.week_number == state.selected_week),
+        summer_weeks, winter_weeks = _split_weeks_into_season_blocks(weeks_for_selected_year)
+        season_blocks: list[ft.Control] = []
+        if summer_weeks:
+            season_blocks.append(
+                _build_week_season_block(
+                    weeks=summer_weeks,
+                    state=state,
                     on_select_week=on_select_week,
                     disabled=campaign_write_pending,
+                    block_bgcolor=COLOR_WEEK_BLOCK_SUMMER_BG,
+                    tile_spacing=week_tile_gap,
                 )
-                for week in weeks_for_selected_year
-            ],
+            )
+        if winter_weeks:
+            season_blocks.append(
+                _build_week_season_block(
+                    weeks=winter_weeks,
+                    state=state,
+                    on_select_week=on_select_week,
+                    disabled=campaign_write_pending,
+                    block_bgcolor=COLOR_WEEK_BLOCK_WINTER_BG,
+                    tile_spacing=week_tile_gap,
+                )
+            )
+
+        week_strip_content = ft.Container(
+            expand=True,
+            clip_behavior=ft.ClipBehavior.HARD_EDGE,
+            content=ft.Row(
+                spacing=week_block_spacing,
+                wrap=False,
+                scroll=ft.ScrollMode.AUTO,
+                controls=season_blocks,
+            ),
         )
 
     tooltip = read_error_message if read_status == "error" else None
 
+    year_group = ft.Row(
+        spacing=year_group_spacing,
+        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+        controls=[
+            _build_year_nav_button(
+                "←",
+                left_year_action,
+                size=year_nav_button_size,
+                font_size=year_nav_font_size,
+            ),
+            ft.Text(
+                year_title,
+                size=year_title_size,
+                weight=ft.FontWeight.BOLD,
+                color=COLOR_TEXT_PRIMARY,
+            ),
+            _build_year_nav_button(
+                right_year_label,
+                right_year_action,
+                size=year_nav_button_size,
+                font_size=year_nav_font_size,
+            ),
+        ],
+    )
+
     content = ft.Row(
-        spacing=16,
+        spacing=content_row_spacing,
         alignment=ft.MainAxisAlignment.START,
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
         controls=[
-            ft.Row(
-                spacing=12,
-                vertical_alignment=ft.CrossAxisAlignment.CENTER,
-                controls=[
-                    _build_year_nav_button("←", left_year_action),
-                    ft.Text(
-                        year_title,
-                        size=32,
-                        weight=ft.FontWeight.BOLD,
-                        color=COLOR_TEXT_PRIMARY,
-                    ),
-                    _build_year_nav_button(right_year_label, right_year_action),
-                ],
-            ),
+            year_group,
             ft.Container(expand=True, content=week_strip_content),
         ],
     )
@@ -323,18 +377,79 @@ def _build_top_temporal_bar(
     )
 
 
-def _build_year_nav_button(label: str, on_click: Callable[[], None] | None) -> ft.Control:
+def _is_mobile_landscape_topbar(
+    *,
+    viewport_width: int | float | None,
+    viewport_height: int | float | None,
+) -> bool:
+    if not isinstance(viewport_width, (int, float)) or not isinstance(viewport_height, (int, float)):
+        return False
+    if viewport_width <= 0 or viewport_height <= 0:
+        return False
+    return viewport_width > viewport_height and viewport_width <= 700
+
+
+def _split_weeks_into_season_blocks(
+    weeks_for_selected_year: list[MockWeek],
+) -> tuple[list[MockWeek], list[MockWeek]]:
+    if not weeks_for_selected_year:
+        return [], []
+    if len(weeks_for_selected_year) <= 10:
+        return weeks_for_selected_year, []
+    if len(weeks_for_selected_year) >= 20:
+        return weeks_for_selected_year[:10], weeks_for_selected_year[10:]
+    split_index = min(10, (len(weeks_for_selected_year) + 1) // 2)
+    return weeks_for_selected_year[:split_index], weeks_for_selected_year[split_index:]
+
+
+def _build_week_season_block(
+    *,
+    weeks: list[MockWeek],
+    state: MainScreenLocalState,
+    on_select_week: Callable[[int], None],
+    disabled: bool,
+    block_bgcolor: str,
+    tile_spacing: int,
+) -> ft.Control:
+    return ft.Container(
+        bgcolor=block_bgcolor,
+        border=ft.Border.all(1, COLOR_WEEK_BLOCK_BORDER),
+        border_radius=6,
+        padding=ft.Padding(left=4, top=4, right=4, bottom=4),
+        content=ft.Row(
+            spacing=tile_spacing,
+            wrap=False,
+            controls=[
+                _build_week_tile(
+                    week=week,
+                    is_selected=(week.week_number == state.selected_week),
+                    on_select_week=on_select_week,
+                    disabled=disabled,
+                )
+                for week in weeks
+            ],
+        ),
+    )
+
+
+def _build_year_nav_button(
+    label: str,
+    on_click: Callable[[], None] | None,
+    *,
+    size: int = 42,
+    font_size: int = 20,
+) -> ft.Control:
     enabled = on_click is not None
     return ft.Container(
-        width=42,
-        height=42,
+        width=size,
+        height=size,
         bgcolor=COLOR_TOP_NAV_BUTTON_BG if enabled else COLOR_TOP_NAV_BUTTON_DISABLED_BG,
         border_radius=999,
         alignment=ft.Alignment.CENTER,
         on_click=(lambda _e: on_click()) if on_click else None,
         content=ft.Text(
             label,
-            size=20,
+            size=font_size,
             weight=ft.FontWeight.BOLD,
             color=COLOR_WHITE if enabled else "#ECEBFF",
         ),

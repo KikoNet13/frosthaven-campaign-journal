@@ -30,6 +30,15 @@ class ResourceWriteResult:
     no_op: bool = False
 
 
+@dataclass(frozen=True)
+class ResourceBulkWriteResult:
+    entry_ref: EntryRef
+    changed_keys: tuple[str, ...]
+    entry_resource_deltas_after: dict[str, int]
+    campaign_totals_after_for_changed_keys: dict[str, int]
+    no_op: bool = False
+
+
 def adjust_resource_delta(
     client: firestore.Client,
     *,
@@ -138,6 +147,141 @@ def adjust_resource_delta(
         _map_firestore_write_exception(exc)
 
 
+def replace_entry_resource_deltas(
+    client: firestore.Client,
+    *,
+    entry_ref: EntryRef,
+    target_resource_deltas: dict[str, int],
+) -> ResourceBulkWriteResult:
+    if not isinstance(target_resource_deltas, dict):
+        raise FirestoreValidationError("`target_resource_deltas` debe ser un mapa.")
+
+    parsed_target = _parse_resource_map(
+        target_resource_deltas,
+        field_label="target_resource_deltas",
+    )
+    for key in parsed_target:
+        if key not in RESOURCE_KEYS:
+            raise FirestoreValidationError(f"`target_resource_deltas` contiene `resource_key` no soportada: {key!r}.")
+
+    # Regla de representación del entry: no persistir claves con delta 0.
+    normalized_target = {
+        key: value
+        for key, value in parsed_target.items()
+        if value != 0
+    }
+
+    entry_doc_ref = _entry_doc_ref(client, entry_ref)
+    campaign_doc_ref = _campaign_doc_ref(client)
+    transaction = client.transaction()
+
+    @firestore.transactional
+    def _run(txn: firestore.Transaction) -> ResourceBulkWriteResult:
+        entry_snapshot = _get_doc_snapshot(txn, entry_doc_ref)
+        if not entry_snapshot.exists:
+            raise FirestoreTransitionInvalidError("La entry ya no existe.")
+        campaign_snapshot = _get_doc_snapshot(txn, campaign_doc_ref)
+        if not campaign_snapshot.exists:
+            raise FirestoreConflictError("La campaÃ±a ya no existe. Pulsa Refresh y reintenta.")
+
+        entry_data = entry_snapshot.to_dict() or {}
+        campaign_data = campaign_snapshot.to_dict() or {}
+
+        current_entry_deltas = _parse_resource_map(
+            entry_data.get("resource_deltas") or {},
+            field_label="resource_deltas",
+        )
+        campaign_totals = _parse_resource_map(
+            campaign_data.get("resource_totals") or {},
+            field_label="campaign.resource_totals",
+        )
+
+        # Preservar cualquier clave fuera del catÃ¡logo MVP para no borrar datos inesperados.
+        current_entry_supported = {
+            key: value for key, value in current_entry_deltas.items() if key in RESOURCE_KEYS
+        }
+        current_entry_unsupported = {
+            key: value for key, value in current_entry_deltas.items() if key not in RESOURCE_KEYS
+        }
+
+        changed_keys = sorted(set(current_entry_supported) | set(normalized_target))
+        if not changed_keys:
+            return ResourceBulkWriteResult(
+                entry_ref=entry_ref,
+                changed_keys=(),
+                entry_resource_deltas_after=dict(current_entry_deltas),
+                campaign_totals_after_for_changed_keys={},
+                no_op=True,
+            )
+
+        next_campaign_totals = dict(campaign_totals)
+        changed_totals_after: dict[str, int] = {}
+
+        for resource_key in changed_keys:
+            current_entry_delta = current_entry_supported.get(resource_key, 0)
+            target_entry_delta = normalized_target.get(resource_key, 0)
+            delta_to_apply = target_entry_delta - current_entry_delta
+
+            current_campaign_total = next_campaign_totals.get(resource_key, 0)
+            next_campaign_total = current_campaign_total + delta_to_apply
+            if next_campaign_total < 0:
+                raise FirestoreValidationError(
+                    f"La operaciÃ³n dejarÃ­a `campaign.resource_totals[{resource_key}]` en negativo."
+                )
+
+            changed_totals_after[resource_key] = next_campaign_total
+            # Regla de #15: conservar 0 materializado si la clave fue tocada.
+            next_campaign_totals[resource_key] = next_campaign_total
+
+        next_entry_deltas = dict(current_entry_unsupported)
+        for key, value in normalized_target.items():
+            next_entry_deltas[key] = value
+
+        if current_entry_deltas == next_entry_deltas:
+            no_op = True
+            no_op_totals = {
+                key: next_campaign_totals.get(key, 0)
+                for key in changed_keys
+            }
+            return ResourceBulkWriteResult(
+                entry_ref=entry_ref,
+                changed_keys=tuple(changed_keys),
+                entry_resource_deltas_after=next_entry_deltas,
+                campaign_totals_after_for_changed_keys=no_op_totals,
+                no_op=no_op,
+            )
+
+        txn.update(
+            entry_doc_ref,
+            {
+                "resource_deltas": next_entry_deltas,
+                "updated_at_utc": firestore.SERVER_TIMESTAMP,
+            },
+        )
+        txn.update(
+            campaign_doc_ref,
+            {
+                "resource_totals": next_campaign_totals,
+                "updated_at_utc": firestore.SERVER_TIMESTAMP,
+            },
+        )
+
+        return ResourceBulkWriteResult(
+            entry_ref=entry_ref,
+            changed_keys=tuple(changed_keys),
+            entry_resource_deltas_after=next_entry_deltas,
+            campaign_totals_after_for_changed_keys=changed_totals_after,
+            no_op=False,
+        )
+
+    try:
+        return _run(transaction)
+    except (FirestoreWriteError, FirestoreConflictError, FirestoreTransitionInvalidError, FirestoreValidationError):
+        raise
+    except Exception as exc:  # pragma: no cover
+        _map_firestore_write_exception(exc)
+
+
 def _campaign_doc_ref(client: firestore.Client) -> Any:
     return client.collection("campaigns").document(CAMPAIGN_ID)
 
@@ -200,4 +344,3 @@ def _map_firestore_write_exception(exc: Exception) -> None:
             "La operación de escritura entró en conflicto. Pulsa Refresh y reintenta."
         ) from exc
     raise FirestoreWriteError(f"Error de escritura en Firestore: {exc}") from exc
-

@@ -61,6 +61,9 @@ def build_main_shell_view(
     entry_write_pending: bool,
     resource_write_error_message: str | None,
     resource_write_pending: bool,
+    resource_draft_values: dict[str, int] | None,
+    resource_draft_dirty: bool,
+    resource_draft_attached_to_viewer: bool,
     active_entry_ref: EntryRef | None,
     active_entry_label: str | None,
     active_status_error_message: str | None,
@@ -88,76 +91,106 @@ def build_main_shell_view(
     on_open_delete_entry_confirm: Callable[[], None],
     on_reorder_entry_up: Callable[[], None],
     on_reorder_entry_down: Callable[[], None],
-    on_adjust_resource_delta: Callable[[str, int], None],
+    on_adjust_resource_draft_delta: Callable[[str, int], None],
+    on_save_resource_draft: Callable[[], None],
+    on_discard_resource_draft: Callable[[], None],
 ) -> ft.Control:
-    return ft.Container(
+    top_bar = _build_top_temporal_bar(
+        state=state,
+        years=years,
+        weeks_for_selected_year=weeks_for_selected_year,
+        read_status=read_status,
+        read_error_message=read_error_message,
+        on_prev_year=on_prev_year,
+        on_next_year=on_next_year,
+        on_select_week=on_select_week,
+        embedded_in_appbar=True,
+    )
+    entry_tabs_bar = _build_entry_tabs_bar(
+        state=state,
+        entries_for_selected_week=entries_for_selected_week,
+        viewer_entry=viewer_entry,
+        entries_panel_error_message=entries_panel_error_message,
+        on_select_entry=on_select_entry,
+    )
+    center_panel = _build_center_focus_panel(
+        state=state,
+        weeks_for_selected_year=weeks_for_selected_year,
+        viewer_entry=viewer_entry,
+        viewer_sessions=viewer_sessions,
+        viewer_sessions_error_message=viewer_sessions_error_message,
+        session_write_error_message=session_write_error_message,
+        session_write_pending=session_write_pending,
+        week_write_error_message=week_write_error_message,
+        week_write_pending=week_write_pending,
+        entry_write_error_message=entry_write_error_message,
+        entry_write_pending=entry_write_pending,
+        resource_write_error_message=resource_write_error_message,
+        resource_write_pending=resource_write_pending,
+        resource_draft_values=resource_draft_values,
+        resource_draft_dirty=resource_draft_dirty,
+        resource_draft_attached_to_viewer=resource_draft_attached_to_viewer,
+        active_entry_ref=active_entry_ref,
+        active_entry_label=active_entry_label,
+        read_error_message=read_error_message,
+        read_warning_message=read_warning_message,
+        on_start_session=on_start_session,
+        on_stop_session=on_stop_session,
+        on_open_manual_create_session=on_open_manual_create_session,
+        on_open_manual_edit_session=on_open_manual_edit_session,
+        on_open_manual_delete_session=on_open_manual_delete_session,
+        on_open_week_notes_modal=on_open_week_notes_modal,
+        on_request_close_week=on_request_close_week,
+        on_request_reopen_week=on_request_reopen_week,
+        on_request_reclose_week=on_request_reclose_week,
+        on_open_create_entry_modal=on_open_create_entry_modal,
+        on_open_edit_entry_modal=on_open_edit_entry_modal,
+        on_open_delete_entry_confirm=on_open_delete_entry_confirm,
+        on_reorder_entry_up=on_reorder_entry_up,
+        on_reorder_entry_down=on_reorder_entry_down,
+        on_adjust_resource_draft_delta=on_adjust_resource_draft_delta,
+        on_save_resource_draft=on_save_resource_draft,
+        on_discard_resource_draft=on_discard_resource_draft,
+    )
+    bottom_bar_content = _build_bottom_status_bar_content(
+        env_name=env_name,
+        viewer_entry=viewer_entry,
+        active_entry_ref=active_entry_ref,
+        active_entry_label=active_entry_label,
+        active_status_error_message=active_status_error_message,
+        campaign_resource_totals=campaign_resource_totals,
+        on_manual_refresh=on_manual_refresh,
+    )
+    return ft.Pagelet(
         expand=True,
-        padding=OUTER_PADDING,
-        content=ft.Column(
+        appbar=ft.AppBar(
+            toolbar_height=TOP_BAR_HEIGHT,
+            automatically_imply_leading=False,
+            leading_width=0,
+            title_spacing=0,
+            elevation=0,
+            force_material_transparency=True,
+            bgcolor=COLOR_TOP_BAR_BG,
+            title=top_bar,
+        ),
+        bottom_appbar=ft.BottomAppBar(
+            height=BOTTOM_BAR_HEIGHT,
+            padding=ft.Padding(left=16, top=12, right=16, bottom=12),
+            elevation=0,
+            bgcolor=COLOR_BOTTOM_BAR_BG,
+            content=bottom_bar_content,
+        ),
+        content=ft.Container(
             expand=True,
-            spacing=0,
-            controls=[
-                _build_top_temporal_bar(
-                    state=state,
-                    years=years,
-                    weeks_for_selected_year=weeks_for_selected_year,
-                    read_status=read_status,
-                    read_error_message=read_error_message,
-                    on_prev_year=on_prev_year,
-                    on_next_year=on_next_year,
-                    on_select_week=on_select_week,
-                ),
-                _build_entry_tabs_bar(
-                    state=state,
-                    entries_for_selected_week=entries_for_selected_week,
-                    viewer_entry=viewer_entry,
-                    entries_panel_error_message=entries_panel_error_message,
-                    on_select_entry=on_select_entry,
-                ),
-                _build_center_focus_panel(
-                    state=state,
-                    weeks_for_selected_year=weeks_for_selected_year,
-                    viewer_entry=viewer_entry,
-                    viewer_sessions=viewer_sessions,
-                    viewer_sessions_error_message=viewer_sessions_error_message,
-                    session_write_error_message=session_write_error_message,
-                    session_write_pending=session_write_pending,
-                    week_write_error_message=week_write_error_message,
-                    week_write_pending=week_write_pending,
-                    entry_write_error_message=entry_write_error_message,
-                    entry_write_pending=entry_write_pending,
-                    resource_write_error_message=resource_write_error_message,
-                    resource_write_pending=resource_write_pending,
-                    active_entry_ref=active_entry_ref,
-                    active_entry_label=active_entry_label,
-                    read_error_message=read_error_message,
-                    read_warning_message=read_warning_message,
-                    on_start_session=on_start_session,
-                    on_stop_session=on_stop_session,
-                    on_open_manual_create_session=on_open_manual_create_session,
-                    on_open_manual_edit_session=on_open_manual_edit_session,
-                    on_open_manual_delete_session=on_open_manual_delete_session,
-                    on_open_week_notes_modal=on_open_week_notes_modal,
-                    on_request_close_week=on_request_close_week,
-                    on_request_reopen_week=on_request_reopen_week,
-                    on_request_reclose_week=on_request_reclose_week,
-                    on_open_create_entry_modal=on_open_create_entry_modal,
-                    on_open_edit_entry_modal=on_open_edit_entry_modal,
-                    on_open_delete_entry_confirm=on_open_delete_entry_confirm,
-                    on_reorder_entry_up=on_reorder_entry_up,
-                    on_reorder_entry_down=on_reorder_entry_down,
-                    on_adjust_resource_delta=on_adjust_resource_delta,
-                ),
-                _build_bottom_status_bar(
-                    env_name=env_name,
-                    viewer_entry=viewer_entry,
-                    active_entry_ref=active_entry_ref,
-                    active_entry_label=active_entry_label,
-                    active_status_error_message=active_status_error_message,
-                    campaign_resource_totals=campaign_resource_totals,
-                    on_manual_refresh=on_manual_refresh,
-                ),
-            ],
+            padding=OUTER_PADDING,
+            content=ft.Column(
+                expand=True,
+                spacing=0,
+                controls=[
+                    entry_tabs_bar,
+                    ft.Container(expand=True, content=center_panel),
+                ],
+            ),
         ),
     )
 
@@ -172,6 +205,7 @@ def _build_top_temporal_bar(
     on_prev_year: Callable[[], None],
     on_next_year: Callable[[], None],
     on_select_week: Callable[[int], None],
+    embedded_in_appbar: bool = False,
 ) -> ft.Control:
     selected_year = state.selected_year
     has_valid_selected_year = selected_year is not None and selected_year in years
@@ -228,33 +262,42 @@ def _build_top_temporal_bar(
 
     tooltip = read_error_message if read_status == "error" else None
 
+    content = ft.Row(
+        spacing=16,
+        alignment=ft.MainAxisAlignment.START,
+        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+        controls=[
+            ft.Row(
+                spacing=12,
+                vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                controls=[
+                    _build_year_nav_button("←", on_prev_year if has_prev_year else None),
+                    ft.Text(
+                        year_title,
+                        size=32,
+                        weight=ft.FontWeight.BOLD,
+                        color=COLOR_TEXT_PRIMARY,
+                    ),
+                    _build_year_nav_button("→", on_next_year if has_next_year else None),
+                ],
+            ),
+            ft.Container(expand=True, content=week_strip_content),
+        ],
+    )
+
+    if embedded_in_appbar:
+        return ft.Container(
+            padding=ft.Padding(left=12, top=10, right=12, bottom=10),
+            tooltip=tooltip,
+            content=content,
+        )
+
     return ft.Container(
         height=TOP_BAR_HEIGHT,
         bgcolor=COLOR_TOP_BAR_BG,
         padding=ft.Padding(left=12, top=10, right=12, bottom=10),
         tooltip=tooltip,
-        content=ft.Row(
-            spacing=16,
-            alignment=ft.MainAxisAlignment.START,
-            vertical_alignment=ft.CrossAxisAlignment.CENTER,
-            controls=[
-                ft.Row(
-                    spacing=12,
-                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
-                    controls=[
-                        _build_year_nav_button("←", on_prev_year if has_prev_year else None),
-                        ft.Text(
-                            year_title,
-                            size=32,
-                            weight=ft.FontWeight.BOLD,
-                            color=COLOR_TEXT_PRIMARY,
-                        ),
-                        _build_year_nav_button("→", on_next_year if has_next_year else None),
-                    ],
-                ),
-                ft.Container(expand=True, content=week_strip_content),
-            ],
-        ),
+        content=content,
     )
 
 
@@ -424,6 +467,9 @@ def _build_center_focus_panel(
     entry_write_pending: bool,
     resource_write_error_message: str | None,
     resource_write_pending: bool,
+    resource_draft_values: dict[str, int] | None,
+    resource_draft_dirty: bool,
+    resource_draft_attached_to_viewer: bool,
     active_entry_ref: EntryRef | None,
     active_entry_label: str | None,
     read_error_message: str | None,
@@ -442,7 +488,9 @@ def _build_center_focus_panel(
     on_open_delete_entry_confirm: Callable[[], None],
     on_reorder_entry_up: Callable[[], None],
     on_reorder_entry_down: Callable[[], None],
-    on_adjust_resource_delta: Callable[[str, int], None],
+    on_adjust_resource_draft_delta: Callable[[str, int], None],
+    on_save_resource_draft: Callable[[], None],
+    on_discard_resource_draft: Callable[[], None],
 ) -> ft.Control:
     selected_week = _find_selected_week(state, weeks_for_selected_year)
 
@@ -458,6 +506,9 @@ def _build_center_focus_panel(
             entry_write_pending=entry_write_pending,
             resource_write_error_message=resource_write_error_message,
             resource_write_pending=resource_write_pending,
+            resource_draft_values=resource_draft_values,
+            resource_draft_dirty=resource_draft_dirty,
+            resource_draft_attached_to_viewer=resource_draft_attached_to_viewer,
             active_entry_ref=active_entry_ref,
             active_entry_label=active_entry_label,
             on_start_session=on_start_session,
@@ -470,7 +521,9 @@ def _build_center_focus_panel(
             on_open_delete_entry_confirm=on_open_delete_entry_confirm,
             on_reorder_entry_up=on_reorder_entry_up,
             on_reorder_entry_down=on_reorder_entry_down,
-            on_adjust_resource_delta=on_adjust_resource_delta,
+            on_adjust_resource_draft_delta=on_adjust_resource_draft_delta,
+            on_save_resource_draft=on_save_resource_draft,
+            on_discard_resource_draft=on_discard_resource_draft,
         )
     elif selected_week is not None:
         primary_content = _build_focus_week_mode(
@@ -515,7 +568,14 @@ def _build_center_focus_panel(
         expand=True,
         bgcolor=COLOR_CENTER_BG,
         padding=ft.Padding.all(CENTER_PANEL_PADDING),
-        content=ft.Column(spacing=12, controls=stacked_controls),
+        content=ft.ListView(
+            expand=True,
+            spacing=12,
+            padding=0,
+            clip_behavior=ft.ClipBehavior.HARD_EDGE,
+            scroll=ft.ScrollMode.AUTO,
+            controls=stacked_controls,
+        ),
     )
 
 
@@ -714,6 +774,9 @@ def _build_focus_entry_mode(
     entry_write_pending: bool,
     resource_write_error_message: str | None,
     resource_write_pending: bool,
+    resource_draft_values: dict[str, int] | None,
+    resource_draft_dirty: bool,
+    resource_draft_attached_to_viewer: bool,
     active_entry_ref: EntryRef | None,
     active_entry_label: str | None,
     on_start_session: Callable[[], None],
@@ -726,7 +789,9 @@ def _build_focus_entry_mode(
     on_open_delete_entry_confirm: Callable[[], None],
     on_reorder_entry_up: Callable[[], None],
     on_reorder_entry_down: Callable[[], None],
-    on_adjust_resource_delta: Callable[[str, int], None],
+    on_adjust_resource_draft_delta: Callable[[str, int], None],
+    on_save_resource_draft: Callable[[], None],
+    on_discard_resource_draft: Callable[[], None],
 ) -> ft.Control:
     viewer_matches_selected_week = _entry_ref_matches_selected_week(state, viewer_entry.ref)
     active_here = active_entry_ref is not None and active_entry_ref == viewer_entry.ref
@@ -798,9 +863,14 @@ def _build_focus_entry_mode(
 
     resources_card = _build_entry_resources_card(
         viewer_entry=viewer_entry,
+        resource_draft_values=resource_draft_values,
+        resource_draft_dirty=resource_draft_dirty,
+        resource_draft_attached_to_viewer=resource_draft_attached_to_viewer,
         resource_write_error_message=resource_write_error_message,
         resource_write_pending=resource_write_pending,
-        on_adjust_resource_delta=on_adjust_resource_delta,
+        on_adjust_resource_draft_delta=on_adjust_resource_draft_delta,
+        on_save_resource_draft=on_save_resource_draft,
+        on_discard_resource_draft=on_discard_resource_draft,
     )
 
     return ft.Column(
@@ -941,13 +1011,47 @@ def _build_entry_actions_card(
 def _build_entry_resources_card(
     *,
     viewer_entry: MockEntry,
+    resource_draft_values: dict[str, int] | None,
+    resource_draft_dirty: bool,
+    resource_draft_attached_to_viewer: bool,
     resource_write_error_message: str | None,
     resource_write_pending: bool,
-    on_adjust_resource_delta: Callable[[str, int], None],
+    on_adjust_resource_draft_delta: Callable[[str, int], None],
+    on_save_resource_draft: Callable[[], None],
+    on_discard_resource_draft: Callable[[], None],
 ) -> ft.Control:
+    effective_draft = (
+        dict(resource_draft_values)
+        if resource_draft_attached_to_viewer and resource_draft_values is not None
+        else dict(viewer_entry.resource_deltas)
+    )
+    draft_controls_disabled = resource_write_pending or not resource_draft_attached_to_viewer
+
     rows: list[ft.Control] = []
     for resource_key in ENTRY_RESOURCE_KEYS:
-        current_value = viewer_entry.resource_deltas.get(resource_key, 0)
+        current_value = effective_draft.get(resource_key, 0)
+        persisted_value = viewer_entry.resource_deltas.get(resource_key, 0)
+        labels: list[ft.Control] = [
+            ft.Text(
+                resource_key,
+                size=13,
+                weight=ft.FontWeight.W_600,
+                color=COLOR_TEXT_PRIMARY,
+            ),
+            ft.Text(
+                f"Delta neto entry (edición): {current_value}",
+                size=11,
+                color=COLOR_TEXT_MUTED,
+            ),
+        ]
+        if resource_draft_dirty and current_value != persisted_value:
+            labels.append(
+                ft.Text(
+                    f"Guardado: {persisted_value}",
+                    size=11,
+                    color="#7D5700",
+                )
+            )
         rows.append(
             ft.Container(
                 padding=ft.Padding(left=8, top=6, right=8, bottom=6),
@@ -961,33 +1065,21 @@ def _build_entry_resources_card(
                         ft.Column(
                             expand=True,
                             spacing=2,
-                            controls=[
-                                ft.Text(
-                                    resource_key,
-                                    size=13,
-                                    weight=ft.FontWeight.W_600,
-                                    color=COLOR_TEXT_PRIMARY,
-                                ),
-                                ft.Text(
-                                    f"Delta neto entry: {current_value}",
-                                    size=11,
-                                    color=COLOR_TEXT_MUTED,
-                                ),
-                            ],
+                            controls=labels,
                         ),
                         ft.Row(
                             spacing=6,
                             controls=[
                                 ft.OutlinedButton(
                                     "-1",
-                                    on_click=lambda _e, key=resource_key: on_adjust_resource_delta(key, -1),
-                                    disabled=resource_write_pending,
+                                    on_click=lambda _e, key=resource_key: on_adjust_resource_draft_delta(key, -1),
+                                    disabled=draft_controls_disabled,
                                     height=32,
                                 ),
                                 ft.FilledButton(
                                     "+1",
-                                    on_click=lambda _e, key=resource_key: on_adjust_resource_delta(key, 1),
-                                    disabled=resource_write_pending,
+                                    on_click=lambda _e, key=resource_key: on_adjust_resource_draft_delta(key, 1),
+                                    disabled=draft_controls_disabled,
                                     height=32,
                                 ),
                             ],
@@ -999,16 +1091,63 @@ def _build_entry_resources_card(
 
     body_controls: list[ft.Control] = [
         ft.Text(
-            "Ajustes incrementales permitidos en weeks abiertas o cerradas.",
+            "Los cambios se editan localmente y se persisten al pulsar Guardar.",
             size=12,
             color=COLOR_TEXT_MUTED,
         ),
-        *rows,
+        ft.Row(
+            spacing=8,
+            wrap=True,
+            controls=[
+                ft.FilledButton(
+                    "Guardar recursos",
+                    on_click=lambda _e: on_save_resource_draft(),
+                    disabled=(
+                        resource_write_pending
+                        or not resource_draft_attached_to_viewer
+                        or not resource_draft_dirty
+                    ),
+                    height=32,
+                ),
+                ft.OutlinedButton(
+                    "Descartar cambios",
+                    on_click=lambda _e: on_discard_resource_draft(),
+                    disabled=(
+                        resource_write_pending
+                        or not resource_draft_attached_to_viewer
+                        or not resource_draft_dirty
+                    ),
+                    height=32,
+                ),
+            ],
+        ),
     ]
+    if resource_draft_attached_to_viewer:
+        body_controls.append(
+            ft.Text(
+                "Cambios sin guardar" if resource_draft_dirty else "Sin cambios locales pendientes",
+                size=12,
+                color="#7D5700" if resource_draft_dirty else COLOR_TEXT_MUTED,
+                italic=resource_draft_dirty,
+            )
+        )
+    else:
+        body_controls.append(
+            ft.Text(
+                "Borrador de recursos no disponible para la entry visible (refresca y reintenta).",
+                size=12,
+                color=COLOR_WARNING_TEXT,
+            )
+        )
+    body_controls.extend(
+        [
+        *rows,
+        ]
+    )
     if resource_write_pending:
         body_controls.append(
             ft.Text(
-                "Procesando ajuste de recurso…",
+                "Guardando cambios de recursos…",
                 size=12,
                 color=COLOR_TEXT_MUTED,
                 italic=True,
@@ -1258,6 +1397,32 @@ def _build_bottom_status_bar(
     campaign_resource_totals: dict[str, int] | None,
     on_manual_refresh: Callable[[], None],
 ) -> ft.Control:
+    return ft.Container(
+        height=BOTTOM_BAR_HEIGHT,
+        bgcolor=COLOR_BOTTOM_BAR_BG,
+        padding=ft.Padding(left=16, top=12, right=16, bottom=12),
+        content=_build_bottom_status_bar_content(
+            env_name=env_name,
+            viewer_entry=viewer_entry,
+            active_entry_ref=active_entry_ref,
+            active_entry_label=active_entry_label,
+            active_status_error_message=active_status_error_message,
+            campaign_resource_totals=campaign_resource_totals,
+            on_manual_refresh=on_manual_refresh,
+        ),
+    )
+
+
+def _build_bottom_status_bar_content(
+    *,
+    env_name: str,
+    viewer_entry: MockEntry | None,
+    active_entry_ref: EntryRef | None,
+    active_entry_label: str | None,
+    active_status_error_message: str | None,
+    campaign_resource_totals: dict[str, int] | None,
+    on_manual_refresh: Callable[[], None],
+) -> ft.Control:
     active_text, active_detail_text = _active_status_texts(
         active_entry_ref=active_entry_ref,
         active_entry_label=active_entry_label,
@@ -1270,65 +1435,60 @@ def _build_bottom_status_bar(
         else "Sin entry en visor"
     )
 
-    return ft.Container(
-        height=BOTTOM_BAR_HEIGHT,
-        bgcolor=COLOR_BOTTOM_BAR_BG,
-        padding=ft.Padding(left=16, top=12, right=16, bottom=12),
-        content=ft.Row(
-            alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
-            vertical_alignment=ft.CrossAxisAlignment.CENTER,
-            controls=[
-                ft.Column(
-                    spacing=2,
-                    horizontal_alignment=ft.CrossAxisAlignment.START,
-                    controls=[
-                        ft.Text(
-                            "Totales (read-only)",
-                            size=16,
-                            weight=ft.FontWeight.BOLD,
-                            color=COLOR_WHITE,
-                        ),
-                        ft.Text(
-                            _format_resource_totals(campaign_resource_totals),
-                            size=12,
-                            color="#EAF9FF",
-                        ),
-                    ],
-                ),
-                ft.Row(
-                    spacing=12,
-                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
-                    controls=[
-                        ft.Column(
-                            spacing=2,
-                            horizontal_alignment=ft.CrossAxisAlignment.END,
-                            controls=[
-                                ft.Text(
-                                    active_text,
-                                    size=13,
-                                    weight=ft.FontWeight.BOLD,
-                                    color=COLOR_WHITE,
-                                    text_align=ft.TextAlign.RIGHT,
-                                ),
-                                ft.Text(
-                                    active_detail_text or viewer_text,
-                                    size=12,
-                                    color="#EAF9FF",
-                                    text_align=ft.TextAlign.RIGHT,
-                                ),
-                                ft.Text(
-                                    f"{viewer_text} · env={env_name}",
-                                    size=11,
-                                    color="#DDF5FF",
-                                    text_align=ft.TextAlign.RIGHT,
-                                ),
-                            ],
-                        ),
-                        _build_refresh_button(on_manual_refresh),
-                    ],
-                ),
-            ],
-        ),
+    return ft.Row(
+        alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+        controls=[
+            ft.Column(
+                spacing=2,
+                horizontal_alignment=ft.CrossAxisAlignment.START,
+                controls=[
+                    ft.Text(
+                        "Totales (read-only)",
+                        size=16,
+                        weight=ft.FontWeight.BOLD,
+                        color=COLOR_WHITE,
+                    ),
+                    ft.Text(
+                        _format_resource_totals(campaign_resource_totals),
+                        size=12,
+                        color="#EAF9FF",
+                    ),
+                ],
+            ),
+            ft.Row(
+                spacing=12,
+                vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                controls=[
+                    ft.Column(
+                        spacing=2,
+                        horizontal_alignment=ft.CrossAxisAlignment.END,
+                        controls=[
+                            ft.Text(
+                                active_text,
+                                size=13,
+                                weight=ft.FontWeight.BOLD,
+                                color=COLOR_WHITE,
+                                text_align=ft.TextAlign.RIGHT,
+                            ),
+                            ft.Text(
+                                active_detail_text or viewer_text,
+                                size=12,
+                                color="#EAF9FF",
+                                text_align=ft.TextAlign.RIGHT,
+                            ),
+                            ft.Text(
+                                f"{viewer_text} · env={env_name}",
+                                size=11,
+                                color="#DDF5FF",
+                                text_align=ft.TextAlign.RIGHT,
+                            ),
+                        ],
+                    ),
+                    _build_refresh_button(on_manual_refresh),
+                ],
+            ),
+        ],
     )
 
 

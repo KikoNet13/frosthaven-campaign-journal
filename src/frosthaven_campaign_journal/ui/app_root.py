@@ -16,10 +16,10 @@ from frosthaven_campaign_journal.data import (
     FirestoreTransitionInvalidError,
     FirestoreValidationError,
     FirestoreWriteError,
+    ResourceBulkWriteResult,
     ResourceWriteResult,
     WeekRead,
     WeekWriteResult,
-    adjust_resource_delta,
     build_firestore_client,
     close_week,
     create_entry,
@@ -33,6 +33,7 @@ from frosthaven_campaign_journal.data import (
     read_entry_by_ref,
     read_q5_entries_for_selected_week,
     read_q8_sessions_for_entry,
+    replace_entry_resource_deltas,
     reorder_entry_within_week,
     reclose_week,
     start_session,
@@ -80,6 +81,10 @@ class EntryPanelReadState:
     entry_write_pending: bool = False
     resource_write_error_message: str | None = None
     resource_write_pending: bool = False
+    resource_draft_entry_ref: EntryRef | None = None
+    resource_draft_values: dict[str, int] = field(default_factory=dict)
+    resource_draft_dirty: bool = False
+    resource_draft_discard_notice: str | None = None
 
 
 def build_app_root(page: ft.Page) -> ft.Control:
@@ -88,8 +93,15 @@ def build_app_root(page: ft.Page) -> ft.Control:
     entry_panel_state = EntryPanelReadState()
 
     shell_host = ft.Container(expand=True)
-    root = ft.SafeArea(content=shell_host)
+    safe_root = ft.SafeArea(expand=True, content=shell_host)
+    root = ft.Container(expand=True, content=safe_root)
     active_dialog: ft.AlertDialog | None = None
+
+    def _sync_root_height_to_viewport() -> None:
+        viewport_height = getattr(page, "height", None)
+        if not isinstance(viewport_height, (int, float)) or viewport_height <= 0:
+            viewport_height = 900
+        root.height = viewport_height
 
     def current_weeks_for_selected_year() -> list[MockWeek]:
         if local_state.selected_year is None:
@@ -105,6 +117,7 @@ def build_app_root(page: ft.Page) -> ft.Control:
         return entry_panel_state.viewer_entry_snapshot
 
     def render_shell() -> None:
+        _sync_root_height_to_viewport()
         shell_host.content = build_main_shell_view(
             state=local_state,
             years=read_state.years,
@@ -122,6 +135,13 @@ def build_app_root(page: ft.Page) -> ft.Control:
             entry_write_pending=entry_panel_state.entry_write_pending,
             resource_write_error_message=entry_panel_state.resource_write_error_message,
             resource_write_pending=entry_panel_state.resource_write_pending,
+            resource_draft_values=(
+                dict(entry_panel_state.resource_draft_values)
+                if _resource_draft_attached_to_viewer()
+                else None
+            ),
+            resource_draft_dirty=entry_panel_state.resource_draft_dirty and _resource_draft_attached_to_viewer(),
+            resource_draft_attached_to_viewer=_resource_draft_attached_to_viewer(),
             active_entry_ref=read_state.active_entry_ref,
             active_entry_label=read_state.active_entry_label,
             active_status_error_message=read_state.active_status_error_message,
@@ -149,7 +169,9 @@ def build_app_root(page: ft.Page) -> ft.Control:
             on_open_delete_entry_confirm=handle_open_delete_entry_confirm,
             on_reorder_entry_up=handle_reorder_entry_up,
             on_reorder_entry_down=handle_reorder_entry_down,
-            on_adjust_resource_delta=handle_adjust_resource_delta,
+            on_adjust_resource_draft_delta=handle_adjust_resource_draft_delta,
+            on_save_resource_draft=handle_save_resource_draft,
+            on_discard_resource_draft=handle_discard_resource_draft,
         )
 
     def _build_client():
@@ -241,12 +263,14 @@ def build_app_root(page: ft.Page) -> ft.Control:
         )
         if updated_entry is not None:
             entry_panel_state.viewer_entry_snapshot = updated_entry
+            _sync_resource_draft_from_viewer_snapshot()
 
     def load_viewer_entry_and_sessions() -> None:
         if local_state.viewer_entry_ref is None:
             entry_panel_state.viewer_entry_snapshot = None
             entry_panel_state.viewer_sessions = []
             entry_panel_state.viewer_sessions_error_message = None
+            _clear_resource_draft_state()
             return
 
         try:
@@ -263,6 +287,7 @@ def build_app_root(page: ft.Page) -> ft.Control:
             return
 
         entry_panel_state.viewer_entry_snapshot = _map_entry_read_to_mock(viewer_entry_read)
+        _sync_resource_draft_from_viewer_snapshot()
 
         try:
             sessions = read_q8_sessions_for_entry(client, entry_ref=local_state.viewer_entry_ref)
@@ -297,6 +322,7 @@ def build_app_root(page: ft.Page) -> ft.Control:
         if current_index <= 0:
             return
 
+        _auto_discard_resource_draft_on_context_change()
         local_state.selected_year = read_state.years[current_index - 1]
         local_state.selected_week = None
         _clear_session_write_error()
@@ -314,6 +340,7 @@ def build_app_root(page: ft.Page) -> ft.Control:
         if current_index >= len(read_state.years) - 1:
             return
 
+        _auto_discard_resource_draft_on_context_change()
         local_state.selected_year = read_state.years[current_index + 1]
         local_state.selected_week = None
         _clear_session_write_error()
@@ -330,6 +357,7 @@ def build_app_root(page: ft.Page) -> ft.Control:
         visible_weeks = current_weeks_for_selected_year()
         if not any(week.week_number == week_number for week in visible_weeks):
             return
+        _auto_discard_resource_draft_on_context_change()
         local_state.selected_week = week_number
         _clear_session_write_error()
         _clear_week_write_error()
@@ -340,6 +368,7 @@ def build_app_root(page: ft.Page) -> ft.Control:
         page.update()
 
     def handle_select_entry(entry_ref: EntryRef) -> None:
+        _auto_discard_resource_draft_on_context_change()
         local_state.viewer_entry_ref = entry_ref
         _clear_session_write_error()
         _clear_week_write_error()
@@ -350,6 +379,7 @@ def build_app_root(page: ft.Page) -> ft.Control:
         page.update()
 
     def handle_manual_refresh() -> None:
+        _auto_discard_resource_draft_on_context_change()
         _clear_session_write_error()
         _clear_week_write_error()
         _clear_entry_write_error()
@@ -383,6 +413,57 @@ def build_app_root(page: ft.Page) -> ft.Control:
 
     def _set_resource_write_error(message: str) -> None:
         entry_panel_state.resource_write_error_message = message
+
+    def _normalize_resource_draft_values(raw_map: dict[str, int] | None) -> dict[str, int]:
+        if not isinstance(raw_map, dict):
+            return {}
+        normalized: dict[str, int] = {}
+        for key in ("lumber", "metal", "hide"):
+            value = raw_map.get(key)
+            if isinstance(value, bool) or not isinstance(value, int):
+                continue
+            if value == 0:
+                continue
+            normalized[key] = value
+        return normalized
+
+    def _clear_resource_draft_state() -> None:
+        entry_panel_state.resource_draft_entry_ref = None
+        entry_panel_state.resource_draft_values = {}
+        entry_panel_state.resource_draft_dirty = False
+        entry_panel_state.resource_draft_discard_notice = None
+
+    def _resource_draft_attached_to_viewer() -> bool:
+        return (
+            local_state.viewer_entry_ref is not None
+            and entry_panel_state.resource_draft_entry_ref == local_state.viewer_entry_ref
+        )
+
+    def _sync_resource_draft_from_viewer_snapshot() -> None:
+        viewer_entry = entry_panel_state.viewer_entry_snapshot
+        if viewer_entry is None:
+            return
+
+        normalized_viewer_deltas = _normalize_resource_draft_values(viewer_entry.resource_deltas)
+        if entry_panel_state.resource_draft_entry_ref != viewer_entry.ref:
+            entry_panel_state.resource_draft_entry_ref = viewer_entry.ref
+            entry_panel_state.resource_draft_values = normalized_viewer_deltas
+            entry_panel_state.resource_draft_dirty = False
+            entry_panel_state.resource_draft_discard_notice = None
+            return
+
+        if not entry_panel_state.resource_draft_dirty:
+            entry_panel_state.resource_draft_values = normalized_viewer_deltas
+
+    def _auto_discard_resource_draft_on_context_change() -> None:
+        had_dirty = entry_panel_state.resource_draft_dirty
+        _clear_resource_draft_state()
+        _clear_resource_write_error()
+        if had_dirty:
+            entry_panel_state.resource_draft_discard_notice = (
+                "Cambios de recursos sin guardar descartados al cambiar de contexto."
+            )
+            _show_snack_info(entry_panel_state.resource_draft_discard_notice, update_page=False)
 
     def _get_selected_week_for_write() -> MockWeek | None:
         if local_state.selected_week is None:
@@ -587,6 +668,73 @@ def build_app_root(page: ft.Page) -> ft.Control:
         )
         return result
 
+    def _run_resource_draft_save() -> ResourceBulkWriteResult | None:
+        entry_ref = _get_viewer_entry_ref_for_resource_write()
+        if entry_ref is None:
+            _set_resource_write_error("No hay entry en el visor para guardar recursos.")
+            render_shell()
+            page.update()
+            return None
+
+        if entry_panel_state.resource_draft_entry_ref != entry_ref:
+            _set_resource_write_error(
+                "El borrador de recursos no coincide con la entry visible; refresca y reintenta."
+            )
+            render_shell()
+            page.update()
+            return None
+
+        reload_q5 = _entry_ref_matches_selected_week(local_state, entry_ref)
+        target_resource_deltas = dict(entry_panel_state.resource_draft_values)
+
+        entry_panel_state.resource_write_pending = True
+        _clear_resource_write_error()
+        render_shell()
+        page.update()
+
+        result: ResourceBulkWriteResult | None = None
+        success = True
+        try:
+            client = _build_client()
+            result = replace_entry_resource_deltas(
+                client,
+                entry_ref=entry_ref,
+                target_resource_deltas=target_resource_deltas,
+            )
+        except FirestoreConflictError as exc:
+            _set_resource_write_error(str(exc))
+            success = False
+        except (
+            FirestoreTransitionInvalidError,
+            FirestoreValidationError,
+            FirestoreReadError,
+            FirestoreWriteError,
+        ) as exc:
+            _set_resource_write_error(str(exc))
+            success = False
+        finally:
+            entry_panel_state.resource_write_pending = False
+
+        if not success:
+            render_shell()
+            page.update()
+            return None
+
+        entry_panel_state.resource_draft_dirty = False
+        entry_panel_state.resource_draft_discard_notice = None
+
+        if result is not None and result.no_op:
+            render_shell()
+            page.update()
+            return result
+
+        refresh_and_render(
+            selected_year_override=local_state.selected_year,
+            reload_q5=reload_q5,
+            reload_q8=(local_state.viewer_entry_ref is not None),
+        )
+        return result
+
     def handle_start_session() -> None:
         _run_session_write(lambda client, entry_ref: start_session(client, entry_ref=entry_ref))
 
@@ -763,6 +911,14 @@ def build_app_root(page: ft.Page) -> ft.Control:
         )
         page.update()
 
+    def _show_snack_info(message: str, *, update_page: bool = True) -> None:
+        page.snack_bar = ft.SnackBar(
+            content=ft.Text(message),
+            open=True,
+        )
+        if update_page:
+            page.update()
+
     def _to_local_strings(value: object | None) -> tuple[str, str]:
         if not isinstance(value, datetime):
             return "", ""
@@ -900,6 +1056,7 @@ def build_app_root(page: ft.Page) -> ft.Control:
 
                 def _select_created_entry(result: EntryWriteResult) -> None:
                     if result.entry_ref is not None:
+                        _auto_discard_resource_draft_on_context_change()
                         local_state.viewer_entry_ref = result.entry_ref
 
                 _run_entry_write(
@@ -1007,6 +1164,7 @@ def build_app_root(page: ft.Page) -> ft.Control:
                 entry_panel_state.viewer_entry_snapshot = None
                 entry_panel_state.viewer_sessions = []
                 entry_panel_state.viewer_sessions_error_message = None
+                _clear_resource_draft_state()
 
             result = _run_entry_write(
                 lambda client: delete_entry(client, entry_ref=entry_ref),
@@ -1073,15 +1231,81 @@ def build_app_root(page: ft.Page) -> ft.Control:
             reload_q8=True,
         )
 
-    def handle_adjust_resource_delta(resource_key: str, adjustment_delta: int) -> None:
-        _run_resource_write(
-            lambda client, entry_ref: adjust_resource_delta(
-                client,
-                entry_ref=entry_ref,
-                resource_key=resource_key,
-                adjustment_delta=adjustment_delta,
+    def handle_adjust_resource_draft_delta(resource_key: str, adjustment_delta: int) -> None:
+        entry_ref = _get_viewer_entry_ref_for_resource_write()
+        if entry_ref is None:
+            _set_resource_write_error("No hay entry en el visor para ajustar recursos.")
+            render_shell()
+            page.update()
+            return
+        if entry_panel_state.resource_draft_entry_ref != entry_ref:
+            _set_resource_write_error(
+                "El borrador de recursos no coincide con la entry visible; refresca y reintenta."
             )
+            render_shell()
+            page.update()
+            return
+        if resource_key not in {"lumber", "metal", "hide"}:
+            _set_resource_write_error(f"Recurso no soportado: {resource_key!r}.")
+            render_shell()
+            page.update()
+            return
+        if isinstance(adjustment_delta, bool) or not isinstance(adjustment_delta, int) or adjustment_delta == 0:
+            _set_resource_write_error("El ajuste de recurso debe ser entero distinto de 0.")
+            render_shell()
+            page.update()
+            return
+
+        current_value = entry_panel_state.resource_draft_values.get(resource_key, 0)
+        next_value = current_value + adjustment_delta
+        if next_value == 0:
+            entry_panel_state.resource_draft_values.pop(resource_key, None)
+        else:
+            entry_panel_state.resource_draft_values[resource_key] = next_value
+
+        entry_panel_state.resource_draft_dirty = True
+        entry_panel_state.resource_draft_discard_notice = None
+        _clear_resource_write_error()
+        render_shell()
+        page.update()
+
+    def handle_save_resource_draft() -> None:
+        entry_ref = _get_viewer_entry_ref_for_resource_write()
+        if entry_ref is None:
+            _set_resource_write_error("No hay entry en el visor para guardar recursos.")
+            render_shell()
+            page.update()
+            return
+        if entry_panel_state.resource_draft_entry_ref != entry_ref:
+            _set_resource_write_error(
+                "El borrador de recursos no coincide con la entry visible; refresca y reintenta."
+            )
+            render_shell()
+            page.update()
+            return
+        if not entry_panel_state.resource_draft_dirty:
+            return
+        _run_resource_draft_save()
+
+    def handle_discard_resource_draft() -> None:
+        viewer_entry = entry_panel_state.viewer_entry_snapshot
+        entry_ref = _get_viewer_entry_ref_for_resource_write()
+        if viewer_entry is None or entry_ref is None or viewer_entry.ref != entry_ref:
+            _clear_resource_draft_state()
+            _clear_resource_write_error()
+            render_shell()
+            page.update()
+            return
+
+        entry_panel_state.resource_draft_entry_ref = viewer_entry.ref
+        entry_panel_state.resource_draft_values = _normalize_resource_draft_values(
+            viewer_entry.resource_deltas
         )
+        entry_panel_state.resource_draft_dirty = False
+        entry_panel_state.resource_draft_discard_notice = None
+        _clear_resource_write_error()
+        render_shell()
+        page.update()
 
     def _show_session_form_dialog(
         *,
@@ -1262,7 +1486,14 @@ def build_app_root(page: ft.Page) -> ft.Control:
         )
         _open_dialog(dialog)
 
+    def _handle_media_change(_e) -> None:
+        _sync_root_height_to_viewport()
+        page.update()
+
+    page.on_media_change = _handle_media_change
+
     # Carga inicial: si falla, el shell se renderiza con error visible.
+    _sync_root_height_to_viewport()
     load_readonly_snapshot(selected_year_override=local_state.selected_year)
     render_shell()
     return root

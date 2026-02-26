@@ -28,8 +28,10 @@ from .entry_writes import (
     update_entry,
 )
 from .resource_writes import (
+    ResourceBulkWriteResult,
     ResourceWriteResult,
     adjust_resource_delta,
+    replace_entry_resource_deltas,
 )
 from .session_writes import (
     SessionWriteResult,
@@ -67,6 +69,7 @@ __all__ = [
     "FirestoreValidationError",
     "FirestoreWriteError",
     "MainScreenSnapshot",
+    "ResourceBulkWriteResult",
     "ResourceWriteResult",
     "SessionWriteResult",
     "WeekRead",
@@ -87,6 +90,7 @@ __all__ = [
     "read_q8_sessions_for_entry",
     "reorder_entry_within_week",
     "reclose_week",
+    "replace_entry_resource_deltas",
     "reopen_week",
     "start_session",
     "stop_session",

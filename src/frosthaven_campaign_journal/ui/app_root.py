@@ -7,6 +7,7 @@ import flet as ft
 
 from frosthaven_campaign_journal.config import load_settings
 from frosthaven_campaign_journal.data import (
+    EntryWriteResult,
     EntryRead,
     EntrySessionRead,
     FirestoreConfigError,
@@ -15,10 +16,14 @@ from frosthaven_campaign_journal.data import (
     FirestoreTransitionInvalidError,
     FirestoreValidationError,
     FirestoreWriteError,
+    ResourceWriteResult,
     WeekRead,
     WeekWriteResult,
+    adjust_resource_delta,
     build_firestore_client,
     close_week,
+    create_entry,
+    delete_entry,
     derive_year_from_week_cursor,
     load_main_screen_snapshot,
     manual_create_session,
@@ -28,9 +33,11 @@ from frosthaven_campaign_journal.data import (
     read_entry_by_ref,
     read_q5_entries_for_selected_week,
     read_q8_sessions_for_entry,
+    reorder_entry_within_week,
     reclose_week,
     start_session,
     stop_session,
+    update_entry,
     update_week_notes,
 )
 from frosthaven_campaign_journal.state.placeholders import (
@@ -69,6 +76,10 @@ class EntryPanelReadState:
     session_write_pending: bool = False
     week_write_error_message: str | None = None
     week_write_pending: bool = False
+    entry_write_error_message: str | None = None
+    entry_write_pending: bool = False
+    resource_write_error_message: str | None = None
+    resource_write_pending: bool = False
 
 
 def build_app_root(page: ft.Page) -> ft.Control:
@@ -78,6 +89,7 @@ def build_app_root(page: ft.Page) -> ft.Control:
 
     shell_host = ft.Container(expand=True)
     root = ft.SafeArea(content=shell_host)
+    active_dialog: ft.AlertDialog | None = None
 
     def current_weeks_for_selected_year() -> list[MockWeek]:
         if local_state.selected_year is None:
@@ -106,6 +118,10 @@ def build_app_root(page: ft.Page) -> ft.Control:
             session_write_pending=entry_panel_state.session_write_pending,
             week_write_error_message=entry_panel_state.week_write_error_message,
             week_write_pending=entry_panel_state.week_write_pending,
+            entry_write_error_message=entry_panel_state.entry_write_error_message,
+            entry_write_pending=entry_panel_state.entry_write_pending,
+            resource_write_error_message=entry_panel_state.resource_write_error_message,
+            resource_write_pending=entry_panel_state.resource_write_pending,
             active_entry_ref=read_state.active_entry_ref,
             active_entry_label=read_state.active_entry_label,
             active_status_error_message=read_state.active_status_error_message,
@@ -128,6 +144,12 @@ def build_app_root(page: ft.Page) -> ft.Control:
             on_request_close_week=handle_request_close_week,
             on_request_reopen_week=handle_request_reopen_week,
             on_request_reclose_week=handle_request_reclose_week,
+            on_open_create_entry_modal=handle_open_create_entry_modal,
+            on_open_edit_entry_modal=handle_open_edit_entry_modal,
+            on_open_delete_entry_confirm=handle_open_delete_entry_confirm,
+            on_reorder_entry_up=handle_reorder_entry_up,
+            on_reorder_entry_down=handle_reorder_entry_down,
+            on_adjust_resource_delta=handle_adjust_resource_delta,
         )
 
     def _build_client():
@@ -279,6 +301,8 @@ def build_app_root(page: ft.Page) -> ft.Control:
         local_state.selected_week = None
         _clear_session_write_error()
         _clear_week_write_error()
+        _clear_entry_write_error()
+        _clear_resource_write_error()
         entry_panel_state.entries_for_selected_week = []
         entry_panel_state.entries_panel_error_message = None
         refresh_and_render(selected_year_override=local_state.selected_year, reload_q8=False)
@@ -294,6 +318,8 @@ def build_app_root(page: ft.Page) -> ft.Control:
         local_state.selected_week = None
         _clear_session_write_error()
         _clear_week_write_error()
+        _clear_entry_write_error()
+        _clear_resource_write_error()
         entry_panel_state.entries_for_selected_week = []
         entry_panel_state.entries_panel_error_message = None
         refresh_and_render(selected_year_override=local_state.selected_year, reload_q8=False)
@@ -307,6 +333,8 @@ def build_app_root(page: ft.Page) -> ft.Control:
         local_state.selected_week = week_number
         _clear_session_write_error()
         _clear_week_write_error()
+        _clear_entry_write_error()
+        _clear_resource_write_error()
         load_entries_for_selected_week()  # Q5 solo, el visor sticky no recarga Q8 por navegación
         render_shell()
         page.update()
@@ -315,6 +343,8 @@ def build_app_root(page: ft.Page) -> ft.Control:
         local_state.viewer_entry_ref = entry_ref
         _clear_session_write_error()
         _clear_week_write_error()
+        _clear_entry_write_error()
+        _clear_resource_write_error()
         load_viewer_entry_and_sessions()  # Q8 sigue al visor sticky
         render_shell()
         page.update()
@@ -322,6 +352,8 @@ def build_app_root(page: ft.Page) -> ft.Control:
     def handle_manual_refresh() -> None:
         _clear_session_write_error()
         _clear_week_write_error()
+        _clear_entry_write_error()
+        _clear_resource_write_error()
         refresh_and_render(
             selected_year_override=local_state.selected_year,
             reload_q5=(local_state.selected_week is not None),
@@ -340,6 +372,18 @@ def build_app_root(page: ft.Page) -> ft.Control:
     def _set_week_write_error(message: str) -> None:
         entry_panel_state.week_write_error_message = message
 
+    def _clear_entry_write_error() -> None:
+        entry_panel_state.entry_write_error_message = None
+
+    def _set_entry_write_error(message: str) -> None:
+        entry_panel_state.entry_write_error_message = message
+
+    def _clear_resource_write_error() -> None:
+        entry_panel_state.resource_write_error_message = None
+
+    def _set_resource_write_error(message: str) -> None:
+        entry_panel_state.resource_write_error_message = message
+
     def _get_selected_week_for_write() -> MockWeek | None:
         if local_state.selected_week is None:
             return None
@@ -354,6 +398,18 @@ def build_app_root(page: ft.Page) -> ft.Control:
             and local_state.viewer_entry_ref.year_number == year_number
             and local_state.viewer_entry_ref.week_number == week_number
         )
+
+    def _get_selected_week_target_for_entry_create() -> tuple[int, int] | None:
+        target_week = _get_selected_week_for_write()
+        if local_state.selected_year is None or local_state.selected_week is None or target_week is None:
+            return None
+        return local_state.selected_year, local_state.selected_week
+
+    def _get_viewer_entry_ref_for_entry_write() -> EntryRef | None:
+        return local_state.viewer_entry_ref
+
+    def _get_viewer_entry_ref_for_resource_write() -> EntryRef | None:
+        return local_state.viewer_entry_ref
 
     def _run_week_write(action) -> WeekWriteResult | None:
         target_week = _get_selected_week_for_write()
@@ -439,6 +495,98 @@ def build_app_root(page: ft.Page) -> ft.Control:
         )
         return True
 
+    def _run_entry_write(
+        action,
+        *,
+        reload_q5: bool,
+        reload_q8: bool,
+        before_refresh=None,
+    ) -> EntryWriteResult | None:
+        entry_panel_state.entry_write_pending = True
+        _clear_entry_write_error()
+        render_shell()
+        page.update()
+
+        result: EntryWriteResult | None = None
+        success = True
+        try:
+            client = _build_client()
+            result = action(client)
+        except FirestoreConflictError as exc:
+            _set_entry_write_error(str(exc))
+            success = False
+        except (
+            FirestoreTransitionInvalidError,
+            FirestoreValidationError,
+            FirestoreReadError,
+            FirestoreWriteError,
+        ) as exc:
+            _set_entry_write_error(str(exc))
+            success = False
+        finally:
+            entry_panel_state.entry_write_pending = False
+
+        if not success:
+            render_shell()
+            page.update()
+            return None
+
+        if before_refresh is not None and result is not None:
+            before_refresh(result)
+
+        refresh_and_render(
+            selected_year_override=local_state.selected_year,
+            reload_q5=reload_q5,
+            reload_q8=reload_q8,
+        )
+        return result
+
+    def _run_resource_write(action) -> ResourceWriteResult | None:
+        entry_ref = _get_viewer_entry_ref_for_resource_write()
+        if entry_ref is None:
+            _set_resource_write_error("No hay entry en el visor para ajustar recursos.")
+            render_shell()
+            page.update()
+            return None
+
+        reload_q5 = _entry_ref_matches_selected_week(local_state, entry_ref)
+
+        entry_panel_state.resource_write_pending = True
+        _clear_resource_write_error()
+        render_shell()
+        page.update()
+
+        result: ResourceWriteResult | None = None
+        success = True
+        try:
+            client = _build_client()
+            result = action(client, entry_ref)
+        except FirestoreConflictError as exc:
+            _set_resource_write_error(str(exc))
+            success = False
+        except (
+            FirestoreTransitionInvalidError,
+            FirestoreValidationError,
+            FirestoreReadError,
+            FirestoreWriteError,
+        ) as exc:
+            _set_resource_write_error(str(exc))
+            success = False
+        finally:
+            entry_panel_state.resource_write_pending = False
+
+        if not success:
+            render_shell()
+            page.update()
+            return None
+
+        refresh_and_render(
+            selected_year_override=local_state.selected_year,
+            reload_q5=reload_q5,
+            reload_q8=(local_state.viewer_entry_ref is not None),
+        )
+        return result
+
     def handle_start_session() -> None:
         _run_session_write(lambda client, entry_ref: start_session(client, entry_ref=entry_ref))
 
@@ -485,9 +633,7 @@ def build_app_root(page: ft.Page) -> ft.Control:
             ],
             actions_alignment=ft.MainAxisAlignment.END,
         )
-        page.dialog = dialog
-        dialog.open = True
-        page.update()
+        _open_dialog(dialog)
 
     def _show_week_state_confirm_dialog(
         *,
@@ -520,9 +666,7 @@ def build_app_root(page: ft.Page) -> ft.Control:
             ],
             actions_alignment=ft.MainAxisAlignment.END,
         )
-        page.dialog = dialog
-        dialog.open = True
-        page.update()
+        _open_dialog(dialog)
 
     def handle_open_week_notes_modal() -> None:
         _show_week_notes_modal()
@@ -587,11 +731,29 @@ def build_app_root(page: ft.Page) -> ft.Control:
             ),
         )
 
+    def _open_dialog(dialog: ft.AlertDialog) -> None:
+        nonlocal active_dialog
+        if active_dialog is not None:
+            try:
+                active_dialog.open = False
+                active_dialog.update()
+            except Exception:
+                pass
+            active_dialog = None
+        page.show_dialog(dialog)
+        active_dialog = dialog
+
     def _close_dialog() -> None:
-        if page.dialog is not None:
-            page.dialog.open = False
+        nonlocal active_dialog
+        if active_dialog is None:
+            return
+        dialog = active_dialog
+        active_dialog = None
+        try:
+            dialog.open = False
+            dialog.update()
+        except Exception:
             page.update()
-        page.dialog = None
 
     def _show_snack_error(message: str) -> None:
         page.snack_bar = ft.SnackBar(
@@ -632,6 +794,294 @@ def build_app_root(page: ft.Page) -> ft.Control:
         if not date_value.strip() and not time_value.strip():
             return None
         return _parse_local_datetime(date_value, time_value, field_label=field_label)
+
+    def _parse_entry_form_values(
+        *,
+        entry_type_value: str | None,
+        scenario_ref_value: str | None,
+    ) -> tuple[str, int | None]:
+        entry_type = (entry_type_value or "").strip()
+        if entry_type not in {"scenario", "outpost"}:
+            raise ValueError("Tipo de entry inválido. Usa `scenario` o `outpost`.")
+
+        if entry_type == "outpost":
+            return "outpost", None
+
+        scenario_ref_raw = (scenario_ref_value or "").strip()
+        if not scenario_ref_raw:
+            raise ValueError("Scenario ref: es obligatorio para entries de tipo `scenario`.")
+        try:
+            scenario_ref = int(scenario_ref_raw)
+        except ValueError as exc:
+            raise ValueError("Scenario ref: debe ser un entero positivo.") from exc
+        if scenario_ref <= 0:
+            raise ValueError("Scenario ref: debe ser un entero positivo.")
+        return "scenario", scenario_ref
+
+    def _show_entry_form_dialog(
+        *,
+        mode: str,
+        entry_to_edit: MockEntry | None = None,
+    ) -> None:
+        if mode == "create" and _get_selected_week_target_for_entry_create() is None:
+            _set_entry_write_error("No hay week seleccionada para crear una entry.")
+            render_shell()
+            page.update()
+            return
+
+        if mode == "edit":
+            entry_ref = _get_viewer_entry_ref_for_entry_write()
+            if entry_ref is None:
+                _set_entry_write_error("No hay entry en el visor para editar.")
+                render_shell()
+                page.update()
+                return
+            if entry_to_edit is None or entry_to_edit.ref != entry_ref:
+                _set_entry_write_error("La entry visible no está cargada; refresca y reintenta.")
+                render_shell()
+                page.update()
+                return
+
+        entry_type_field = ft.Dropdown(
+            label="Tipo de entry",
+            width=220,
+            dense=True,
+            value=(entry_to_edit.entry_type if entry_to_edit is not None else "scenario"),
+            options=[
+                ft.dropdown.Option("scenario"),
+                ft.dropdown.Option("outpost"),
+            ],
+        )
+        scenario_ref_field = ft.TextField(
+            label="Scenario ref",
+            hint_text="Entero positivo",
+            width=180,
+            dense=True,
+            value=(
+                str(entry_to_edit.scenario_ref)
+                if entry_to_edit is not None and entry_to_edit.scenario_ref is not None
+                else ""
+            ),
+        )
+        dialog_error = ft.Text("", color="#8A1F1F", size=12, visible=False)
+
+        def _apply_entry_type(_e=None) -> None:
+            is_scenario = entry_type_field.value == "scenario"
+            scenario_ref_field.disabled = not is_scenario
+            if not is_scenario:
+                scenario_ref_field.hint_text = "No aplica para outpost"
+            else:
+                scenario_ref_field.hint_text = "Entero positivo"
+            page.update()
+
+        entry_type_field.on_change = _apply_entry_type
+
+        def _submit(_e) -> None:
+            try:
+                entry_type, scenario_ref = _parse_entry_form_values(
+                    entry_type_value=entry_type_field.value,
+                    scenario_ref_value=scenario_ref_field.value,
+                )
+            except ValueError as exc:
+                dialog_error.value = str(exc)
+                dialog_error.visible = True
+                page.update()
+                return
+
+            if mode == "create":
+                create_target = _get_selected_week_target_for_entry_create()
+                if create_target is None:
+                    dialog_error.value = "No hay week seleccionada para crear una entry."
+                    dialog_error.visible = True
+                    page.update()
+                    return
+                year_number, week_number = create_target
+                _close_dialog()
+
+                def _select_created_entry(result: EntryWriteResult) -> None:
+                    if result.entry_ref is not None:
+                        local_state.viewer_entry_ref = result.entry_ref
+
+                _run_entry_write(
+                    lambda client: create_entry(
+                        client,
+                        year_number=year_number,
+                        week_number=week_number,
+                        entry_type=entry_type,
+                        scenario_ref=scenario_ref,
+                    ),
+                    reload_q5=True,
+                    reload_q8=True,
+                    before_refresh=_select_created_entry,
+                )
+                return
+
+            entry_ref = _get_viewer_entry_ref_for_entry_write()
+            if entry_ref is None:
+                dialog_error.value = "No hay entry en el visor para editar."
+                dialog_error.visible = True
+                page.update()
+                return
+
+            reload_q5 = _entry_ref_matches_selected_week(local_state, entry_ref)
+            _close_dialog()
+            _run_entry_write(
+                lambda client: update_entry(
+                    client,
+                    entry_ref=entry_ref,
+                    entry_type=entry_type,
+                    scenario_ref=scenario_ref,
+                ),
+                reload_q5=reload_q5,
+                reload_q8=True,
+            )
+
+        title = "Crear entry" if mode == "create" else "Editar entry"
+        submit_label = "Crear" if mode == "create" else "Guardar"
+
+        dialog = ft.AlertDialog(
+            modal=True,
+            title=ft.Text(title),
+            content=ft.Container(
+                width=420,
+                content=ft.Column(
+                    tight=True,
+                    spacing=8,
+                    controls=[
+                        entry_type_field,
+                        scenario_ref_field,
+                        dialog_error,
+                    ],
+                ),
+            ),
+            actions=[
+                ft.TextButton("Cancelar", on_click=lambda _e: _close_dialog()),
+                ft.FilledButton(submit_label, on_click=_submit),
+            ],
+            actions_alignment=ft.MainAxisAlignment.END,
+        )
+        _open_dialog(dialog)
+        _apply_entry_type()
+
+    def handle_open_create_entry_modal() -> None:
+        _show_entry_form_dialog(mode="create")
+
+    def handle_open_edit_entry_modal() -> None:
+        viewer_entry = entry_panel_state.viewer_entry_snapshot
+        entry_ref = _get_viewer_entry_ref_for_entry_write()
+        if entry_ref is None:
+            _set_entry_write_error("No hay entry en el visor para editar.")
+            render_shell()
+            page.update()
+            return
+        if viewer_entry is None or viewer_entry.ref != entry_ref:
+            _set_entry_write_error("La entry visible no está cargada; refresca y reintenta.")
+            render_shell()
+            page.update()
+            return
+        _show_entry_form_dialog(mode="edit", entry_to_edit=viewer_entry)
+
+    def handle_open_delete_entry_confirm() -> None:
+        entry_ref = _get_viewer_entry_ref_for_entry_write()
+        if entry_ref is None:
+            _set_entry_write_error("No hay entry en el visor para borrar.")
+            render_shell()
+            page.update()
+            return
+
+        viewer_entry = entry_panel_state.viewer_entry_snapshot
+        if viewer_entry is None or viewer_entry.ref != entry_ref:
+            _set_entry_write_error("La entry visible no está cargada; refresca y reintenta.")
+            render_shell()
+            page.update()
+            return
+
+        entry_label = viewer_entry.label
+        reload_q5 = _entry_ref_matches_selected_week(local_state, entry_ref)
+
+        def _confirm(_e) -> None:
+            _close_dialog()
+
+            def _clear_viewer_after_delete(_result: EntryWriteResult) -> None:
+                local_state.viewer_entry_ref = None
+                entry_panel_state.viewer_entry_snapshot = None
+                entry_panel_state.viewer_sessions = []
+                entry_panel_state.viewer_sessions_error_message = None
+
+            result = _run_entry_write(
+                lambda client: delete_entry(client, entry_ref=entry_ref),
+                reload_q5=reload_q5,
+                reload_q8=False,
+                before_refresh=_clear_viewer_after_delete,
+            )
+            if result is None:
+                return
+            if result.auto_stopped_session_id:
+                page.snack_bar = ft.SnackBar(
+                    content=ft.Text(
+                        f"Entry borrada. Se auto-cerró la sesión {result.auto_stopped_session_id}."
+                    ),
+                    open=True,
+                )
+                page.update()
+
+        dialog = ft.AlertDialog(
+            modal=True,
+            title=ft.Text("Borrar entry"),
+            content=ft.Text(
+                f"¿Seguro que quieres borrar la entry `{entry_label}`? Esta acción es irreversible."
+            ),
+            actions=[
+                ft.TextButton("Cancelar", on_click=lambda _e: _close_dialog()),
+                ft.FilledButton("Borrar", on_click=_confirm),
+            ],
+            actions_alignment=ft.MainAxisAlignment.END,
+        )
+        _open_dialog(dialog)
+
+    def handle_reorder_entry_up() -> None:
+        entry_ref = _get_viewer_entry_ref_for_entry_write()
+        if entry_ref is None:
+            _set_entry_write_error("No hay entry en el visor para reordenar.")
+            render_shell()
+            page.update()
+            return
+        _run_entry_write(
+            lambda client: reorder_entry_within_week(
+                client,
+                entry_ref=entry_ref,
+                direction="up",
+            ),
+            reload_q5=_entry_ref_matches_selected_week(local_state, entry_ref),
+            reload_q8=True,
+        )
+
+    def handle_reorder_entry_down() -> None:
+        entry_ref = _get_viewer_entry_ref_for_entry_write()
+        if entry_ref is None:
+            _set_entry_write_error("No hay entry en el visor para reordenar.")
+            render_shell()
+            page.update()
+            return
+        _run_entry_write(
+            lambda client: reorder_entry_within_week(
+                client,
+                entry_ref=entry_ref,
+                direction="down",
+            ),
+            reload_q5=_entry_ref_matches_selected_week(local_state, entry_ref),
+            reload_q8=True,
+        )
+
+    def handle_adjust_resource_delta(resource_key: str, adjustment_delta: int) -> None:
+        _run_resource_write(
+            lambda client, entry_ref: adjust_resource_delta(
+                client,
+                entry_ref=entry_ref,
+                resource_key=resource_key,
+                adjustment_delta=adjustment_delta,
+            )
+        )
 
     def _show_session_form_dialog(
         *,
@@ -765,8 +1215,7 @@ def build_app_root(page: ft.Page) -> ft.Control:
             ],
             actions_alignment=ft.MainAxisAlignment.END,
         )
-        page.dialog = dialog
-        dialog.open = True
+        _open_dialog(dialog)
         _apply_active_checkbox()
 
     def handle_open_create_session_modal() -> None:
@@ -811,9 +1260,7 @@ def build_app_root(page: ft.Page) -> ft.Control:
             ],
             actions_alignment=ft.MainAxisAlignment.END,
         )
-        page.dialog = dialog
-        dialog.open = True
-        page.update()
+        _open_dialog(dialog)
 
     # Carga inicial: si falla, el shell se renderiza con error visible.
     load_readonly_snapshot(selected_year_override=local_state.selected_year)

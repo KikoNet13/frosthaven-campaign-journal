@@ -152,6 +152,22 @@ Se valida:
   - Se acepta divergencia transitoria: el código actual sigue usando `campaign.week_cursor` hasta ejecutar `#81`.
   - `#76` se cierra como unidad de decisión+docs; no incluye migración técnica ni revalidación de `TC-TEMPORAL-01/02`.
 
+### Hito H1-04
+
+- Fecha: 2026-02-26
+- Objetivo: restaurar la usabilidad de la barra temporal superior en viewport móvil horizontal (`#79`) con bloques estacionales y overflow scrollable.
+- Resultado: completado
+- Verificación A: aprobado (validación Charlotte en `desktop` + `mobile landscape` registrada en issue `#79`)
+- Verificación B: aprobado (weeks finales accesibles y selección funcional en móvil horizontal sin regresión visible en desktop)
+- Evidencia:
+  - Issue `#79` (hallazgo original + comentario de validación de cierre con Charlotte)
+  - PR de la unidad `#79` (implementación UI y cierre end-to-end)
+- Resumen:
+  - Top bar responsive con compactación solo en modo móvil horizontal (`landscape`).
+  - Weeks del año visible reestructuradas en 2 bloques visuales (verano/invierno) con scroll horizontal de overflow.
+  - Desktop pequeño (`800x600`) preservado sin compactación accidental tras ajustar la heurística responsiva.
+  - `portrait` queda fuera de alcance explícito de la unidad.
+
 ## Conocimiento migrado desde legado
 
 - `important.txt`

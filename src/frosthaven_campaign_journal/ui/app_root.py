@@ -155,6 +155,8 @@ def build_app_root(page: ft.Page) -> ft.Control:
             read_status=read_state.status,
             read_error_message=read_state.error_message,
             read_warning_message=read_state.warning_message,
+            viewport_width=getattr(page, "width", None),
+            viewport_height=getattr(page, "height", None),
             env_name=load_settings().env,
             on_prev_year=handle_prev_year,
             on_next_year=handle_next_year,

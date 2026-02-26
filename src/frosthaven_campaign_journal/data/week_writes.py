@@ -99,7 +99,6 @@ def reopen_week(
     week_number: int,
 ) -> WeekWriteResult:
     week_doc_ref = _week_doc_ref(client, year_number=year_number, week_number=week_number)
-    campaign_doc_ref = _campaign_doc_ref(client)
     transaction = client.transaction()
 
     @firestore.transactional
@@ -137,13 +136,6 @@ def reopen_week(
                 "updated_at_utc": firestore.SERVER_TIMESTAMP,
             },
         )
-        txn.update(
-            campaign_doc_ref,
-            {
-                "week_cursor": next_cursor,
-                "updated_at_utc": firestore.SERVER_TIMESTAMP,
-            },
-        )
         return WeekWriteResult(
             week_number=week_number,
             new_status="open",
@@ -166,7 +158,6 @@ def _close_like_week_operation(
     operation_label: str,
 ) -> WeekWriteResult:
     week_doc_ref = _week_doc_ref(client, year_number=year_number, week_number=week_number)
-    campaign_doc_ref = _campaign_doc_ref(client)
     transaction = client.transaction()
 
     @firestore.transactional
@@ -215,13 +206,6 @@ def _close_like_week_operation(
             week_doc_ref,
             {
                 "status": "closed",
-                "updated_at_utc": firestore.SERVER_TIMESTAMP,
-            },
-        )
-        txn.update(
-            campaign_doc_ref,
-            {
-                "week_cursor": next_cursor,
                 "updated_at_utc": firestore.SERVER_TIMESTAMP,
             },
         )

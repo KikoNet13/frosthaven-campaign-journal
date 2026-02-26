@@ -17,7 +17,6 @@ WEEKS_PER_YEAR = 20
 
 @dataclass(frozen=True)
 class CampaignMainRead:
-    week_cursor: int
     resource_totals: dict[str, int]
     updated_at_utc: Any | None
 
@@ -88,9 +87,6 @@ def read_q1_campaign_main(client: firestore.Client) -> CampaignMainRead:
         raise FirestoreReadError(f"No existe el documento de campaña `campaigns/{CAMPAIGN_ID}`.")
 
     data = snapshot.to_dict() or {}
-    week_cursor_raw = data.get("week_cursor")
-    if not isinstance(week_cursor_raw, int) or week_cursor_raw <= 0:
-        raise FirestoreReadError("Q1 inválido: `week_cursor` debe ser un entero positivo.")
 
     resource_totals_raw = data.get("resource_totals") or {}
     if not isinstance(resource_totals_raw, dict):
@@ -107,7 +103,6 @@ def read_q1_campaign_main(client: firestore.Client) -> CampaignMainRead:
         resource_totals[key] = value
 
     return CampaignMainRead(
-        week_cursor=week_cursor_raw,
         resource_totals=resource_totals,
         updated_at_utc=data.get("updated_at_utc"),
     )
@@ -418,15 +413,25 @@ def load_main_screen_snapshot(
     if not years:
         raise FirestoreReadError("Q2 inválido: no hay años provisionados en la campaña.")
 
-    derived_year = derive_year_from_week_cursor(campaign_main.week_cursor)
     if selected_year is not None and selected_year in years:
         effective_year = selected_year
-    elif derived_year in years:
-        effective_year = derived_year
+        weeks_for_selected_year = read_q3_q4_weeks_for_year(client, effective_year)
     else:
         effective_year = years[0]
+        weeks_for_selected_year: list[WeekRead] | None = None
+        first_year_weeks: list[WeekRead] | None = None
 
-    weeks_for_selected_year = read_q3_q4_weeks_for_year(client, effective_year)
+        for idx, year_number in enumerate(years):
+            year_weeks = read_q3_q4_weeks_for_year(client, year_number)
+            if idx == 0:
+                first_year_weeks = year_weeks
+            if any(week.status == "open" for week in year_weeks):
+                effective_year = year_number
+                weeks_for_selected_year = year_weeks
+                break
+
+        if weeks_for_selected_year is None:
+            weeks_for_selected_year = first_year_weeks or []
 
     active_session: ActiveSessionRead | None = None
     active_entry: ActiveEntryRead | None = None
@@ -450,10 +455,6 @@ def load_main_screen_snapshot(
         active_entry=active_entry,
         active_status_error_message=active_status_error_message,
     )
-
-
-def derive_year_from_week_cursor(week_cursor: int) -> int:
-    return ((week_cursor - 1) // WEEKS_PER_YEAR) + 1
 
 
 def _resolve_season_type_for_week(*, year_number: int, week_number: int) -> str:

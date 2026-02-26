@@ -38,11 +38,6 @@ def extend_years_plus_one(client: firestore.Client) -> CampaignWriteResult:
         if not campaign_snapshot.exists:
             raise FirestoreTransitionInvalidError("La campaña ya no existe.")
 
-        campaign_data = campaign_snapshot.to_dict() or {}
-        week_cursor_raw = campaign_data.get("week_cursor")
-        if isinstance(week_cursor_raw, bool) or not isinstance(week_cursor_raw, int) or week_cursor_raw <= 0:
-            raise FirestoreValidationError("`campaign.week_cursor` debe ser un entero positivo.")
-
         years_state = _read_years_state(txn, client)
         if not years_state:
             raise FirestoreTransitionInvalidError(
@@ -118,7 +113,6 @@ def extend_years_plus_one(client: firestore.Client) -> CampaignWriteResult:
         txn.update(
             campaign_doc_ref,
             {
-                "week_cursor": next_week_cursor,
                 "updated_at_utc": server_ts,
             },
         )

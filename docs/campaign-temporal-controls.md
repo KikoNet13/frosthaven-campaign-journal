@@ -24,7 +24,7 @@ Incluye:
 - selector de año y selector de semanas del año seleccionado;
 - provisión inicial automática de años en `campaign/01`;
 - extensión manual de años (`+1`) con confirmación;
-- semántica de navegación de semana vs cambio de `week_cursor`;
+- semántica de navegación de semana vs semana actual derivada;
 - patrón de UI del selector de entry al pulsar semana (a nivel de intención).
 
 No incluye:
@@ -63,7 +63,8 @@ No incluye:
 
 1. El selector de semanas muestra semanas del **año seleccionado**.
 1. Su función principal en esta issue es navegación/foco temporal.
-1. Pulsar una semana **no cambia automáticamente** `campaign.week_cursor`.
+1. Pulsar una semana **no cambia automáticamente** la semana actual derivada
+   (primera `Week` abierta).
 1. Al pulsar una semana se abre el flujo de selección de entry (popover/modal
    anclado), definido en esta issue a nivel de patrón e intención.
 
@@ -83,22 +84,25 @@ No incluye:
 1. Tras confirmar, se añade **1 año** nuevo.
 1. No hay extensión automática por umbral en el MVP.
 
-## Política de `week_cursor` (actualización posterior de dominio)
+## Política de semana actual derivada (actualización posterior de dominio y reencuadre `#76`)
 
 1. La semántica original de ajuste manual explícito de `week_cursor` definida en
    esta issue fue **actualizada** por la Issue `#37`
    (`docs/editability-policy.md`).
-1. En el MVP actual, `week_cursor` apunta a la **primera `Week` abierta**
-   (menor `week_number` abierta) y se recalcula tras cambios de estado de
-   `Week`.
+1. El canon de producto/documentación vigente define la **semana actual** como
+   concepto **derivado no persistido**: la primera `Week` abierta (menor
+   `week_number` abierta), recalculada tras cambios de estado de `Week`.
 1. Seleccionar semana para navegar/focalizar sigue siendo una acción separada de
-   la navegación temporal y no cambia automáticamente `week_cursor`.
-1. El marcador visual de `current week` (derivado de `week_cursor`) y la
+   la navegación temporal y no cambia automáticamente la semana actual derivada.
+1. El marcador visual de `current week` (derivado de la semana actual) y la
    selección `Week`/`Entry` usada por el flujo de sesión se tratan como
    conceptos separados (ver `docs/active-session-flow.md`, Issue `#14`).
 1. Default de arranque de pantalla principal (`#16`): la barra superior se
    sitúa en el año de `current week`, pero la selección inicial de `Week` y
    `Entry` es vacía (`none`).
+1. **Nota de transición (`#76`)**: la implementación actual del repo todavía
+   persiste/lee `campaign.week_cursor` en backend/UI como mecanismo transitorio.
+   La migración técnica para retirar esa dependencia se sigue en `#81`.
 
 ## Click en semana y selector de entry (patrón + intención)
 
@@ -113,7 +117,8 @@ No incluye:
 ## Límites y dependencias
 
 - **Issue #9** (esta decisión): navegación temporal superior + provisión/
-  extensión de años + semántica de `week_cursor`.
+  extensión de años + semántica de semana actual derivada (históricamente
+  referida como `week_cursor`).
 - **Issue #13**: detalle técnico de inicialización y extensión de
   `year/season/week`.
 - **Issue #14** (o equivalente): detalle del popover de entries y flujo de
@@ -125,7 +130,7 @@ No incluye:
 - **Issue #12**: contrato de operaciones Firestore por agregado (implementación
   técnica de operaciones como provisión/extensión/cambio de cursor).
 - **Issue #37**: política de editabilidad manual del MVP y semántica derivada de
-  `week_cursor` (primera `Week` abierta), que actualiza esta decisión.
+  la semana actual (primera `Week` abierta), que actualiza esta decisión.
 - **Issue #18**: timestamps y desempates de orden estable entre dispositivos.
 
 ## Referencias

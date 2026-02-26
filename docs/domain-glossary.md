@@ -20,9 +20,14 @@ entidad `Entry` (`scenario|outpost`) y jerarquía temporal explícita:
 ### Campaign
 
 - `campaign_id`: string fijo, valor `01`.
-- `week_cursor`: entero, semana actual activa.
-  - En MVP apunta a la **primera `Week` abierta** (menor `week_number` abierta)
-    y se recalcula tras operaciones que cambian el estado de `Week`.
+- **Semana actual derivada** (concepto canónico): primera `Week` abierta
+  (menor `week_number` abierta) y se recalcula tras operaciones que cambian el
+  estado de `Week`.
+  - No se persiste como dato canónico del modelo.
+- `week_cursor` (término técnico transitorio / implementación actual): entero
+  persistido que hoy representa la semana actual derivada.
+  - Se mantiene como detalle legacy hasta la migración técnica de `#81`
+    (reencuadre documental en `#76`).
 - `resource_totals`: mapa `resource_key -> int` derivado de la suma de
   `Entry.resource_deltas` en la campaña.
   - Ausencia de clave = total `0` para cálculo (las claves nunca usadas pueden
@@ -97,11 +102,15 @@ entidad `Entry` (`scenario|outpost`) y jerarquía temporal explícita:
 
 - Persistencia temporal en UTC.
 - `week_number` global inmutable.
-- Seleccionar `Week` para navegación/foco no implica cambiar `week_cursor`.
-- `week_cursor` se deriva de la primera `Week` abierta (menor `week_number`
-  abierta) según `docs/editability-policy.md`.
+- Seleccionar `Week` para navegación/foco no implica cambiar la semana actual
+  derivada.
+- La semana actual derivada se define como la primera `Week` abierta (menor
+  `week_number` abierta) según `docs/editability-policy.md`.
 - Las correcciones manuales de `Week.status` (`reopen`/`reclose`) recalculan
-  `week_cursor`.
+  la semana actual derivada.
+- Nota de transición (`#76` -> `#81`): la implementación actual aún persiste y
+  actualiza `campaign.week_cursor`, pero se trata de un detalle transitorio y
+  no del contrato canónico del MVP.
 - `year_number` y `season_type` son coherentes con `week_number` y la jerarquía.
 - En esta issue no se define provisión inicial de años (por ejemplo, crear 4
   años en bloque).
@@ -130,11 +139,11 @@ entidad `Entry` (`scenario|outpost`) y jerarquía temporal explícita:
 1. `Week.status` puede corregirse manualmente (`reopen`/`reclose`) en MVP.
 1. Se permiten correcciones manuales completas de `Session` (crear/editar/
    borrar), manteniendo `0..1` sesión activa global.
-1. `week_cursor` siempre apunta a la primera `Week` abierta (menor
+1. La semana actual derivada siempre apunta a la primera `Week` abierta (menor
    `week_number` abierta) y se recalcula tras cambios de estado de `Week`;
-   navegar semanas no cambia el cursor.
+   navegar semanas no la cambia.
 1. Debe existir al menos una `Week` abierta provisionada para mantener
-   `week_cursor` como entero válido.
+   una semana actual derivada válida.
 1. Cada `Entry.resource_deltas[resource_key]` es entero firmado y se valida que
    el estado final de totales no sea negativo.
 1. `scenario_ref` es obligatorio y entero positivo para `scenario`.
@@ -156,12 +165,12 @@ entidad `Entry` (`scenario|outpost`) y jerarquía temporal explícita:
 1. Borrar `Entry` debe eliminar en cascada sus hijos.
 1. Si el delta neto de un recurso en `Entry.resource_deltas` llega a `0`, la
    clave se elimina del mapa.
-1. Reabrir o re-cerrar una `Week` recalcula `week_cursor` a la primera `Week`
-   abierta.
+1. Reabrir o re-cerrar una `Week` recalcula la semana actual derivada a la
+   primera `Week` abierta.
 1. No se permite cerrar/re-cerrar una `Week` si la operación dejaría `0` weeks
    abiertas provisionadas.
 1. Operaciones que dejen totales finales negativos deben rechazarse.
-1. Cerrar `Week` con sesión activa debe cerrar sesión y recalcular `week_cursor`
-   según la primera `Week` abierta.
+1. Cerrar `Week` con sesión activa debe cerrar sesión y recalcular la semana
+   actual derivada según la primera `Week` abierta.
 1. Seleccionar una semana en el control temporal superior no debe cambiar
-   `week_cursor` sin acción explícita adicional.
+   la semana actual derivada sin acción explícita adicional.

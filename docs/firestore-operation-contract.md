@@ -56,8 +56,13 @@ No incluye:
    - `refrescar + reintentar` para conflictos concurrentes;
    - error local (sin refresh por defecto) para transiciones inválidas;
    - corrección de datos/entrada para rechazos de validación.
-1. `week_cursor` se expresa como **postcondición derivada** en operaciones que
-   cambian estado de `Week` o estructura temporal.
+1. La **semana actual derivada** (primera `Week` abierta) se expresa como
+   **postcondición derivada** en operaciones que cambian estado de `Week` o
+   estructura temporal.
+1. **Nota de transición (`#76`)**: la implementación actual todavía persiste/
+   consume `campaign.week_cursor` como mecanismo técnico transitorio; este
+   documento lo trata como detalle de implementación a retirar en `#81`, no
+   como contrato canónico.
 1. `Session` no usa un campo `state`; una sesión activa se define por
    `ended_at_utc = null`.
 1. Ownership de `Session` se deriva de la ruta; no se redefine por campos.
@@ -101,11 +106,11 @@ No incluye:
 
 | operation_id | agregado_principal | agregados_afectados | tipo | disparador | estado_mvp | dependencias_documentales | notas |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `Campaign.provision_initial_years` | `campaign` | `campaign`, `year`, `season`, `week` | `compuesta` | creación/provisión inicial de campaña | `activa` | `#9`, `#13`, `#37` | `week_cursor` derivado como postcondición |
+| `Campaign.provision_initial_years` | `campaign` | `campaign`, `year`, `season`, `week` | `compuesta` | creación/provisión inicial de campaña | `activa` | `#9`, `#13`, `#37` | semana actual derivada como postcondición |
 | `Campaign.extend_years_plus_one` | `campaign` | `campaign`, `year`, `season`, `week` | `compuesta` | acción `+` de año (UI) | `activa` | `#9`, `#13`, `#37` | crea 1 año completo; cursor derivado |
 | `Campaign.set_week_cursor_manual` | `campaign` | `campaign` | `simple` | ajuste manual (semántica histórica) | `excluida` | `#9`, `#37` | semántica sustituida en MVP |
 | `Week.close` | `week` | `week`, `campaign`, `session` | `compuesta` | cierre normal de semana | `activa` | `#8`, `#37` | auto-stop si hay sesión activa |
-| `Week.reopen` | `week` | `week`, `campaign` | `compuesta` | corrección manual de estado | `activa` | `#8`, `#37` | recálculo de `week_cursor` |
+| `Week.reopen` | `week` | `week`, `campaign` | `compuesta` | corrección manual de estado | `activa` | `#8`, `#37` | recálculo de semana actual derivada |
 | `Week.reclose` | `week` | `week`, `campaign`, `session` | `compuesta` | corrección manual de estado | `activa` | `#8`, `#37` | auto-stop si hay sesión activa |
 | `Week.update_notes` | `week` | `week` | `simple` | edición de notas | `activa` | `#8`, `#37` | permitido en `open|closed` |
 | `Entry.create` | `entry` | `entry`, `week` | `compuesta` | creación manual de entry | `activa` | `#37`, glosario | auto-normaliza `order_index` si detecta secuencia inconsistente |
@@ -126,10 +131,10 @@ No incluye:
 
 | operation_id | precondiciones_dominio | precondiciones_conflicto | validaciones | postcondiciones | rechazos_esperados | categoria_rechazo | atomicidad_esperada_comportamiento | respuesta_cliente_recomendada | notas_de_implementación |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `Campaign.provision_initial_years` | campaña existe y está provisionable | base de campaña no obsoleta | crea 4 años; `summer->winter`; 10 semanas/estación; no duplicados (`year/season/week`) | estructura temporal inicial completa; `week_cursor` apunta a primera week abierta | duplicados, base obsoleta | `validacion` / `conflicto` | todo el bloque temporal se crea o falla completo | `refrescar + reintentar` si conflicto; error local si duplicado/estado inválido | no fija técnica Firestore |
-| `Campaign.extend_years_plus_one` | campaña ya provisionada; último año identificable | base de campaña/estructura temporal no obsoleta | crea exactamente 1 año; continuidad `year_number` y `week_number`; no duplicados | nuevo año completo añadido; `week_cursor` derivado válido | duplicados; continuidad inválida; base obsoleta | `validacion` / `conflicto` | se añade el año completo o falla completo | `refrescar + reintentar` si conflicto; error local si estructura inválida | disparo UI desde `+` de año |
-| `Week.close` | week existe; transición `open -> closed`; week abierta provisionada no quedará en 0 tras operación | base de `week.status` y sesión activa relevante no obsoletas | si hay sesión activa en la week, ejecutar `Session.auto_stop`; validar recálculo de `week_cursor` | week queda `closed`; sesión activa de esa week queda cerrada si existía; `week_cursor` recalculado | transición ya cerrada; dejaría 0 weeks abiertas; base obsoleta | `transicion_invalida` / `validacion` / `conflicto` | auto-stop + cierre + recálculo se consideran una sola operación lógica | error local (transición/validación); `refrescar + reintentar` si conflicto | `closed` no bloquea mutaciones por sí mismo |
-| `Week.reopen` | week existe; transición `closed -> open` | base de `week.status` no obsoleta | transición válida; recálculo de `week_cursor` | week queda `open`; `week_cursor` recalculado | transición ya abierta; base obsoleta | `transicion_invalida` / `conflicto` | cambio de estado + recálculo como operación lógica única | error local si transición inválida; `refrescar + reintentar` si conflicto | corrección manual explícita |
+| `Campaign.provision_initial_years` | campaña existe y está provisionable | base de campaña no obsoleta | crea 4 años; `summer->winter`; 10 semanas/estación; no duplicados (`year/season/week`) | estructura temporal inicial completa; semana actual derivada apunta a primera week abierta | duplicados, base obsoleta | `validacion` / `conflicto` | todo el bloque temporal se crea o falla completo | `refrescar + reintentar` si conflicto; error local si duplicado/estado inválido | no fija técnica Firestore |
+| `Campaign.extend_years_plus_one` | campaña ya provisionada; último año identificable | base de campaña/estructura temporal no obsoleta | crea exactamente 1 año; continuidad `year_number` y `week_number`; no duplicados | nuevo año completo añadido; semana actual derivada válida | duplicados; continuidad inválida; base obsoleta | `validacion` / `conflicto` | se añade el año completo o falla completo | `refrescar + reintentar` si conflicto; error local si estructura inválida | disparo UI desde `+` de año |
+| `Week.close` | week existe; transición `open -> closed`; week abierta provisionada no quedará en 0 tras operación | base de `week.status` y sesión activa relevante no obsoletas | si hay sesión activa en la week, ejecutar `Session.auto_stop`; validar recálculo de la semana actual derivada | week queda `closed`; sesión activa de esa week queda cerrada si existía; semana actual derivada recalculada | transición ya cerrada; dejaría 0 weeks abiertas; base obsoleta | `transicion_invalida` / `validacion` / `conflicto` | auto-stop + cierre + recálculo se consideran una sola operación lógica | error local (transición/validación); `refrescar + reintentar` si conflicto | `closed` no bloquea mutaciones por sí mismo |
+| `Week.reopen` | week existe; transición `closed -> open` | base de `week.status` no obsoleta | transición válida; recálculo de la semana actual derivada | week queda `open`; semana actual derivada recalculada | transición ya abierta; base obsoleta | `transicion_invalida` / `conflicto` | cambio de estado + recálculo como operación lógica única | error local si transición inválida; `refrescar + reintentar` si conflicto | corrección manual explícita |
 | `Week.reclose` | week existe; transición `open -> closed`; no dejar 0 weeks abiertas | base de `week.status` y sesión activa relevante no obsoletas | si hay sesión activa en la week, `auto-stop`; validar recálculo de cursor | week queda `closed`; cursor derivado válido | transición ya cerrada; dejaría 0 weeks abiertas; base obsoleta | `transicion_invalida` / `validacion` / `conflicto` | auto-stop + cambio de estado + recálculo como operación lógica única | error local (transición/validación); `refrescar + reintentar` si conflicto | corrección manual de estado |
 | `Week.update_notes` | week existe | base de `updated_at_utc`/versión no obsoleta | edición de texto válida; permitido en `open|closed` | `notes` actualizadas | base obsoleta; payload inválido | `conflicto` / `validacion` | una actualización simple | `refrescar + reingresar cambios` si conflicto; error local si payload inválido | sin LWW |
 | `Entry.create` | week existe; ownership por ruta válido | base de orden (`entries` de la week) no obsoleta para inserción | `Entry.type` válido; `scenario_ref` obligatorio si `scenario`; si secuencia `order_index` inconsistente, auto-normalizar denso `1..N` antes/asociado a inserción | nueva entry creada con `order_index` válido y secuencia consistente | payload inválido; week inexistente; base obsoleta no resoluble | `validacion` / `conflicto` | normalización de orden + creación forman operación lógica única | error local si payload inválido; `refrescar + reintentar` si conflicto | permitido en week `open|closed` |
@@ -154,7 +159,7 @@ batch o combinación de mecanismos Firestore.
 Operaciones compuestas mínimas:
 
 1. `Session.start` con `auto-stop` previo cuando ya existe sesión activa.
-1. `Week.close` / `Week.reclose` con `auto-stop` + recálculo de `week_cursor`.
+1. `Week.close` / `Week.reclose` con `auto-stop` + recálculo de la semana actual derivada.
 1. `Entry.delete` activa con `auto-stop` + borrado de `sessions` (y eliminación
    implícita de `resource_deltas` al borrar la `Entry`).
 1. `Entry.create` con auto-normalización de `order_index` cuando la secuencia de
@@ -162,21 +167,21 @@ Operaciones compuestas mínimas:
 1. `Entry.adjust_resource_delta`, `Entry.set_resource_delta` y
    `Entry.clear_resource_delta` con recálculo de `campaign.resource_totals`.
 1. `Campaign.provision_initial_years` y `Campaign.extend_years_plus_one` con
-   estructura temporal completa + cursor derivado válido.
+   estructura temporal completa + semana actual derivada válida.
 
 ## Alineación temporal con #13
 
 | operacion | insumo_#13 | insumo_#37 | regla_en_#12 | no_definido_en_#12 | riesgo_si_se_viola |
 | --- | --- | --- | --- | --- | --- |
-| `Campaign.provision_initial_years` | 4 años iniciales, `summer->winter`, 10 semanas/estación, `week_number` correlativo | cursor derivado; no dejar 0 abiertas | creación completa con duplicados rechazados y cursor derivado válido | técnica Firestore | estructura temporal inconsistente / cursor inválido |
-| `Campaign.extend_years_plus_one` | +1 año, continuidad `year_number`/`week_number` | cursor derivado | extensión exacta de 1 año; sin reprovisión; sin duplicados | técnica Firestore | numeración rota o duplicados |
-| `Week.close/reopen/reclose` | coherencia `week_number`/jerarquía | recálculo de cursor; transición manual | cambio de estado + postcondición de `week_cursor` | timestamp/desempate | cursor incoherente o estado inválido |
+| `Campaign.provision_initial_years` | 4 años iniciales, `summer->winter`, 10 semanas/estación, `week_number` correlativo | semana actual derivada; no dejar 0 abiertas | creación completa con duplicados rechazados y semana actual derivada válida | técnica Firestore | estructura temporal inconsistente / semana actual inválida |
+| `Campaign.extend_years_plus_one` | +1 año, continuidad `year_number`/`week_number` | semana actual derivada | extensión exacta de 1 año; sin reprovisión; sin duplicados | técnica Firestore | numeración rota o duplicados |
+| `Week.close/reopen/reclose` | coherencia `week_number`/jerarquía | recálculo de semana actual derivada; transición manual | cambio de estado + postcondición de semana actual derivada | timestamp/desempate | semana actual incoherente o estado inválido |
 | `Entry`/`Session` (incluyendo `Entry.resource_deltas`) sobre weeks históricas | weeks siguen existiendo y `week_number` no cambia | editabilidad amplia en `open|closed` | operaciones permitidas en weeks `closed` salvo validación específica | política UI | bloqueos artificiales o contradicción con `#37` |
 
 ## Alineación de editabilidad e invariantes con #37
 
 1. `Campaign.set_week_cursor_manual` se documenta como exclusión activa del MVP.
-1. `week_cursor` es derivado (postcondición) y nunca selección manual libre.
+1. La semana actual derivada (históricamente implementada como `week_cursor`) es postcondición y nunca selección manual libre.
 1. `Week.status=closed` es marcador informativo; no bloquea por sí mismo
    mutaciones de `Entry` (incluyendo `resource_deltas`) ni `Session`.
 1. `Entry.reorder_within_week` está limitado a la misma `Week` y resecuencia
@@ -210,8 +215,8 @@ Operaciones compuestas mínimas:
 
 1. `Campaign.extend_years_plus_one` crea exactamente 1 año y mantiene
    continuidad temporal de `#13`.
-1. `Week.close` con sesión activa define `auto-stop + cerrar` y recálculo de
-   `week_cursor` como operación compuesta.
+1. `Week.close` con sesión activa define `auto-stop + cerrar` y recálculo de la
+   semana actual derivada como operación compuesta.
 1. `Week.close` sobre week ya `closed` se clasifica como `transicion_invalida`
    con error local.
 1. `Week.reclose` rechaza operaciones que dejen `0` weeks abiertas.

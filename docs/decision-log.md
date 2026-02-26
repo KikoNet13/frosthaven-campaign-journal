@@ -757,3 +757,37 @@
   `src/frosthaven_campaign_journal/ui/views/main_shell_view.py`,
   `src/frosthaven_campaign_journal/state/placeholders.py`,
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/53`
+
+### DEC-0034
+
+- `date`: 2026-02-26
+- `status`: accepted
+- `problem`: existe una discrepancia entre el modelo temporal deseado por
+  producto (semana actual derivada no persistida = primera `Week` abierta) y el
+  estado actual del repo, que todavía persiste/consume `campaign.week_cursor`
+  como campo canónico en lecturas y writes temporales. La issue `#76` nació como
+  gap de observabilidad UI de `week_cursor`, pero esa formulación deja de ser
+  correcta si `week_cursor` ya no debe existir como concepto vigente.
+- `decision`: reencuadrar `#76` como unidad de decisión+documentación para
+  fijar el canon de **semana actual derivada no persistida**, marcar
+  `campaign.week_cursor` como implementación transitoria (no contrato objetivo)
+  y abrir una issue técnica separada para migrar código/datos. No se realiza la
+  migración técnica en `#76`.
+- `rationale`: simplifica el modelo conceptual (semana actual = primera week
+  abierta), evita diseñar UX/testabilidad alrededor de un campo técnico que se
+  quiere retirar y reduce retrabajo al separar claramente reencuadre documental
+  de migración de implementación.
+- `impact`: actualiza docs núcleo (temporal, editabilidad, lecturas, contrato,
+  glosario, invariantes) con nota de transición; añade trazabilidad histórica en
+  `#70`; crea una issue técnica de migración (`#81`); y deja una divergencia
+  transitoria aceptada entre docs canónicas y código actual hasta ejecutar esa
+  migración.
+- `references`: `docs/campaign-temporal-controls.md`,
+  `docs/editability-policy.md`, `docs/minimal-read-queries.md`,
+  `docs/firestore-operation-contract.md`, `docs/domain-glossary.md`,
+  `docs/domain-invariant-test-plan.md`, `docs/context-governance.md`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/76`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/81`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/70`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/19`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/37`

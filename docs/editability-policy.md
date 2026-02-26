@@ -24,7 +24,7 @@ Incluye:
 - corrección manual de `Week.status` (`reopen`/`reclose`);
 - correcciones manuales completas de `Session` (crear/editar/borrar,
   incluyendo timestamps);
-- política derivada de `campaign.week_cursor` como primera `Week` abierta;
+- política derivada de semana actual (primera `Week` abierta) como concepto no persistido;
 - matriz de operaciones manuales permitidas y sus límites;
 - impacto documental sobre dominio, conflictos y orden técnico downstream.
 
@@ -39,7 +39,7 @@ No incluye:
 
 - `docs/domain-glossary.md` (modelo de dominio e invariantes actuales)
 - `docs/conflict-policy.md` (política de conflictos concurrentes MVP)
-- `docs/campaign-temporal-controls.md` (controles temporales y semántica previa de `week_cursor`)
+- `docs/campaign-temporal-controls.md` (controles temporales y semántica temporal)
 - `docs/campaign-temporal-initialization.md` (estructura temporal y provisión)
 - Decisiones de Kiko para esta issue marco:
   - reordenación manual de `Entry`: sí, con operación "mover una entry";
@@ -47,7 +47,7 @@ No incluye:
   - `order_index`: secuencia densa `1..N`;
   - `Week.reopen/reclose`: sí;
   - correcciones manuales de `Session`: completo (crear/editar/borrar, con timestamps);
-  - `week_cursor`: primera `Week` abierta (menor `week_number` entre abiertas);
+  - semana actual derivada: primera `Week` abierta (menor `week_number` entre abiertas);
   - borrado para `#12`: hard delete real (insumo downstream);
   - `Entry.update` para `#12`: amplio (insumo downstream);
   - atomicidad en `#12`: solo comportamiento (insumo downstream).
@@ -71,8 +71,8 @@ No incluye:
 | `Entry.reorder_within_week` | `week` + `entry` | Sí | Mover una `Entry` dentro de la misma `Week` | Resecuencia `order_index` densa `1..N` |
 | `Entry.update` | `entry` | Sí | Amplio (campos funcionales de `Entry`) | Contrato detallado en `#12`; no cambia de `Week` aquí |
 | `Week.update_notes` | `week` | Sí | Weeks abiertas o cerradas | Editabilidad de contenido amplia |
-| `Week.reopen` | `week` + `campaign` | Sí | `closed -> open` | Recalcula `week_cursor` |
-| `Week.reclose` | `week` + `campaign` | Sí | `open -> closed` | Recalcula `week_cursor` |
+| `Week.reopen` | `week` + `campaign` | Sí | `closed -> open` | Recalcula la semana actual derivada |
+| `Week.reclose` | `week` + `campaign` | Sí | `open -> closed` | Recalcula la semana actual derivada |
 | `Session.manual_create` | `session` + `campaign` | Sí | Histórica o activa | Preserva `0..1` sesión activa global |
 | `Session.manual_update` | `session` + `campaign` | Sí | Corrección de timestamps y estado | Preserva `0..1` sesión activa global |
 | `Session.manual_delete` | `session` + `campaign` | Sí | Borrado real | Preserva `0..1` sesión activa global |
@@ -132,21 +132,25 @@ No incluye:
    contrato de pre/postcondiciones/rechazos en `#12` (parcheado por supersesión
    parcial de recursos).
 
-## Reglas de estado y cursor (`Week.status`, `week_cursor`)
+## Reglas de estado y semana actual derivada (`Week.status`, concepto derivado)
 
-### Política global de `week_cursor`
+### Política global de semana actual derivada
 
-1. `campaign.week_cursor` apunta a la **primera `Week` abierta**, definida como
-   la `Week` abierta con **menor `week_number`** entre las weeks provisionadas.
+1. La **semana actual** del MVP se define como la **primera `Week` abierta**,
+   es decir, la `Week` abierta con **menor `week_number`** entre las weeks
+   provisionadas.
 1. Navegar o seleccionar una `Week` para foco/edición no cambia automáticamente
-   `week_cursor`.
-1. `week_cursor` pasa a ser un valor derivado de la estructura de weeks abiertas
-   y sus estados, en lugar de una selección manual libre.
+   la semana actual derivada.
+1. La semana actual se trata como un valor derivado de la estructura de weeks
+   abiertas y sus estados, en lugar de una selección manual libre.
+1. **Nota de transición (`#76`)**: la implementación actual todavía
+   persiste/consume `campaign.week_cursor` en código como mecanismo transitorio;
+   la migración técnica para retirarlo se sigue en `#81`.
 
 ### Reglas de recálculo
 
-`week_cursor` se recalcula tras operaciones que puedan cambiar la primera week
-abierta:
+La semana actual derivada se recalcula tras operaciones que puedan cambiar la
+primera week abierta:
 
 - `Week.close`
 - `Week.reopen`
@@ -163,10 +167,10 @@ abierta:
    - `docs/campaign-temporal-initialization.md`
    - `#12` (contrato por agregado)
 
-### Invariante de existencia de week abierta (soporte del cursor)
+### Invariante de existencia de week abierta (soporte de la semana actual)
 
 1. Debe existir al menos una `Week` abierta provisionada para mantener
-   `week_cursor` como entero válido.
+   una semana actual derivada válida.
 1. Si una operación (`Week.close`/`Week.reclose`) dejara **0 weeks abiertas**,
    la operación se rechaza.
 
@@ -211,7 +215,7 @@ abierta:
   - se permiten `reopen` y `reclose`.
 - Se amplía la mutabilidad de `Session`:
   - correcciones manuales completas (crear/editar/borrar).
-- Se redefine `week_cursor`:
+- Se redefine la semana actual:
   - pasa a ser la primera `Week` abierta (menor `week_number` abierta).
 
 ## Impacto sobre conflictos y contratos downstream
@@ -251,10 +255,10 @@ abierta:
    - No hay movimiento entre weeks.
 1. **Reabrir una `Week` cerrada**
    - `Week.status` cambia a `open`.
-   - `week_cursor` se recalcula a la primera week abierta.
+   - la semana actual derivada se recalcula a la primera week abierta.
 1. **Re-cerrar una `Week` reabierta**
    - `Week.status` vuelve a `closed`.
-   - `week_cursor` se recalcula con la misma regla global.
+   - la semana actual derivada se recalcula con la misma regla global.
 1. **Corrección manual completa de `Session`**
    - Se permiten create/edit/delete con timestamps.
    - No se rompe la invariante `0..1` sesión activa global.
@@ -270,7 +274,7 @@ abierta:
 - Riesgo de ampliar demasiado el alcance de `#12` si no se separa claramente
   esta decisión de dominio del contrato Firestore.
 - Riesgo de contradicción temporal si no se alinean `#9`, `#13` y esta decisión
-  respecto a `week_cursor`.
+  respecto a la semana actual derivada (históricamente `week_cursor`).
 - Riesgo de aumentar edge cases concurrentes; se asume mitigación mediante la
   política de rechazo ya vigente en `#8`.
 

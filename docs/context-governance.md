@@ -135,6 +135,23 @@ Se valida:
   - Alcance aplicado: validación de uso individual con alternancia en dos tabs y `Refresh`, sin claims multi-writer concurrente real.
   - Reencuadre explícito: `DEF-001` se ejecuta como viewport equivalente (`desktop` + `mobile/tablet`) en vez de dispositivo físico en esta unidad.
 
+### Hito H1-03
+
+- Fecha: 2026-02-26
+- Objetivo: reencuadrar el modelo temporal del MVP a “semana actual derivada no persistida” (`#76`) y dejar trazabilidad de transición.
+- Resultado: completado (decisión+docs+trazabilidad) con migración técnica diferida
+- Verificación A: aprobado (issue `#76` reencuadrada + comentario histórico en `#70`)
+- Verificación B: aprobado (docs núcleo alineados y issue técnica de migración creada)
+- Evidencia:
+  - Issue `#76` (reencuadre de discrepancia de modelo temporal)
+  - Issue `#81` (migración técnica de implementación para retirar dependencia de `campaign.week_cursor`)
+  - Comentario en `#70` (reinterpretación/superseded del bloqueo temporal)
+  - PR de la unidad `#76` (decisión+docs)
+- Resumen:
+  - Canon documental actualizado: la “semana actual” pasa a definirse como concepto derivado (primera `Week` abierta) y no como campo persistido canónico.
+  - Se acepta divergencia transitoria: el código actual sigue usando `campaign.week_cursor` hasta ejecutar `#81`.
+  - `#76` se cierra como unidad de decisión+docs; no incluye migración técnica ni revalidación de `TC-TEMPORAL-01/02`.
+
 ## Conocimiento migrado desde legado
 
 - `important.txt`

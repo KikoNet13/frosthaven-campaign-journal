@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 
@@ -96,6 +97,9 @@ def build_app_root(page: ft.Page) -> ft.Control:
     safe_root = ft.SafeArea(expand=True, content=shell_host)
     root = ft.Container(expand=True, content=safe_root)
     active_dialog: ft.AlertDialog | None = None
+    pending_resource_draft_context_action: Callable[[], None] | None = None
+    pending_resource_draft_context_action_label: str | None = None
+    resource_draft_leave_confirm_dialog_open = False
 
     def _sync_root_height_to_viewport() -> None:
         viewport_height = getattr(page, "height", None)
@@ -321,17 +325,23 @@ def build_app_root(page: ft.Page) -> ft.Control:
         current_index = read_state.years.index(local_state.selected_year)
         if current_index <= 0:
             return
+        target_year = read_state.years[current_index - 1]
 
-        _auto_discard_resource_draft_on_context_change()
-        local_state.selected_year = read_state.years[current_index - 1]
-        local_state.selected_week = None
-        _clear_session_write_error()
-        _clear_week_write_error()
-        _clear_entry_write_error()
-        _clear_resource_write_error()
-        entry_panel_state.entries_for_selected_week = []
-        entry_panel_state.entries_panel_error_message = None
-        refresh_and_render(selected_year_override=local_state.selected_year, reload_q8=False)
+        def _continue() -> None:
+            local_state.selected_year = target_year
+            local_state.selected_week = None
+            _clear_session_write_error()
+            _clear_week_write_error()
+            _clear_entry_write_error()
+            _clear_resource_write_error()
+            entry_panel_state.entries_for_selected_week = []
+            entry_panel_state.entries_panel_error_message = None
+            refresh_and_render(selected_year_override=local_state.selected_year, reload_q8=False)
+
+        _run_or_confirm_resource_draft_before_context_change(
+            _continue,
+            action_label="cambiar de año",
+        )
 
     def handle_next_year() -> None:
         if local_state.selected_year is None or local_state.selected_year not in read_state.years:
@@ -339,17 +349,23 @@ def build_app_root(page: ft.Page) -> ft.Control:
         current_index = read_state.years.index(local_state.selected_year)
         if current_index >= len(read_state.years) - 1:
             return
+        target_year = read_state.years[current_index + 1]
 
-        _auto_discard_resource_draft_on_context_change()
-        local_state.selected_year = read_state.years[current_index + 1]
-        local_state.selected_week = None
-        _clear_session_write_error()
-        _clear_week_write_error()
-        _clear_entry_write_error()
-        _clear_resource_write_error()
-        entry_panel_state.entries_for_selected_week = []
-        entry_panel_state.entries_panel_error_message = None
-        refresh_and_render(selected_year_override=local_state.selected_year, reload_q8=False)
+        def _continue() -> None:
+            local_state.selected_year = target_year
+            local_state.selected_week = None
+            _clear_session_write_error()
+            _clear_week_write_error()
+            _clear_entry_write_error()
+            _clear_resource_write_error()
+            entry_panel_state.entries_for_selected_week = []
+            entry_panel_state.entries_panel_error_message = None
+            refresh_and_render(selected_year_override=local_state.selected_year, reload_q8=False)
+
+        _run_or_confirm_resource_draft_before_context_change(
+            _continue,
+            action_label="cambiar de año",
+        )
 
     def handle_select_week(week_number: int) -> None:
         if local_state.selected_year is None:
@@ -357,37 +373,53 @@ def build_app_root(page: ft.Page) -> ft.Control:
         visible_weeks = current_weeks_for_selected_year()
         if not any(week.week_number == week_number for week in visible_weeks):
             return
-        _auto_discard_resource_draft_on_context_change()
-        local_state.selected_week = week_number
-        _clear_session_write_error()
-        _clear_week_write_error()
-        _clear_entry_write_error()
-        _clear_resource_write_error()
-        load_entries_for_selected_week()  # Q5 solo, el visor sticky no recarga Q8 por navegación
-        render_shell()
-        page.update()
+
+        def _continue() -> None:
+            local_state.selected_week = week_number
+            _clear_session_write_error()
+            _clear_week_write_error()
+            _clear_entry_write_error()
+            _clear_resource_write_error()
+            load_entries_for_selected_week()  # Q5 solo, el visor sticky no recarga Q8 por navegación
+            render_shell()
+            page.update()
+
+        _run_or_confirm_resource_draft_before_context_change(
+            _continue,
+            action_label="cambiar de week",
+        )
 
     def handle_select_entry(entry_ref: EntryRef) -> None:
-        _auto_discard_resource_draft_on_context_change()
-        local_state.viewer_entry_ref = entry_ref
-        _clear_session_write_error()
-        _clear_week_write_error()
-        _clear_entry_write_error()
-        _clear_resource_write_error()
-        load_viewer_entry_and_sessions()  # Q8 sigue al visor sticky
-        render_shell()
-        page.update()
+        def _continue() -> None:
+            local_state.viewer_entry_ref = entry_ref
+            _clear_session_write_error()
+            _clear_week_write_error()
+            _clear_entry_write_error()
+            _clear_resource_write_error()
+            load_viewer_entry_and_sessions()  # Q8 sigue al visor sticky
+            render_shell()
+            page.update()
+
+        _run_or_confirm_resource_draft_before_context_change(
+            _continue,
+            action_label="cambiar de entry",
+        )
 
     def handle_manual_refresh() -> None:
-        _auto_discard_resource_draft_on_context_change()
-        _clear_session_write_error()
-        _clear_week_write_error()
-        _clear_entry_write_error()
-        _clear_resource_write_error()
-        refresh_and_render(
-            selected_year_override=local_state.selected_year,
-            reload_q5=(local_state.selected_week is not None),
-            reload_q8=(local_state.viewer_entry_ref is not None),
+        def _continue() -> None:
+            _clear_session_write_error()
+            _clear_week_write_error()
+            _clear_entry_write_error()
+            _clear_resource_write_error()
+            refresh_and_render(
+                selected_year_override=local_state.selected_year,
+                reload_q5=(local_state.selected_week is not None),
+                reload_q8=(local_state.viewer_entry_ref is not None),
+            )
+
+        _run_or_confirm_resource_draft_before_context_change(
+            _continue,
+            action_label="refrescar",
         )
 
     def _clear_session_write_error() -> None:
@@ -439,6 +471,9 @@ def build_app_root(page: ft.Page) -> ft.Control:
             and entry_panel_state.resource_draft_entry_ref == local_state.viewer_entry_ref
         )
 
+    def _has_dirty_resource_draft_attached_to_viewer() -> bool:
+        return _resource_draft_attached_to_viewer() and entry_panel_state.resource_draft_dirty
+
     def _sync_resource_draft_from_viewer_snapshot() -> None:
         viewer_entry = entry_panel_state.viewer_entry_snapshot
         if viewer_entry is None:
@@ -455,15 +490,122 @@ def build_app_root(page: ft.Page) -> ft.Control:
         if not entry_panel_state.resource_draft_dirty:
             entry_panel_state.resource_draft_values = normalized_viewer_deltas
 
-    def _auto_discard_resource_draft_on_context_change() -> None:
+    def _discard_resource_draft_for_context_change(*, show_notice: bool) -> None:
         had_dirty = entry_panel_state.resource_draft_dirty
         _clear_resource_draft_state()
         _clear_resource_write_error()
-        if had_dirty:
+        if show_notice and had_dirty:
             entry_panel_state.resource_draft_discard_notice = (
                 "Cambios de recursos sin guardar descartados al cambiar de contexto."
             )
             _show_snack_info(entry_panel_state.resource_draft_discard_notice, update_page=False)
+
+    def _auto_discard_resource_draft_on_context_change() -> None:
+        _discard_resource_draft_for_context_change(show_notice=True)
+
+    def _clear_pending_resource_draft_context_action() -> None:
+        nonlocal pending_resource_draft_context_action
+        nonlocal pending_resource_draft_context_action_label
+        pending_resource_draft_context_action = None
+        pending_resource_draft_context_action_label = None
+
+    def _queue_resource_draft_context_action(
+        action: Callable[[], None],
+        *,
+        action_label: str | None,
+    ) -> None:
+        nonlocal pending_resource_draft_context_action
+        nonlocal pending_resource_draft_context_action_label
+        pending_resource_draft_context_action = action
+        pending_resource_draft_context_action_label = action_label
+
+    def _take_pending_resource_draft_context_action() -> Callable[[], None] | None:
+        nonlocal pending_resource_draft_context_action
+        nonlocal pending_resource_draft_context_action_label
+        action = pending_resource_draft_context_action
+        pending_resource_draft_context_action = None
+        pending_resource_draft_context_action_label = None
+        return action
+
+    def _close_resource_draft_leave_confirm_dialog(*, clear_pending_action: bool) -> None:
+        nonlocal resource_draft_leave_confirm_dialog_open
+        resource_draft_leave_confirm_dialog_open = False
+        _close_dialog()
+        if clear_pending_action:
+            _clear_pending_resource_draft_context_action()
+
+    def _run_pending_resource_draft_context_action() -> None:
+        pending_action = _take_pending_resource_draft_context_action()
+        if pending_action is None:
+            return
+        pending_action()
+
+    def _open_resource_draft_leave_confirm_dialog() -> None:
+        nonlocal resource_draft_leave_confirm_dialog_open
+        if resource_draft_leave_confirm_dialog_open:
+            return
+        resource_draft_leave_confirm_dialog_open = True
+
+        if pending_resource_draft_context_action_label:
+            body_text = (
+                "Hay cambios de recursos sin guardar en la entry visible. "
+                f"¿Qué quieres hacer antes de {pending_resource_draft_context_action_label}?"
+            )
+        else:
+            body_text = (
+                "Hay cambios de recursos sin guardar en la entry visible. "
+                "¿Qué quieres hacer antes de continuar?"
+            )
+
+        def _handle_cancel(_e) -> None:
+            _close_resource_draft_leave_confirm_dialog(clear_pending_action=True)
+
+        def _handle_discard(_e) -> None:
+            _close_resource_draft_leave_confirm_dialog(clear_pending_action=False)
+            _discard_resource_draft_for_context_change(show_notice=False)
+            _run_pending_resource_draft_context_action()
+
+        def _handle_save(_e) -> None:
+            _close_resource_draft_leave_confirm_dialog(clear_pending_action=False)
+            result = _run_resource_draft_save()
+            if result is None:
+                _clear_pending_resource_draft_context_action()
+                return
+            _run_pending_resource_draft_context_action()
+
+        dialog = ft.AlertDialog(
+            modal=True,
+            title=ft.Text("Cambios de recursos sin guardar"),
+            content=ft.Text(body_text),
+            actions=[
+                ft.TextButton("Cancelar", on_click=_handle_cancel),
+                ft.OutlinedButton(
+                    "Descartar",
+                    on_click=_handle_discard,
+                    disabled=entry_panel_state.resource_write_pending,
+                ),
+                ft.FilledButton(
+                    "Guardar",
+                    on_click=_handle_save,
+                    disabled=entry_panel_state.resource_write_pending,
+                ),
+            ],
+            actions_alignment=ft.MainAxisAlignment.END,
+        )
+        _open_dialog(dialog)
+
+    def _run_or_confirm_resource_draft_before_context_change(
+        action: Callable[[], None],
+        *,
+        action_label: str | None,
+    ) -> None:
+        if not _has_dirty_resource_draft_attached_to_viewer():
+            action()
+            return
+        if resource_draft_leave_confirm_dialog_open:
+            return
+        _queue_resource_draft_context_action(action, action_label=action_label)
+        _open_resource_draft_leave_confirm_dialog()
 
     def _get_selected_week_for_write() -> MockWeek | None:
         if local_state.selected_week is None:
@@ -1288,6 +1430,7 @@ def build_app_root(page: ft.Page) -> ft.Control:
         _run_resource_draft_save()
 
     def handle_discard_resource_draft() -> None:
+        _clear_pending_resource_draft_context_action()
         viewer_entry = entry_panel_state.viewer_entry_snapshot
         entry_ref = _get_viewer_entry_ref_for_resource_write()
         if viewer_entry is None or entry_ref is None or viewer_entry.ref != entry_ref:

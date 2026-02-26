@@ -127,7 +127,7 @@ No incluye:
 | --- | --- | --- | --- | --- | --- | --- |
 | `I12-S1` | Inventariar operaciones por agregado (`campaign`, `week`, `entry` incl. `resource_deltas`, `session`) y casos de uso | `Codex` | `#7`, `#8`, `#9`, `#37` | Tabla de operaciones por agregado | Inventario completo y sin solapes obvios con mutabilidad vigente | `draftable` |
 | `I12-S2` | Definir contrato por agregado (precondiciones, postcondiciones, validaciones, rechazo por conflicto/transición inválida, atomicidad esperada) | `Codex` | `I12-S1` | Tabla de contrato por agregado | Cada agregado tiene contrato explícito y coherente con `#8` y `#37` | `draftable` |
-| `I12-S3` | Alinear operaciones temporales y de cursor con `#13` y `#37` (provisión/extensión/`week_cursor` derivado) | `Codex+Kiko` | `I12-S2`, `#13`, `#37` | Nota/tabla de alineación `#12` ↔ (`#13`, `#37`) | No quedan contradicciones con flujo temporal ni editabilidad | `draftable` |
+| `I12-S3` | Alinear operaciones temporales y semántica de semana actual con `#13` y `#37` (provisión/extensión/semana actual derivada; hist. `week_cursor`) | `Codex+Kiko` | `I12-S2`, `#13`, `#37` | Nota/tabla de alineación `#12` ↔ (`#13`, `#37`) | No quedan contradicciones con flujo temporal ni editabilidad | `draftable` |
 | `I12-S4` | Cerrar la decisión (revisión interactiva, trazabilidad y referencias) | `Codex+Kiko` | `I12-S3` | Documento final + registro de decisión | Aprobación explícita de Kiko y PR mergeada | `draftable` |
 
 #### Riesgos y bloqueos
@@ -199,22 +199,31 @@ No incluye:
 | --- | --- | --- | --- | --- | --- | --- |
 | `I37-S1` | Definir matriz de operaciones manuales permitidas (editabilidad "como papel") y límites | `Codex+Kiko` | `#8`, `#9`, `docs/domain-glossary.md` | Matriz de mutabilidad por agregado | Quedan cerradas operaciones manuales permitidas y su alcance MVP | `ready` |
 | `I37-S2` | Formalizar reglas de `Entry.reorder`, `Week.reopen/reclose` y correcciones manuales de `Session` | `Codex+Kiko` | `I37-S1` | Reglas por agregado e invariantes | No quedan ambigüedades funcionales sobre mutabilidad de orden/estado/sesiones | `ready` |
-| `I37-S3` | Redefinir semántica de `week_cursor` (primera `Week` abierta) y su recálculo | `Codex+Kiko` | `I37-S2`, `#13` | Reglas de cursor y alineación temporal | `week_cursor` queda coherente con temporalidad y editabilidad | `ready` |
+| `I37-S3` | Redefinir semántica de semana actual derivada (hist. `week_cursor`) y su recálculo | `Codex+Kiko` | `I37-S2`, `#13` | Reglas de semana actual y alineación temporal | La semana actual derivada queda coherente con temporalidad y editabilidad | `ready` |
 | `I37-S4` | Actualizar trazabilidad (`glossary`, conflictos, checklist/bloques) y cerrar decisión | `Codex+Kiko` | `I37-S3` | Documento final + referencias + registro de decisión | Aprobación explícita de Kiko y PR mergeada | `ready` |
 
 #### Riesgos y bloqueos
 
 - Riesgo de dejar `#12` parcialmente redactada con invariantes viejas si `#37`
   no se cierra antes.
-- Riesgo de contradicción entre semántica de `week_cursor` en temporal (#9/#13)
+- Riesgo de contradicción entre semántica de semana actual derivada (hist.
+  `week_cursor`) en temporal (#9/#13)
   y mutabilidad de estado si no se alinea explícitamente.
 
 #### Criterio de cierre de la issue
 
 - Existe una decisión marco de editabilidad manual del MVP ("como papel") que
   fija reordenación manual de `Entry` (intra-`Week`), `Week.reopen/reclose`,
-  correcciones manuales completas de `Session` y `week_cursor` como primera
-  `Week` abierta, con trazabilidad a `#12/#14/#15/#17/#19`.
+  correcciones manuales completas de `Session` y semana actual derivada (hist.
+  `week_cursor`) como primera `Week` abierta, con trazabilidad a
+  `#12/#14/#15/#17/#19`.
+
+#### Nota de transición temporal (`#76`)
+
+- Las referencias históricas a `week_cursor` en este documento se reinterpretan
+  como **semana actual derivada** (primera `Week` abierta).
+- La migración técnica para retirar la dependencia de `campaign.week_cursor` del
+  código y contratos residuales queda trazada en `#81`.
 
 #### Notas de secuencia / paralelización
 

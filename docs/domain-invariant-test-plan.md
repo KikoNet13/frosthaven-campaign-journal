@@ -86,9 +86,9 @@ No incluye:
 | `INV-SESSION-02` | `auto-stop` embebido preserva invariantes | `dominio` | Operaciones compuestas con `auto-stop` (`start`, `Week.close/reclose`, `Entry.delete`) no dejan estados parciales válidos asumidos | `#12`, `#14` | `critical` | Compuesto + side-effects |
 | `INV-SESSION-03` | Clasificación/recuperación de errores en flujo de sesión | `consistencia_visible` | `conflicto` vs `transicion_invalida` vs `validacion` se diferencian y recuperan según contrato | `#8`, `#12`, `#14` | `high` | Afecta UX/reintento |
 | `INV-SESSION-04` | Separación foco vs activo | `consistencia_visible` | La UI distingue `selected_entry` y `active_entry` con carga/refresh coherentes | `#14`, `#16`, `#18` | `critical` | Relacionado con Q6/Q7 |
-| `INV-TEMPORAL-01` | `week_cursor` = primera week abierta | `dominio` | `week_cursor` se recalcula a la primera `Week` abierta tras cambios de estado | `#37`, `#12`, `#9`, glosario | `critical` | Cursor derivado |
+| `INV-TEMPORAL-01` | Semana actual derivada = primera week abierta | `dominio` | La semana actual derivada se recalcula a la primera `Week` abierta tras cambios de estado | `#37`, `#12`, `#9`, glosario | `critical` | Antes modelada como `week_cursor` |
 | `INV-TEMPORAL-02` | Nunca `0` weeks abiertas | `dominio` | `Week.close/reclose` no puede dejar `0` weeks abiertas | `#12`, `#37`, `#13` | `critical` | Validación bloqueante |
-| `INV-TEMPORAL-03` | Navegación/selección no cambia `week_cursor` | `consistencia_visible` | Seleccionar week/entry no muta `campaign.week_cursor` | `#9`, `#14`, `#16`, glosario | `high` | Separa navegación de cursor |
+| `INV-TEMPORAL-03` | Navegación/selección no cambia semana actual derivada | `consistencia_visible` | Seleccionar week/entry no muta la semana actual derivada (históricamente representada por `campaign.week_cursor`) | `#9`, `#14`, `#16`, glosario | `high` | Separa navegación de semana actual derivada |
 | `INV-TEMPORAL-04` | Estructura temporal fija del MVP | `dominio` | `summer -> winter`, 10 semanas/estación, 4 años iniciales, extensión `+1` | `#13`, `#12` | `high` | Estructural |
 | `INV-TEMPORAL-05` | `week_number` global único/inmutable | `dominio` | `week_number` es correlativo, único e inmutable | `#13`, glosario, `#12` | `high` | Impacta lecturas/orden |
 | `INV-ENTRY-01` | `order_index` denso `1..N` | `dominio` | Tras create/reorder, la secuencia de entries de la week es densa y estable | `#12`, `#18`, glosario | `high` | Incluye auto-normalización |
@@ -131,9 +131,9 @@ No incluye:
 | `TC-SESSION-02` | `INV-SESSION-02` | `Week.close/reclose` con activa embebida preserva invariante | Week con sesión activa en esa week | Cerrar/re-cerrar week | `auto-stop` embebido + cierre/reclose sin estado parcial asumido | `conflicto` / `validacion` | Campos mínimos + referencia al escenario compuesto | `desk_check_documental` | `P0` | `bloqueante_plan` | Relaciona `#12` + `#14` |
 | `TC-SESSION-03` | `INV-SESSION-03` | `start` sobre entry ya activa clasifica transición inválida | `selected_entry == active_entry` | Pulsar `Iniciar` | Error local; no nueva sesión ni `auto-stop` | `transicion_invalida` | Resultado observado + status | `single_device_preparado` | `P1` | `planificado_no_bloqueante` | Flujo UI |
 | `TC-SESSION-04` | `INV-SESSION-04` | Activa en otra entry y foco distinto | Existe activa global en otra entry | Cargar Q6/Q7 y seleccionar otra entry | UI distingue foco vs activo; label de activo externo coherente | `sin_error` / `conflicto` | Evidencia visual + refs de datos | `single_device_preparado` / `desk_check_documental` | `P0` | `bloqueante_plan` | Cruza `#14/#16/#18` |
-| `TC-TEMPORAL-01` | `INV-TEMPORAL-01` | Recalcular `week_cursor` tras cambio de estado | Week abierta candidata a primera abierta | Ejecutar `Week.close/reopen/reclose` | `week_cursor` apunta a primera week abierta válida | `sin_error` / `conflicto` | Resultado cursor antes/después | `desk_check_documental` | `P0` | `bloqueante_plan` | Cursor derivado |
+| `TC-TEMPORAL-01` | `INV-TEMPORAL-01` | Recalcular semana actual derivada tras cambio de estado | Week abierta candidata a primera abierta | Ejecutar `Week.close/reopen/reclose` | La semana actual derivada apunta a la primera week abierta válida | `sin_error` / `conflicto` | Resultado de semana actual derivada antes/después | `desk_check_documental` | `P0` | `bloqueante_plan` | Antes expresado como `week_cursor` |
 | `TC-TEMPORAL-02` | `INV-TEMPORAL-02` | Rechazo al dejar `0` weeks abiertas | Última week abierta identificada | Intentar `close/reclose` | Operación rechazada por validación; invariante preservada | `validacion` | Resultado esperado + status | `desk_check_documental` | `P0` | `bloqueante_plan` | Validación crítica |
-| `TC-TEMPORAL-03` | `INV-TEMPORAL-03` | Navegación no muta `week_cursor` | `week_cursor` conocido; sin side-effect de estado | `ui.select_week` / `ui.select_entry` | Selección cambia foco; `week_cursor` no cambia | `sin_error` | Evidencia visual/estado | `single_device_preparado` / `desk_check_documental` | `P1` | `planificado_no_bloqueante` | Consistencia visible |
+| `TC-TEMPORAL-03` | `INV-TEMPORAL-03` | Navegación no muta semana actual derivada | Semana actual derivada conocida; sin side-effect de estado | `ui.select_week` / `ui.select_entry` | Selección cambia foco; la semana actual derivada no cambia | `sin_error` | Evidencia visual/estado | `single_device_preparado` / `desk_check_documental` | `P1` | `planificado_no_bloqueante` | Consistencia visible |
 | `TC-TEMPORAL-04` | `INV-TEMPORAL-04` | Provisión/extensión respeta plantilla temporal | Campaña nueva o provisionada para `+1` | Provisión inicial / `extend_years_plus_one` | `summer->winter`, 10 semanas/estación, 4 años iniciales / `+1` exacto | `sin_error` / `validacion` / `conflicto` | Resultado estructural resumido | `desk_check_documental` | `P1` | `planificado_no_bloqueante` | Estructura + continuidad |
 | `TC-TEMPORAL-05` | `INV-TEMPORAL-05` | `week_number` global único e inmutable | Estructura temporal conocida | Revisar create/extend y operaciones históricas | No duplicación/reutilización; numeración correlativa mantenida | `sin_error` / `validacion` | Evidencia de rangos/resultados | `desk_check_documental` | `P1` | `planificado_no_bloqueante` | Trazable en docs |
 | `TC-ENTRY-01` | `INV-ENTRY-01` | Resecuencia densa tras create/reorder | Week con entries y/o secuencia inconsistente | `Entry.create` / `Entry.reorder_within_week` | `order_index` denso `1..N`; auto-normalización si aplica | `sin_error` / `conflicto` | Orden antes/después | `desk_check_documental` / `single_device_preparado` | `P1` | `planificado_no_bloqueante` | Incluye auto-normalización |
@@ -149,6 +149,14 @@ No incluye:
 | `TC-READ-04` | `INV-READ-04` | `ui.manual_refresh` reconcilia estado visible | UI desfasada tras conflicto o estado obsoleto | `ui.manual_refresh` | Estado visible se normaliza sin realtime | `conflicto` / `sin_error` | Resultado antes/después refresh | `single_device_preparado` / `desk_check_documental` | `P0` | `bloqueante_plan` | Núcleo de recuperación MVP |
 
 ## Mapeo a edge cases de `#17` (trazabilidad)
+
+### Nota de transición temporal (`#76`)
+
+- Tras `#76`, las referencias de este documento a `week_cursor` se interpretan
+  como **semana actual derivada** (primera `Week` abierta).
+- El bloqueo registrado en `#70` para `TC-TEMPORAL-01/02` por observabilidad de
+  `week_cursor` queda **superseded/reinterpretado** por el reencuadre de modelo.
+- La migración técnica del código/documentación residual queda trazada en `#81`.
 
 ### Regla
 
@@ -166,7 +174,7 @@ No incluye:
 | `TC-SESSION-01` | `EC-SESSION-01` | Conflicto en `start` compuesto y unicidad de activa global | `directa` | `P0` crítico |
 | `TC-ENTRY-02` | `EC-SESSION-06` | `Entry.delete` activa con `auto-stop` embebido | `directa` | Compuesto |
 | `TC-SESSION-02` | `EC-SESSION-06` | Variante de conflicto compuesto en cierre de sesión dentro de operación padre | `parcial` | Complementa `Entry.delete` / `Week.close` |
-| `TC-TEMPORAL-01` | `EC-WEEK-02` | Conflicto en estado de week con recálculo de `week_cursor` | `directa` | `P0` crítico |
+| `TC-TEMPORAL-01` | `EC-WEEK-02` | Conflicto en estado de week con recálculo de semana actual derivada | `directa` | `P0` crítico |
 | `TC-TEMPORAL-02` | `EC-WEEK-03` | No dejar `0` weeks abiertas | `directa` | `P0` crítico |
 | `TC-RESOURCE-01` | `EC-RESOURCE-02` | Recursos sobre base obsoleta afectan consistencia de totales | `parcial` | Integridad de totales |
 | `TC-RESOURCE-04` | `EC-RESOURCE-03` | Drift/inconsistencia clasificada como conflicto | `directa` | `P0` crítico |

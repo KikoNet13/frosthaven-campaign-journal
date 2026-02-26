@@ -45,7 +45,7 @@ este checklist:
 - **Controles temporales de campaña** (Issue #9):
   `docs/campaign-temporal-controls.md`
   - selector temporal superior, provisión inicial de 4 años, extensión manual
-    `+1`, separación entre navegación de semana y `week_cursor`.
+    `+1`, separación entre navegación de semana y semana actual derivada.
 - **Inicialización temporal de campaña (técnica)** (Issue #13):
   `docs/campaign-temporal-initialization.md`
   - estructura temporal fija del MVP (`summer -> winter`, 10 semanas por
@@ -54,7 +54,10 @@ este checklist:
   `docs/editability-policy.md`
   - editabilidad amplia ("como papel"), reordenación manual de `Entry`,
     `Week.reopen/reclose`, correcciones manuales de `Session` y semántica
-    derivada de `week_cursor`.
+    derivada de la semana actual.
+  - Nota de transición (`#76` -> `#81`): referencias históricas a
+    `week_cursor` en este checklist deben interpretarse como **semana actual
+    derivada** (primera `Week` abierta) hasta completar la migración técnica.
 - **Modelo de recursos por `Entry` (delta neto)** (Issue #40):
   `docs/resource-delta-model.md`
   - `ResourceChange` se sustituye por `Entry.resource_deltas` (delta neto por

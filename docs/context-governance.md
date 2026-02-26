@@ -98,6 +98,25 @@ Se valida:
   - `docs/context-checklists.md` (`CHK-GATE-CODE` actualizado)
   - `AGENTS.md` y `docs/system-map.md` alineados con transición a implementación.
 
+### Hito H1-01
+
+- Fecha: 2026-02-26
+- Objetivo: ejecutar P0 single-device del plan de invariantes (`#70`) y registrar evidencia trazable.
+- Resultado: completado con bloqueos y diferidos
+- Verificación A: aprobado (registro de evidencia en issue + follow-ups)
+- Verificación B: aprobado (clasificación completa `pass/fail/blocked/deferred`)
+- Evidencia:
+  - Issue `#70` (matriz P0, resultados por lotes y resumen de cierre operativo)
+  - Follow-up `#75` (`TC-ENTRY-02` fail: `Entry.delete` activa no elimina tras confirmar)
+  - Follow-up `#76` (bloqueo de observabilidad temporal UI para `week_cursor`)
+  - PR de la unidad `#70` (resumen y cierre end-to-end)
+- Resumen:
+  - `pass`: 4 (`TC-SESSION-04`, `TC-READ-04`, `TC-SESSION-02`, `TC-RESOURCE-04`)
+  - `fail`: 1 (`TC-ENTRY-02`)
+  - `blocked`: 2 (`TC-TEMPORAL-01`, `TC-TEMPORAL-02`)
+  - `deferred`: 1 (`TC-SESSION-01`)
+  - Alcance aplicado: P0 estricto de `#19`; `EC-TEMPORAL-01` (`#17`) queda fuera de `#70` por trazabilidad de prioridades (`TC-TEMPORAL-04`, `P1` en `#19`).
+
 ## Conocimiento migrado desde legado
 
 - `important.txt`

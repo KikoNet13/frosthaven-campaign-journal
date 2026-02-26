@@ -144,7 +144,8 @@ def delete_entry(
             session_data = session_snap.to_dict() or {}
             if session_data.get("ended_at_utc") is None and auto_stopped_session_id is None:
                 auto_stopped_session_id = session_snap.id
-            txn.delete(session_snap.reference)
+
+        next_resource_totals: dict[str, int] | None = None
 
         if resource_deltas:
             campaign_snapshot = _get_doc_snapshot(txn, campaign_doc_ref)
@@ -168,16 +169,23 @@ def delete_entry(
                     )
                 resource_totals[key] = next_total
 
+            next_resource_totals = resource_totals
+
+        # En transacciones Firestore, todas las lecturas deben ocurrir antes de la primera escritura.
+        existing = _read_entries_for_week(txn, entries_ref)
+        _normalize_entries_order_if_needed(txn, existing)
+
+        for session_snap in session_snaps:
+            txn.delete(session_snap.reference)
+
+        if next_resource_totals is not None:
             txn.update(
                 campaign_doc_ref,
                 {
-                    "resource_totals": resource_totals,
+                    "resource_totals": next_resource_totals,
                     "updated_at_utc": firestore.SERVER_TIMESTAMP,
                 },
             )
-
-        existing = _read_entries_for_week(txn, entries_ref)
-        _normalize_entries_order_if_needed(txn, existing)
         remaining = [item for item in existing if item["snapshot"].reference.path != entry_doc_ref.path]
 
         txn.delete(entry_doc_ref)

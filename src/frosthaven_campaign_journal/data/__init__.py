@@ -6,6 +6,10 @@ from .firestore_client import (
     build_firestore_client,
 )
 from .firestore_placeholder import describe_firestore_status
+from .campaign_writes import (
+    CampaignWriteResult,
+    extend_years_plus_one,
+)
 from .main_screen_reads import (
     ActiveEntryRead,
     ActiveSessionRead,
@@ -58,6 +62,7 @@ from .write_errors import (
 __all__ = [
     "ActiveEntryRead",
     "ActiveSessionRead",
+    "CampaignWriteResult",
     "CampaignMainRead",
     "EntryWriteResult",
     "EntryRead",
@@ -81,6 +86,7 @@ __all__ = [
     "delete_entry",
     "derive_year_from_week_cursor",
     "describe_firestore_status",
+    "extend_years_plus_one",
     "load_main_screen_snapshot",
     "manual_create_session",
     "manual_delete_session",

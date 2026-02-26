@@ -61,6 +61,7 @@ def build_main_shell_view(
     entry_write_pending: bool,
     resource_write_error_message: str | None,
     resource_write_pending: bool,
+    campaign_write_pending: bool,
     resource_draft_values: dict[str, int] | None,
     resource_draft_dirty: bool,
     resource_draft_attached_to_viewer: bool,
@@ -74,6 +75,7 @@ def build_main_shell_view(
     env_name: str,
     on_prev_year: Callable[[], None],
     on_next_year: Callable[[], None],
+    on_open_extend_year_plus_one_confirm: Callable[[], None],
     on_select_week: Callable[[int], None],
     on_select_entry: Callable[[EntryRef], None],
     on_manual_refresh: Callable[[], None],
@@ -101,8 +103,10 @@ def build_main_shell_view(
         weeks_for_selected_year=weeks_for_selected_year,
         read_status=read_status,
         read_error_message=read_error_message,
+        campaign_write_pending=campaign_write_pending,
         on_prev_year=on_prev_year,
         on_next_year=on_next_year,
+        on_open_extend_year_plus_one_confirm=on_open_extend_year_plus_one_confirm,
         on_select_week=on_select_week,
         embedded_in_appbar=True,
     )
@@ -202,8 +206,10 @@ def _build_top_temporal_bar(
     weeks_for_selected_year: list[MockWeek],
     read_status: str,
     read_error_message: str | None,
+    campaign_write_pending: bool,
     on_prev_year: Callable[[], None],
     on_next_year: Callable[[], None],
+    on_open_extend_year_plus_one_confirm: Callable[[], None],
     on_select_week: Callable[[int], None],
     embedded_in_appbar: bool = False,
 ) -> ft.Control:
@@ -213,11 +219,26 @@ def _build_top_temporal_bar(
         year_index = years.index(selected_year)
         has_prev_year = year_index > 0
         has_next_year = year_index < len(years) - 1
+        is_last_year = year_index == len(years) - 1
         year_title = f"Año {selected_year}"
     else:
         has_prev_year = False
         has_next_year = False
+        is_last_year = False
         year_title = "Año -"
+
+    left_year_action = on_prev_year if has_prev_year and not campaign_write_pending else None
+    if not has_valid_selected_year:
+        right_year_label = "→"
+        right_year_action = None
+    elif is_last_year:
+        right_year_label = "+"
+        right_year_action = (
+            on_open_extend_year_plus_one_confirm if not campaign_write_pending else None
+        )
+    else:
+        right_year_label = "→"
+        right_year_action = on_next_year if has_next_year and not campaign_write_pending else None
 
     if read_status == "error" and not weeks_for_selected_year:
         week_strip_content: ft.Control = ft.Row(
@@ -255,6 +276,7 @@ def _build_top_temporal_bar(
                     week=week,
                     is_selected=(week.week_number == state.selected_week),
                     on_select_week=on_select_week,
+                    disabled=campaign_write_pending,
                 )
                 for week in weeks_for_selected_year
             ],
@@ -271,14 +293,14 @@ def _build_top_temporal_bar(
                 spacing=12,
                 vertical_alignment=ft.CrossAxisAlignment.CENTER,
                 controls=[
-                    _build_year_nav_button("←", on_prev_year if has_prev_year else None),
+                    _build_year_nav_button("←", left_year_action),
                     ft.Text(
                         year_title,
                         size=32,
                         weight=ft.FontWeight.BOLD,
                         color=COLOR_TEXT_PRIMARY,
                     ),
-                    _build_year_nav_button("→", on_next_year if has_next_year else None),
+                    _build_year_nav_button(right_year_label, right_year_action),
                 ],
             ),
             ft.Container(expand=True, content=week_strip_content),
@@ -324,6 +346,7 @@ def _build_week_tile(
     week: MockWeek,
     is_selected: bool,
     on_select_week: Callable[[int], None],
+    disabled: bool = False,
 ) -> ft.Control:
     border = ft.Border.all(2, COLOR_WEEK_TILE_SELECTED_BORDER) if is_selected else None
     bgcolor = COLOR_WEEK_TILE_CLOSED_BG if week.is_closed else COLOR_WEEK_TILE_BG
@@ -336,7 +359,9 @@ def _build_week_tile(
         border=border,
         border_radius=2,
         alignment=ft.Alignment.CENTER,
-        on_click=lambda _e, week_number=week.week_number: on_select_week(week_number),
+        on_click=(
+            None if disabled else (lambda _e, week_number=week.week_number: on_select_week(week_number))
+        ),
         content=ft.Text(
             str(week.week_number),
             size=13,

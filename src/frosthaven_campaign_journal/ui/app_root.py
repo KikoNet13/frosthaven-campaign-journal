@@ -8,6 +8,7 @@ import flet as ft
 
 from frosthaven_campaign_journal.config import load_settings
 from frosthaven_campaign_journal.data import (
+    CampaignWriteResult,
     EntryWriteResult,
     EntryRead,
     EntrySessionRead,
@@ -26,6 +27,7 @@ from frosthaven_campaign_journal.data import (
     create_entry,
     delete_entry,
     derive_year_from_week_cursor,
+    extend_years_plus_one,
     load_main_screen_snapshot,
     manual_create_session,
     manual_delete_session,
@@ -65,6 +67,7 @@ class MainScreenReadState:
     active_entry_ref: EntryRef | None = None
     active_entry_label: str | None = None
     active_status_error_message: str | None = None
+    campaign_write_pending: bool = False
 
 
 @dataclass
@@ -139,6 +142,7 @@ def build_app_root(page: ft.Page) -> ft.Control:
             entry_write_pending=entry_panel_state.entry_write_pending,
             resource_write_error_message=entry_panel_state.resource_write_error_message,
             resource_write_pending=entry_panel_state.resource_write_pending,
+            campaign_write_pending=read_state.campaign_write_pending,
             resource_draft_values=(
                 dict(entry_panel_state.resource_draft_values)
                 if _resource_draft_attached_to_viewer()
@@ -156,6 +160,7 @@ def build_app_root(page: ft.Page) -> ft.Control:
             env_name=load_settings().env,
             on_prev_year=handle_prev_year,
             on_next_year=handle_next_year,
+            on_open_extend_year_plus_one_confirm=handle_open_extend_year_plus_one_confirm,
             on_select_week=handle_select_week,
             on_select_entry=handle_select_entry,
             on_manual_refresh=handle_manual_refresh,
@@ -634,6 +639,38 @@ def build_app_root(page: ft.Page) -> ft.Control:
     def _get_viewer_entry_ref_for_resource_write() -> EntryRef | None:
         return local_state.viewer_entry_ref
 
+    def _run_campaign_write(action) -> CampaignWriteResult | None:
+        read_state.campaign_write_pending = True
+        render_shell()
+        page.update()
+
+        result: CampaignWriteResult | None = None
+        success = True
+        try:
+            client = _build_client()
+            result = action(client)
+        except FirestoreConflictError as exc:
+            _show_snack_error(str(exc))
+            success = False
+        except (
+            FirestoreConfigError,
+            FirestoreTransitionInvalidError,
+            FirestoreValidationError,
+            FirestoreReadError,
+            FirestoreWriteError,
+        ) as exc:
+            _show_snack_error(str(exc))
+            success = False
+        finally:
+            read_state.campaign_write_pending = False
+
+        if not success:
+            render_shell()
+            page.update()
+            return None
+
+        return result
+
     def _run_week_write(action) -> WeekWriteResult | None:
         target_week = _get_selected_week_for_write()
         if local_state.selected_year is None or local_state.selected_week is None or target_week is None:
@@ -958,8 +995,83 @@ def build_app_root(page: ft.Page) -> ft.Control:
         )
         _open_dialog(dialog)
 
+    def _get_extend_year_plus_one_target() -> tuple[int, int] | None:
+        if not read_state.years:
+            _show_snack_error("No hay años provisionados en la campaña.")
+            return None
+        selected_year = local_state.selected_year
+        if selected_year is None or selected_year not in read_state.years:
+            _show_snack_error("No hay un año válido seleccionado para extender la campaña.")
+            return None
+        last_year = max(read_state.years)
+        if selected_year != last_year:
+            _show_snack_error("Solo se puede extender +1 año desde el último año provisionado.")
+            return None
+        return selected_year, (last_year + 1)
+
+    def _show_extend_year_plus_one_confirm_dialog() -> None:
+        target = _get_extend_year_plus_one_target()
+        if target is None:
+            return
+        current_year, next_year_number = target
+
+        def _confirm(_e) -> None:
+            _close_dialog()
+            result = _run_campaign_write(lambda client: extend_years_plus_one(client))
+            if result is None:
+                return
+
+            local_state.selected_year = result.new_year_number
+            local_state.selected_week = None
+            _clear_session_write_error()
+            _clear_week_write_error()
+            _clear_entry_write_error()
+            _clear_resource_write_error()
+            entry_panel_state.entries_for_selected_week = []
+            entry_panel_state.entries_panel_error_message = None
+            refresh_and_render(
+                selected_year_override=result.new_year_number,
+                reload_q5=False,
+                reload_q8=(local_state.viewer_entry_ref is not None),
+            )
+            _show_snack_info(
+                f"Año {result.new_year_number} añadido correctamente "
+                f"(weeks {result.created_week_start}-{result.created_week_end})."
+            )
+
+        dialog = ft.AlertDialog(
+            modal=True,
+            title=ft.Text("Extender campaña (+1 año)"),
+            content=ft.Text(
+                (
+                    f"Vas a extender la campaña desde Año {current_year} a Año {next_year_number}.\n\n"
+                    "Se añadirá exactamente 1 año completo (20 weeks) con confirmación explícita."
+                )
+            ),
+            actions=[
+                ft.TextButton("Cancelar", on_click=lambda _e: _close_dialog()),
+                ft.FilledButton(
+                    "Extender",
+                    on_click=_confirm,
+                    disabled=read_state.campaign_write_pending,
+                ),
+            ],
+            actions_alignment=ft.MainAxisAlignment.END,
+        )
+        _open_dialog(dialog)
+
     def handle_open_week_notes_modal() -> None:
         _show_week_notes_modal()
+
+    def handle_open_extend_year_plus_one_confirm() -> None:
+        if read_state.campaign_write_pending:
+            return
+        if _get_extend_year_plus_one_target() is None:
+            return
+        _run_or_confirm_resource_draft_before_context_change(
+            _show_extend_year_plus_one_confirm_dialog,
+            action_label="extender +1 año",
+        )
 
     def handle_request_close_week() -> None:
         target_week = _get_selected_week_for_write()

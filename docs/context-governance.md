@@ -117,6 +117,24 @@ Se valida:
   - `deferred`: 1 (`TC-SESSION-01`)
   - Alcance aplicado: P0 estricto de `#19`; `EC-TEMPORAL-01` (`#17`) queda fuera de `#70` por trazabilidad de prioridades (`TC-TEMPORAL-04`, `P1` en `#19`).
 
+### Hito H1-02
+
+- Fecha: 2026-02-26
+- Objetivo: validar uso individual en dispositivo alterno (`DEF-001` reenfocado) con Charlotte y viewports equivalentes (`#71`).
+- Resultado: completado con gap de usabilidad móvil y un bloqueo opcional de harness
+- Verificación A: aprobado (ejecución y evidencia registradas en issue `#71`)
+- Verificación B: aprobado (todos los escenarios `S1..S7` clasificados)
+- Evidencia:
+  - Issue `#71` (matriz de escenarios, resultados por lotes y resumen operativo)
+  - Follow-up `#79` (barra temporal superior no usable en viewport móvil)
+  - PR de la unidad `#71` (resumen y cierre end-to-end)
+- Resumen:
+  - `pass`: 5 (`S1`, `S2`, `S3`, `S4`, `S5`)
+  - `fail`: 1 (`S7`, robustez visual móvil)
+  - `blocked`: 1 (`S6`, opcional por limitación de harness/alcance del run)
+  - Alcance aplicado: validación de uso individual con alternancia en dos tabs y `Refresh`, sin claims multi-writer concurrente real.
+  - Reencuadre explícito: `DEF-001` se ejecuta como viewport equivalente (`desktop` + `mobile/tablet`) en vez de dispositivo físico en esta unidad.
+
 ## Conocimiento migrado desde legado
 
 - `important.txt`

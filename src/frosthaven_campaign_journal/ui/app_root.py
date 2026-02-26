@@ -26,7 +26,6 @@ from frosthaven_campaign_journal.data import (
     close_week,
     create_entry,
     delete_entry,
-    derive_year_from_week_cursor,
     extend_years_plus_one,
     load_main_screen_snapshot,
     manual_create_session,
@@ -62,7 +61,6 @@ class MainScreenReadState:
     warning_message: str | None = None
     years: list[int] = field(default_factory=list)
     weeks_by_year: dict[int, list[MockWeek]] = field(default_factory=dict)
-    campaign_week_cursor: int | None = None
     campaign_resource_totals: dict[str, int] | None = None
     active_entry_ref: EntryRef | None = None
     active_entry_label: str | None = None
@@ -204,7 +202,6 @@ def build_app_root(page: ft.Page) -> ft.Control:
         read_state.status = "ready"
         read_state.error_message = None
         read_state.years = snapshot.years
-        read_state.campaign_week_cursor = snapshot.campaign_main.week_cursor
         read_state.campaign_resource_totals = snapshot.campaign_main.resource_totals
         read_state.weeks_by_year[snapshot.effective_year] = [
             _map_week_read_to_mock(week)
@@ -218,15 +215,7 @@ def build_app_root(page: ft.Page) -> ft.Control:
         }
         if local_state.selected_week is not None and local_state.selected_week not in visible_week_numbers:
             local_state.selected_week = None
-
-        derived_year = derive_year_from_week_cursor(snapshot.campaign_main.week_cursor)
-        if derived_year not in snapshot.years:
-            read_state.warning_message = (
-                "Advertencia: `week_cursor` apunta a un año no provisionado. "
-                f"Se usa Año {snapshot.effective_year} como fallback de navegación."
-            )
-        else:
-            read_state.warning_message = None
+        read_state.warning_message = None
 
         if snapshot.active_entry is None:
             read_state.active_entry_ref = None

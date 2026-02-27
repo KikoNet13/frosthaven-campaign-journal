@@ -6,8 +6,8 @@
 - `purpose`: Registrar decisiones con trazabilidad y precedencia.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-02-24
-- `next_review`: 2026-03-10
+- `last_updated`: 2026-02-26
+- `next_review`: 2026-03-12
 
 ## Formato canónico por entrada
 
@@ -791,3 +791,14 @@
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/70`,
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/19`,
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/37`
+
+
+### DEC-0035
+
+- `date`: 2026-02-26
+- `status`: accepted
+- `problem`: tras completar la fase fuerte de preparación de contexto, el ritmo de implementación funcional de la app quedó por debajo del objetivo personal del proyecto (uso propio y avance visible de UI/funcionalidades).
+- `decision`: cambiar el modo operativo a **desarrollo-first**: priorizar cierre de UI y funcionalidades pendientes, manteniendo documentación, issues y PR con nivel ligero y orientado a ejecución. Este cambio no elimina trazabilidad; la hace proporcional al impacto real.
+- `rationale`: maximiza valor práctico del proyecto, reduce sobrecarga documental y mantiene aprendizaje aplicable sin frenar entrega de producto.
+- `impact`: se incorpora una guía reusable de arranque de proyectos personales con ingeniería de contexto ligera; se actualiza el estado de fase para priorizar implementación acelerada; y se crea backlog inmediato de issues de desarrollo, incluyendo una de simplificación de código.
+- `references`: `AGENTS.md`, `docs/context-governance.md`, `docs/mvp-implementation-checklist.md`, `learning/personal-context-engineering-quickstart.md`

@@ -6,8 +6,8 @@
 - `purpose`: Mapa navegable de la documentación oficial y legado temporal.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-02-24
-- `next_review`: 2026-03-10
+- `last_updated`: 2026-02-26
+- `next_review`: 2026-03-12
 
 ## Objetivo
 
@@ -72,6 +72,8 @@ Este documento permite que una persona o agente nuevo entienda rápidamente:
   - Flujo GitHub Flow minimalista para este proyecto.
 - `learning/handbook.md`
   - Principios transferibles de ingeniería de contexto.
+- `learning/personal-context-engineering-quickstart.md`
+  - Guía práctica para iniciar proyectos personales con contexto ligero y foco en entrega.
 - `learning/frosthaven-annex.md`
   - Casos aplicados al proyecto.
 - `learning/git-workflow-handbook.md`
@@ -128,3 +130,4 @@ Este documento permite que una persona o agente nuevo entienda rápidamente:
 - Estado de fase -> `docs/context-governance.md`
 - Pasos operativos -> `docs/context-checklists.md`
 - Material reutilizable -> `learning/handbook.md`
+- Arranque rápido de proyectos personales -> `learning/personal-context-engineering-quickstart.md`

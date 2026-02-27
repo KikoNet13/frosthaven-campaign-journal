@@ -6,8 +6,8 @@
 - `purpose`: Gobierno de contexto, gate de calidad y estado verificable.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-02-24
-- `next_review`: 2026-03-10
+- `last_updated`: 2026-02-26
+- `next_review`: 2026-03-12
 
 ## Alcance de Fase 0
 
@@ -168,6 +168,26 @@ Se valida:
   - Desktop pequeño (`800x600`) preservado sin compactación accidental tras ajustar la heurística responsiva.
   - `portrait` queda fuera de alcance explícito de la unidad.
 
+
+
+### Hito H1-05
+
+- Fecha: 2026-02-26
+- Objetivo: reorientar la ejecución a desarrollo acelerado de la app (UI + funcionalidades) con contexto ligero reutilizable.
+- Resultado: aprobado
+- Verificación A: aprobado (nueva guía reusable publicada y trazada en mapa del sistema)
+- Verificación B: aprobado (decisión registrada y backlog de implementación actualizado con próximas issues)
+- Evidencia:
+  - `learning/personal-context-engineering-quickstart.md`
+  - `docs/system-map.md`
+  - `docs/decision-log.md` (DEC-0035)
+  - `docs/mvp-implementation-checklist.md` (nuevas issues pendientes post-#20)
+- Resumen:
+  - Se adopta modo `development_first_light_context`.
+  - La documentación pasa a criterio de soporte a implementación, no de protagonismo.
+  - Se mantiene trazabilidad mínima profesional (issue/commit/PR) para cambios no triviales.
+
+
 ## Conocimiento migrado desde legado
 
 - `important.txt`
@@ -192,8 +212,7 @@ Se valida:
 
 ## Estado actual de fase
 
-- Estado: implementation_enabled
+- Estado: development_first_light_context
 - Criterio de aceptación de Fase 0: cubierto a nivel documental y gate `#20`
   validado.
-- Siguiente paso: iniciar implementación (slice recomendado de
-  infraestructura/base app).
+- Siguiente paso: ejecutar la siguiente issue funcional prioritaria de UI/lecturas y completar el backlog corto de implementación.

@@ -241,6 +241,29 @@ Usar esta plantilla mínima en cada issue/bloque del checklist:
 - [x] Estado local de selección/navegación + visor sticky + activo mock (Issue #53)
 - [ ] Integrar lecturas mínimas read-only para arranque y navegación base (Issue #54)
 
+### Próximas issues pendientes (foco desarrollo rápido)
+
+- [ ] Issue #82 — Finalizar flujo de selección temporal y navegación semanal completa en UI (incluye estados vacíos/semana cerrada y feedback visual claro).
+- [ ] Issue #83 — Conectar acciones principales del panel central (`start`, `stop`, `add session`, `delete entry`) con handlers reales y mensajes de error básicos.
+- [ ] Issue #84 — Simplificación de código UI/estado: reducir complejidad accidental en `app_root`/`main_shell_view`/placeholders, extrayendo utilidades y eliminando duplicación innecesaria.
+- [ ] Issue #85 — Mejorar robustez móvil mínima (portrait + landscape) para barra temporal y panel central con validación visual rápida.
+- [ ] Issue #86 — Cerrar vertical read/write MVP de una operación completa (crear sesión + impacto en recursos + refresco visible en pantalla principal).
+
+#### Orden recomendado inmediato
+
+1. #54
+1. #82
+1. #84
+1. #83
+1. #85
+1. #86
+
+#### Criterio de priorización
+
+- Priorizar cambios con impacto visible en UI/flujo diario de uso.
+- Mantener issues pequeñas (1–2 sesiones de trabajo).
+- Si una issue crece demasiado, dividirla antes de implementar.
+
 ## Referencias
 
 - `AGENTS.md`

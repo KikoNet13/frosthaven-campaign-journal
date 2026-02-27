@@ -14,7 +14,7 @@ from frosthaven_campaign_journal.state.placeholders import (
 )
 
 
-TOP_BAR_HEIGHT = 78
+TOP_BAR_HEIGHT = 64
 ENTRY_TABS_BAR_HEIGHT = 44
 BOTTOM_BAR_HEIGHT = 96
 OUTER_PADDING = 0
@@ -43,8 +43,6 @@ COLOR_WARNING_TEXT = "#7D5700"
 COLOR_WEEK_BLOCK_SUMMER_BG = "#F2ABAB"
 COLOR_WEEK_BLOCK_WINTER_BG = "#E6B3C4"
 COLOR_WEEK_BLOCK_BORDER = "#D98787"
-COLOR_WEEK_STATUS_OPEN = "#2D8A3E"
-COLOR_WEEK_STATUS_CLOSED = "#8A5C5C"
 ENTRY_RESOURCE_KEYS = ("lumber", "metal", "hide")
 
 
@@ -121,7 +119,6 @@ def build_main_shell_view(
     )
     entry_tabs_bar = _build_entry_tabs_bar(
         state=state,
-        weeks_for_selected_year=weeks_for_selected_year,
         entries_for_selected_week=entries_for_selected_week,
         viewer_entry=viewer_entry,
         entries_panel_error_message=entries_panel_error_message,
@@ -354,43 +351,19 @@ def _build_top_temporal_bar(
         ],
     )
 
-    selected_week = _find_selected_week(state, weeks_for_selected_year)
-    if state.selected_week is None:
-        week_status_text = "Navegación semanal: sin week seleccionada."
-        week_status_color = COLOR_TEXT_MUTED
-    elif selected_week is None:
-        week_status_text = "La week seleccionada ya no está visible en el año actual."
-        week_status_color = COLOR_WARNING_TEXT
-    elif selected_week.is_closed:
-        week_status_text = f"Navegación semanal: Week {selected_week.week_number} cerrada."
-        week_status_color = COLOR_TEXT_DIMMED
-    else:
-        week_status_text = f"Navegación semanal: Week {selected_week.week_number} abierta."
-        week_status_color = COLOR_TEXT_PRIMARY
-
-    content = ft.Column(
-        spacing=4,
+    content = ft.Row(
+        spacing=content_row_spacing,
+        alignment=ft.MainAxisAlignment.START,
+        vertical_alignment=ft.CrossAxisAlignment.CENTER,
         controls=[
-            ft.Row(
-                spacing=content_row_spacing,
-                alignment=ft.MainAxisAlignment.START,
-                vertical_alignment=ft.CrossAxisAlignment.CENTER,
-                controls=[
-                    year_group,
-                    ft.Container(expand=True, content=week_strip_content),
-                ],
-            ),
-            ft.Text(
-                week_status_text,
-                size=11,
-                color=week_status_color,
-            ),
+            year_group,
+            ft.Container(expand=True, content=week_strip_content),
         ],
     )
 
     if embedded_in_appbar:
         return ft.Container(
-            padding=ft.Padding(left=12, top=6, right=12, bottom=6),
+            padding=ft.Padding(left=12, top=10, right=12, bottom=10),
             tooltip=tooltip,
             content=content,
         )
@@ -398,7 +371,7 @@ def _build_top_temporal_bar(
     return ft.Container(
         height=TOP_BAR_HEIGHT,
         bgcolor=COLOR_TOP_BAR_BG,
-        padding=ft.Padding(left=12, top=6, right=12, bottom=6),
+        padding=ft.Padding(left=12, top=10, right=12, bottom=10),
         tooltip=tooltip,
         content=content,
     )
@@ -493,50 +466,22 @@ def _build_week_tile(
     border = ft.Border.all(2, COLOR_WEEK_TILE_SELECTED_BORDER) if is_selected else None
     bgcolor = COLOR_WEEK_TILE_CLOSED_BG if week.is_closed else COLOR_WEEK_TILE_BG
     text_color = COLOR_TEXT_DIMMED if week.is_closed else COLOR_TEXT_PRIMARY
-    status_dot_color = COLOR_WEEK_STATUS_CLOSED if week.is_closed else COLOR_WEEK_STATUS_OPEN
-    status_text = "C" if week.is_closed else "A"
-    status_color = COLOR_TEXT_DIMMED if week.is_closed else COLOR_TEXT_MUTED
 
     return ft.Container(
         width=46,
-        height=46,
+        height=42,
         bgcolor=bgcolor,
         border=border,
         border_radius=2,
         alignment=ft.Alignment.CENTER,
-        tooltip=f"Week {week.week_number} {'cerrada' if week.is_closed else 'abierta'}",
         on_click=(
             None if disabled else (lambda _e, week_number=week.week_number: on_select_week(week_number))
         ),
-        content=ft.Column(
-            spacing=2,
-            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-            controls=[
-                ft.Text(
-                    str(week.week_number),
-                    size=13,
-                    weight=ft.FontWeight.W_600,
-                    color=text_color,
-                ),
-                ft.Row(
-                    spacing=3,
-                    alignment=ft.MainAxisAlignment.CENTER,
-                    controls=[
-                        ft.Container(
-                            width=6,
-                            height=6,
-                            border_radius=999,
-                            bgcolor=status_dot_color,
-                        ),
-                        ft.Text(
-                            status_text,
-                            size=8,
-                            weight=ft.FontWeight.W_600,
-                            color=status_color,
-                        ),
-                    ],
-                ),
-            ],
+        content=ft.Text(
+            str(week.week_number),
+            size=13,
+            weight=ft.FontWeight.W_600,
+            color=text_color,
         ),
     )
 
@@ -544,7 +489,6 @@ def _build_week_tile(
 def _build_entry_tabs_bar(
     *,
     state: MainScreenLocalState,
-    weeks_for_selected_year: list[MockWeek],
     entries_for_selected_week: list[MockEntry],
     viewer_entry: MockEntry | None,
     entries_panel_error_message: str | None,
@@ -576,19 +520,12 @@ def _build_entry_tabs_bar(
             ],
         )
     elif not entries_for_selected_week:
-        selected_week = _find_selected_week(state, weeks_for_selected_year)
-        if selected_week is None:
-            empty_text = "La week seleccionada ya no está visible en el año actual."
-        elif selected_week.is_closed:
-            empty_text = f"Week {selected_week.week_number} cerrada sin entries"
-        else:
-            empty_text = f"Week {selected_week.week_number} abierta sin entries"
         content = ft.Row(
             alignment=ft.MainAxisAlignment.CENTER,
             vertical_alignment=ft.CrossAxisAlignment.CENTER,
             controls=[
                 ft.Text(
-                    empty_text,
+                    f"Week {state.selected_week} sin entries",
                     size=13,
                     color=COLOR_TEXT_MUTED,
                     italic=True,
@@ -833,13 +770,6 @@ def _build_focus_week_mode(
 ) -> ft.Control:
     badge_bg = "#EDEDED" if week.is_closed else "#D9F2D9"
     badge_fg = "#6A6A6A" if week.is_closed else "#237A3B"
-    week_context_text = (
-        "Week cerrada: navegación y correcciones manuales permitidas, sin sesión activa esperada."
-        if week.is_closed
-        else "Week abierta: navegación activa y acciones de week disponibles."
-    )
-    week_context_bg = "#F4EEEE" if week.is_closed else "#EEF8EE"
-    week_context_border = "#D4B8B8" if week.is_closed else "#B7D9BF"
     action_buttons: list[ft.Control] = [
         ft.FilledButton(
             "Nueva entry",
@@ -882,18 +812,7 @@ def _build_focus_week_mode(
         )
 
     notes_controls: list[ft.Control] = [
-        ft.Row(spacing=8, wrap=True, controls=action_buttons),
-        ft.Container(
-            padding=ft.Padding(left=10, top=8, right=10, bottom=8),
-            bgcolor=week_context_bg,
-            border=ft.Border.all(1, week_context_border),
-            border_radius=6,
-            content=ft.Text(
-                week_context_text,
-                size=12,
-                color=COLOR_TEXT_MUTED,
-            ),
-        ),
+        ft.Row(spacing=8, wrap=True, controls=action_buttons)
     ]
     if week_write_pending:
         notes_controls.append(

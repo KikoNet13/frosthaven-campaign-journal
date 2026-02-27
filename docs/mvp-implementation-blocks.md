@@ -572,10 +572,10 @@ No incluye:
 - [x] `#52` Shell de pantalla principal (layout base Figma)
 - [x] `#53` Estado local de navegación/visor sticky/activo mock
 - [x] `#54` Integración read-only inicial (`Q1/Q2/Q3/Q4/Q6/Q7`)
+- [x] `#86` Selección temporal y feedback semanal en UI (solo tiles + feedback)
 
 ### Próxima secuencia técnica esperada (según orden actual)
 
-1. `U1-temporal-nav-ui` Finalizar flujo de selección temporal y navegación semanal completa en UI
 1. `U2-ui-state-simplification` Simplificar complejidad accidental en `app_root`/`main_shell_view`/placeholders
 1. `U3-panel-actions-real-handlers` Conectar `start`, `stop`, `add session` y `delete entry` con handlers reales
 1. `U4-mobile-robustness-min` Mejorar robustez móvil mínima (`portrait` + `landscape`) en barra temporal y panel central

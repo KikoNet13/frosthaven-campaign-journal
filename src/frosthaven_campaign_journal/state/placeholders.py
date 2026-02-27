@@ -4,6 +4,9 @@ from dataclasses import dataclass, field
 from typing import NamedTuple
 
 
+ENTRY_RESOURCE_KEYS = ("lumber", "metal", "hide")
+
+
 @dataclass(frozen=True)
 class EntryRef:
     year_number: int
@@ -46,6 +49,15 @@ class MainScreenLocalState:
     selected_year: int | None
     selected_week: int | None
     viewer_entry_ref: EntryRef | None
+
+
+def entry_ref_matches_selected_week(state: MainScreenLocalState, entry_ref: EntryRef) -> bool:
+    return (
+        state.selected_year is not None
+        and state.selected_week is not None
+        and entry_ref.year_number == state.selected_year
+        and entry_ref.week_number == state.selected_week
+    )
 
 
 class MockMainScreenDataset(NamedTuple):

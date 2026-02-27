@@ -240,10 +240,10 @@ Usar esta plantilla mínima en cada issue/bloque del checklist:
 - [x] Shell de pantalla principal con layout base según Figma (Issue #52)
 - [x] Estado local de selección/navegación + visor sticky + activo mock (Issue #53)
 - [x] Integrar lecturas mínimas read-only para arranque y navegación base (Issue #54)
+- [x] Completar selección temporal y feedback semanal en UI (Issue #86)
 
 ### Próximas unidades propuestas (sin issue abierta)
 
-- [ ] `U1-temporal-nav-ui`: finalizar flujo de selección temporal y navegación semanal completa en UI (incluye estados vacíos/semana cerrada y feedback visual claro).
 - [ ] `U2-ui-state-simplification`: simplificar complejidad accidental en `app_root`/`main_shell_view`/placeholders, extrayendo utilidades y eliminando duplicación innecesaria.
 - [ ] `U3-panel-actions-real-handlers`: conectar acciones principales del panel central (`start`, `stop`, `add session`, `delete entry`) con handlers reales y mensajes de error básicos.
 - [ ] `U4-mobile-robustness-min`: robustez móvil mínima (`portrait` + `landscape`) para barra temporal y panel central con validación visual rápida.
@@ -253,7 +253,6 @@ Al priorizar una unidad, abrir primero su issue y sustituir el identificador `U*
 
 #### Orden recomendado inmediato
 
-1. `U1-temporal-nav-ui`
 1. `U2-ui-state-simplification`
 1. `U3-panel-actions-real-handlers`
 1. `U4-mobile-robustness-min`

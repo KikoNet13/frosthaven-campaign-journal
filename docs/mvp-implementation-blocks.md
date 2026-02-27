@@ -6,8 +6,8 @@
 - `purpose`: Desglosar el checklist técnico base de implementación MVP en bloques y subbloques ejecutables con trazabilidad, incluyendo decisiones marco posteriores que alteren el orden técnico.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-02-24
-- `next_review`: 2026-03-10
+- `last_updated`: 2026-02-27
+- `next_review`: 2026-03-13
 
 ## Objetivo
 
@@ -571,11 +571,17 @@ No incluye:
 - [x] `#51` Bootstrap de app Flet y estructura base
 - [x] `#52` Shell de pantalla principal (layout base Figma)
 - [x] `#53` Estado local de navegación/visor sticky/activo mock
-- [ ] `#54` Integración read-only inicial (`Q1/Q2/Q3/Q4/Q6/Q7`)
+- [x] `#54` Integración read-only inicial (`Q1/Q2/Q3/Q4/Q6/Q7`)
 
 ### Próxima secuencia técnica esperada (según orden actual)
 
-1. `#54` Integrar lecturas mínimas read-only para arranque y navegación base
+1. `U1-temporal-nav-ui` Finalizar flujo de selección temporal y navegación semanal completa en UI
+1. `U2-ui-state-simplification` Simplificar complejidad accidental en `app_root`/`main_shell_view`/placeholders
+1. `U3-panel-actions-real-handlers` Conectar `start`, `stop`, `add session` y `delete entry` con handlers reales
+1. `U4-mobile-robustness-min` Mejorar robustez móvil mínima (`portrait` + `landscape`) en barra temporal y panel central
+1. `U5-read-write-vertical-slice` Cerrar vertical read/write MVP de una operación completa con refresco visible
+
+Al priorizar una unidad, abrir primero su issue y sustituir el identificador `U*` por `#<issue>` en seguimiento.
 
 ## Referencias
 

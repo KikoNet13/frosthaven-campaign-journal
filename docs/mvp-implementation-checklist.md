@@ -6,8 +6,8 @@
 - `purpose`: Checklist técnico base para preparar la implementación del MVP con orden, dependencias y verificación mínima.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-02-24
-- `next_review`: 2026-03-10
+- `last_updated`: 2026-02-27
+- `next_review`: 2026-03-13
 
 ## Objetivo
 
@@ -239,24 +239,25 @@ Usar esta plantilla mínima en cada issue/bloque del checklist:
 - [x] Bootstrap de app Flet y estructura base del proyecto (Issue #51)
 - [x] Shell de pantalla principal con layout base según Figma (Issue #52)
 - [x] Estado local de selección/navegación + visor sticky + activo mock (Issue #53)
-- [ ] Integrar lecturas mínimas read-only para arranque y navegación base (Issue #54)
+- [x] Integrar lecturas mínimas read-only para arranque y navegación base (Issue #54)
 
-### Próximas issues pendientes (foco desarrollo rápido)
+### Próximas unidades propuestas (sin issue abierta)
 
-- [ ] Issue #82 — Finalizar flujo de selección temporal y navegación semanal completa en UI (incluye estados vacíos/semana cerrada y feedback visual claro).
-- [ ] Issue #83 — Conectar acciones principales del panel central (`start`, `stop`, `add session`, `delete entry`) con handlers reales y mensajes de error básicos.
-- [ ] Issue #84 — Simplificación de código UI/estado: reducir complejidad accidental en `app_root`/`main_shell_view`/placeholders, extrayendo utilidades y eliminando duplicación innecesaria.
-- [ ] Issue #85 — Mejorar robustez móvil mínima (portrait + landscape) para barra temporal y panel central con validación visual rápida.
-- [ ] Issue #86 — Cerrar vertical read/write MVP de una operación completa (crear sesión + impacto en recursos + refresco visible en pantalla principal).
+- [ ] `U1-temporal-nav-ui`: finalizar flujo de selección temporal y navegación semanal completa en UI (incluye estados vacíos/semana cerrada y feedback visual claro).
+- [ ] `U2-ui-state-simplification`: simplificar complejidad accidental en `app_root`/`main_shell_view`/placeholders, extrayendo utilidades y eliminando duplicación innecesaria.
+- [ ] `U3-panel-actions-real-handlers`: conectar acciones principales del panel central (`start`, `stop`, `add session`, `delete entry`) con handlers reales y mensajes de error básicos.
+- [ ] `U4-mobile-robustness-min`: robustez móvil mínima (`portrait` + `landscape`) para barra temporal y panel central con validación visual rápida.
+- [ ] `U5-read-write-vertical-slice`: cerrar vertical read/write MVP de una operación completa (crear sesión + impacto en recursos + refresco visible en pantalla principal).
+
+Al priorizar una unidad, abrir primero su issue y sustituir el identificador `U*` por `#<issue>` en seguimiento.
 
 #### Orden recomendado inmediato
 
-1. #54
-1. #82
-1. #84
-1. #83
-1. #85
-1. #86
+1. `U1-temporal-nav-ui`
+1. `U2-ui-state-simplification`
+1. `U3-panel-actions-real-handlers`
+1. `U4-mobile-robustness-min`
+1. `U5-read-write-vertical-slice`
 
 #### Criterio de priorización
 

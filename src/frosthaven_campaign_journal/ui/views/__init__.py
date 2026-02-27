@@ -1,10 +1,3 @@
-"""UI views used by the app."""
+"""Legacy views package (kept for non-main-shell placeholders)."""
 
-from .main_shell_contracts import MainShellViewActions, MainShellViewData
-from .main_shell_view import build_main_shell_view
-
-__all__ = [
-    "MainShellViewActions",
-    "MainShellViewData",
-    "build_main_shell_view",
-]
+__all__: list[str] = []

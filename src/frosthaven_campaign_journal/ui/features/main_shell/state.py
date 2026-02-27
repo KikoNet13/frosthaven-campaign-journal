@@ -1,8 +1,15 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from frosthaven_campaign_journal.state.placeholders import EntryRef, MockEntry, MockWeek, ViewerSessionItem
+from frosthaven_campaign_journal.state.placeholders import (
+    EntryRef,
+    MainScreenLocalState,
+    MockEntry,
+    MockWeek,
+    ViewerSessionItem,
+    build_initial_main_screen_state,
+)
 
 
 @dataclass
@@ -38,4 +45,19 @@ class EntryPanelReadState:
     resource_draft_values: dict[str, int] = field(default_factory=dict)
     resource_draft_dirty: bool = False
     resource_draft_discard_notice: str | None = None
+
+
+@dataclass
+class WorkflowState:
+    pending_context_intent: object | None = None
+    pending_context_action_label: str | None = None
+    resource_draft_leave_confirm_open: bool = False
+
+
+@dataclass
+class MainShellState:
+    local_state: MainScreenLocalState = field(default_factory=build_initial_main_screen_state)
+    read_state: MainScreenReadState = field(default_factory=MainScreenReadState)
+    entry_panel_state: EntryPanelReadState = field(default_factory=EntryPanelReadState)
+    workflow: WorkflowState = field(default_factory=WorkflowState)
 

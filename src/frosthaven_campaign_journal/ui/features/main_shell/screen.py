@@ -1,27 +1,29 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import flet as ft
 
-from frosthaven_campaign_journal.ui.views.main_shell_contracts import (
-    MainShellViewActions,
-    MainShellViewData,
-)
-from frosthaven_campaign_journal.ui.views.main_shell_focus import build_center_focus_panel
-from frosthaven_campaign_journal.ui.views.main_shell_shared import (
+from frosthaven_campaign_journal.ui.features.main_shell.components.focus import build_center_focus_panel
+from frosthaven_campaign_journal.ui.features.main_shell.components.shared import (
     BOTTOM_BAR_HEIGHT,
     COLOR_BOTTOM_BAR_BG,
     COLOR_TOP_BAR_BG,
     OUTER_PADDING,
     TOP_BAR_HEIGHT,
 )
-from frosthaven_campaign_journal.ui.views.main_shell_status import build_bottom_status_bar_content
-from frosthaven_campaign_journal.ui.views.main_shell_temporal import (
+from frosthaven_campaign_journal.ui.features.main_shell.components.status import (
+    build_bottom_status_bar_content,
+)
+from frosthaven_campaign_journal.ui.features.main_shell.components.temporal import (
     build_entry_tabs_bar,
     build_top_temporal_bar,
 )
+from frosthaven_campaign_journal.ui.features.main_shell.contracts import (
+    MainShellViewActions,
+    MainShellViewData,
+)
 
 
-def build_main_shell_view(*, data: MainShellViewData, actions: MainShellViewActions) -> ft.Control:
+def build_main_shell_screen(*, data: MainShellViewData, actions: MainShellViewActions) -> ft.Control:
     top_bar = build_top_temporal_bar(
         data=data,
         actions=actions,

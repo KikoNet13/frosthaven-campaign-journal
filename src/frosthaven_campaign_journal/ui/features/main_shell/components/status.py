@@ -5,11 +5,11 @@ from typing import Callable
 import flet as ft
 
 from frosthaven_campaign_journal.state.placeholders import EntryRef
-from frosthaven_campaign_journal.ui.views.main_shell_contracts import (
+from frosthaven_campaign_journal.ui.features.main_shell.contracts import (
     MainShellViewActions,
     MainShellViewData,
 )
-from frosthaven_campaign_journal.ui.views.main_shell_shared import (
+from frosthaven_campaign_journal.ui.features.main_shell.components.shared import (
     COLOR_WHITE,
     entry_short_label,
     truncate,

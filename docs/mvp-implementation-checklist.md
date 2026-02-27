@@ -242,6 +242,7 @@ Usar esta plantilla mínima en cada issue/bloque del checklist:
 - [x] Integrar lecturas mínimas read-only para arranque y navegación base (Issue #54)
 - [x] Completar selección temporal y feedback semanal en UI (Issue #86)
 - [x] Simplificar complejidad accidental en `app_root`/`main_shell_view`/placeholders (Issue #90)
+- [x] Refactor declarativo completo (MVU) de Main Shell en estructura feature-first (Issue #92)
 
 ### Próximas unidades propuestas (sin issue abierta)
 
@@ -294,3 +295,4 @@ Al priorizar una unidad, abrir primero su issue y sustituir el identificador `U*
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/18`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/19`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/20`
+- `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/92`

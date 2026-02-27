@@ -27,6 +27,7 @@ dist/
 
 # Logs
 *.log
+tmp/
 
 # IDE and editor
 .vscode/

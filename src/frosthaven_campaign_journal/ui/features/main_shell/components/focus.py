@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from typing import Callable
 
@@ -9,11 +9,11 @@ from frosthaven_campaign_journal.state.placeholders import (
     MainScreenLocalState,
     entry_ref_matches_selected_week,
 )
-from frosthaven_campaign_journal.ui.views.main_shell_contracts import (
+from frosthaven_campaign_journal.ui.features.main_shell.contracts import (
     MainShellViewActions,
     MainShellViewData,
 )
-from frosthaven_campaign_journal.ui.views.main_shell_shared import (
+from frosthaven_campaign_journal.ui.features.main_shell.components.shared import (
     CENTER_PANEL_PADDING,
     COLOR_CENTER_BG,
     COLOR_ERROR_BG,
@@ -60,14 +60,14 @@ def build_center_focus_panel(
             resource_draft_attached_to_viewer=data.resource_draft_attached_to_viewer,
             active_entry_ref=data.active_entry_ref,
             active_entry_label=data.active_entry_label,
-            on_start_session=actions.on_start_session,
-            on_stop_session=actions.on_stop_session,
+            on_begin_session=actions.on_begin_session,
+            on_end_session=actions.on_end_session,
             on_open_manual_create_session=actions.on_open_manual_create_session,
             on_open_manual_edit_session=actions.on_open_manual_edit_session,
             on_open_manual_delete_session=actions.on_open_manual_delete_session,
-            on_open_create_entry_modal=actions.on_open_create_entry_modal,
+            on_open_entry_add_modal=actions.on_open_entry_add_modal,
             on_open_edit_entry_modal=actions.on_open_edit_entry_modal,
-            on_open_delete_entry_confirm=actions.on_open_delete_entry_confirm,
+            on_open_entry_delete_confirm=actions.on_open_entry_delete_confirm,
             on_reorder_entry_up=actions.on_reorder_entry_up,
             on_reorder_entry_down=actions.on_reorder_entry_down,
             on_adjust_resource_draft_delta=actions.on_adjust_resource_draft_delta,
@@ -82,10 +82,10 @@ def build_center_focus_panel(
             entry_write_error_message=data.entry_write_error_message,
             entry_write_pending=data.entry_write_pending,
             on_open_week_notes_modal=actions.on_open_week_notes_modal,
-            on_request_close_week=actions.on_request_close_week,
-            on_request_reopen_week=actions.on_request_reopen_week,
-            on_request_reclose_week=actions.on_request_reclose_week,
-            on_open_create_entry_modal=actions.on_open_create_entry_modal,
+            on_request_week_close=actions.on_request_week_close,
+            on_request_week_reopen=actions.on_request_week_reopen,
+            on_request_week_reclose=actions.on_request_week_reclose,
+            on_open_entry_add_modal=actions.on_open_entry_add_modal,
         )
     else:
         primary_content = _build_focus_empty_mode(data.state)
@@ -139,25 +139,25 @@ def _build_focus_empty_mode(state: MainScreenLocalState) -> ft.Control:
                 color=COLOR_TEXT_PRIMARY,
             ),
             ft.Text(
-                "Navega por las weeks del año visible y selecciona una entry para mostrarla en el visor.",
+                "Navega por las weeks del aÃ±o visible y selecciona una entry para mostrarla en el visor.",
                 size=14,
                 color=COLOR_TEXT_MUTED,
             ),
             build_placeholder_card(
-                title="Visor (sticky) vacío",
+                title="Visor (sticky) vacÃ­o",
                 body=(
-                    "El visor se mantiene separado de la navegación. "
-                    "Cuando selecciones una entry, seguirá visible aunque cambies de año o week."
+                    "El visor se mantiene separado de la navegaciÃ³n. "
+                    "Cuando selecciones una entry, seguirÃ¡ visible aunque cambies de aÃ±o o week."
                 ),
                 min_height=108,
             ),
             build_placeholder_card(
                 title=(
-                    f"Navegación actual: Año {state.selected_year}"
+                    f"NavegaciÃ³n actual: AÃ±o {state.selected_year}"
                     if state.selected_year is not None
-                    else "Navegación actual: sin año disponible"
+                    else "NavegaciÃ³n actual: sin aÃ±o disponible"
                 ),
-                body="No hay week seleccionada todavía.",
+                body="No hay week seleccionada todavÃ­a.",
                 min_height=74,
             ),
         ],
@@ -172,17 +172,17 @@ def _build_focus_week_mode(
     entry_write_error_message: str | None,
     entry_write_pending: bool,
     on_open_week_notes_modal: Callable[[], None],
-    on_request_close_week: Callable[[], None],
-    on_request_reopen_week: Callable[[], None],
-    on_request_reclose_week: Callable[[], None],
-    on_open_create_entry_modal: Callable[[], None],
+    on_request_week_close: Callable[[], None],
+    on_request_week_reopen: Callable[[], None],
+    on_request_week_reclose: Callable[[], None],
+    on_open_entry_add_modal: Callable[[], None],
 ) -> ft.Control:
     badge_bg = "#EDEDED" if week.is_closed else "#D9F2D9"
     badge_fg = "#6A6A6A" if week.is_closed else "#237A3B"
     action_buttons: list[ft.Control] = [
         ft.FilledButton(
             "Nueva entry",
-            on_click=lambda _e: on_open_create_entry_modal(),
+            on_click=lambda _e: on_open_entry_add_modal(),
             disabled=entry_write_pending,
             height=32,
         ),
@@ -197,7 +197,7 @@ def _build_focus_week_mode(
         action_buttons.append(
             ft.FilledButton(
                 "Reopen",
-                on_click=lambda _e: on_request_reopen_week(),
+                on_click=lambda _e: on_request_week_reopen(),
                 disabled=week_write_pending,
                 height=32,
             )
@@ -207,13 +207,13 @@ def _build_focus_week_mode(
             [
                 ft.FilledButton(
                     "Close",
-                    on_click=lambda _e: on_request_close_week(),
+                    on_click=lambda _e: on_request_week_close(),
                     disabled=week_write_pending,
                     height=32,
                 ),
                 ft.OutlinedButton(
                     "Reclose",
-                    on_click=lambda _e: on_request_reclose_week(),
+                    on_click=lambda _e: on_request_week_reclose(),
                     disabled=week_write_pending,
                     height=32,
                 ),
@@ -224,7 +224,7 @@ def _build_focus_week_mode(
     if week_write_pending:
         notes_controls.append(
             ft.Text(
-                "Procesando acción de week…",
+                "Procesando acciÃ³n de weekâ€¦",
                 size=12,
                 color=COLOR_TEXT_MUTED,
                 italic=True,
@@ -233,7 +233,7 @@ def _build_focus_week_mode(
     if entry_write_pending:
         notes_controls.append(
             ft.Text(
-                "Procesando acción de entry…",
+                "Procesando acciÃ³n de entryâ€¦",
                 size=12,
                 color=COLOR_TEXT_MUTED,
                 italic=True,
@@ -301,7 +301,7 @@ def _build_focus_week_mode(
             build_placeholder_card(
                 title="Sin entry en visor",
                 body=(
-                    "La week está seleccionada para navegación, pero el visor solo cambia al seleccionar una entry."
+                    "La week estÃ¡ seleccionada para navegaciÃ³n, pero el visor solo cambia al seleccionar una entry."
                 ),
                 min_height=90,
             ),
@@ -326,14 +326,14 @@ def _build_focus_entry_mode(
     resource_draft_attached_to_viewer: bool,
     active_entry_ref: object | None,
     active_entry_label: str | None,
-    on_start_session: Callable[[], None],
-    on_stop_session: Callable[[], None],
+    on_begin_session: Callable[[], None],
+    on_end_session: Callable[[], None],
     on_open_manual_create_session: Callable[[], None],
     on_open_manual_edit_session: Callable[[str], None],
     on_open_manual_delete_session: Callable[[str], None],
-    on_open_create_entry_modal: Callable[[], None],
+    on_open_entry_add_modal: Callable[[], None],
     on_open_edit_entry_modal: Callable[[], None],
-    on_open_delete_entry_confirm: Callable[[], None],
+    on_open_entry_delete_confirm: Callable[[], None],
     on_reorder_entry_up: Callable[[], None],
     on_reorder_entry_down: Callable[[], None],
     on_adjust_resource_draft_delta: Callable[[str, int], None],
@@ -345,8 +345,8 @@ def _build_focus_entry_mode(
 
     context_lines = [
         (
-            f"Viendo: {viewer_entry.label} · Week {viewer_entry.ref.week_number} · "
-            f"Año {viewer_entry.ref.year_number}"
+            f"Viendo: {viewer_entry.label} Â· Week {viewer_entry.ref.week_number} Â· "
+            f"AÃ±o {viewer_entry.ref.year_number}"
         ),
         format_navigation_line(state),
     ]
@@ -356,12 +356,12 @@ def _build_focus_entry_mode(
         )
 
     if active_entry_ref is None:
-        session_status_text = "Sin sesión activa real."
+        session_status_text = "Sin sesiÃ³n activa real."
     elif active_here:
-        session_status_text = f"Con sesión activa aquí: {active_entry_label or 'Entry activa'}."
+        session_status_text = f"Con sesiÃ³n activa aquÃ­: {active_entry_label or 'Entry activa'}."
     else:
         session_status_text = (
-            f"Con sesión activa en otra entry: {active_entry_label or 'Entry activa'}."
+            f"Con sesiÃ³n activa en otra entry: {active_entry_label or 'Entry activa'}."
         )
 
     detail_lines = [f"Tipo: {viewer_entry.entry_type}"]
@@ -391,8 +391,8 @@ def _build_focus_entry_mode(
         session_write_error_message=session_write_error_message,
         session_write_pending=session_write_pending,
         session_status_text=session_status_text,
-        on_start_session=on_start_session,
-        on_stop_session=on_stop_session,
+        on_begin_session=on_begin_session,
+        on_end_session=on_end_session,
         on_open_manual_create_session=on_open_manual_create_session,
         on_open_manual_edit_session=on_open_manual_edit_session,
         on_open_manual_delete_session=on_open_manual_delete_session,
@@ -401,9 +401,9 @@ def _build_focus_entry_mode(
     entry_actions_card = _build_entry_actions_card(
         entry_write_error_message=entry_write_error_message,
         entry_write_pending=entry_write_pending,
-        on_open_create_entry_modal=on_open_create_entry_modal,
+        on_open_entry_add_modal=on_open_entry_add_modal,
         on_open_edit_entry_modal=on_open_edit_entry_modal,
-        on_open_delete_entry_confirm=on_open_delete_entry_confirm,
+        on_open_entry_delete_confirm=on_open_entry_delete_confirm,
         on_reorder_entry_up=on_reorder_entry_up,
         on_reorder_entry_down=on_reorder_entry_down,
     )
@@ -428,21 +428,21 @@ def _build_focus_entry_mode(
                 vertical_alignment=ft.CrossAxisAlignment.CENTER,
                 controls=[
                     ft.Text(
-                        f"Week {viewer_entry.ref.week_number} · {viewer_entry.label}",
+                        f"Week {viewer_entry.ref.week_number} Â· {viewer_entry.label}",
                         size=22,
                         weight=ft.FontWeight.BOLD,
                         color=COLOR_TEXT_PRIMARY,
                     ),
                     build_badge(viewer_entry.entry_type, "#E7E0FF", "#4F46A5"),
                     build_badge(
-                        "activo aquí" if active_here else "visor",
+                        "activo aquÃ­" if active_here else "visor",
                         "#DFF4FF" if active_here else "#F0F0F0",
                         "#0E5E78" if active_here else "#666666",
                     ),
                 ],
             ),
             build_placeholder_card(
-                title="Contexto de visor / navegación",
+                title="Contexto de visor / navegaciÃ³n",
                 body="\n".join(context_lines),
                 min_height=110,
             ),
@@ -458,9 +458,9 @@ def _build_entry_actions_card(
     *,
     entry_write_error_message: str | None,
     entry_write_pending: bool,
-    on_open_create_entry_modal: Callable[[], None],
+    on_open_entry_add_modal: Callable[[], None],
     on_open_edit_entry_modal: Callable[[], None],
-    on_open_delete_entry_confirm: Callable[[], None],
+    on_open_entry_delete_confirm: Callable[[], None],
     on_reorder_entry_up: Callable[[], None],
     on_reorder_entry_down: Callable[[], None],
 ) -> ft.Control:
@@ -476,7 +476,7 @@ def _build_entry_actions_card(
             controls=[
                 ft.FilledButton(
                     "Nueva",
-                    on_click=lambda _e: on_open_create_entry_modal(),
+                    on_click=lambda _e: on_open_entry_add_modal(),
                     disabled=entry_write_pending,
                     height=32,
                 ),
@@ -488,7 +488,7 @@ def _build_entry_actions_card(
                 ),
                 ft.OutlinedButton(
                     "Borrar",
-                    on_click=lambda _e: on_open_delete_entry_confirm(),
+                    on_click=lambda _e: on_open_entry_delete_confirm(),
                     disabled=entry_write_pending,
                     height=32,
                 ),
@@ -510,7 +510,7 @@ def _build_entry_actions_card(
     if entry_write_pending:
         body_controls.append(
             ft.Text(
-                "Procesando acción de entry…",
+                "Procesando acciÃ³n de entryâ€¦",
                 size=12,
                 color=COLOR_TEXT_MUTED,
                 italic=True,
@@ -586,7 +586,7 @@ def _build_entry_resources_card(
                 color=COLOR_TEXT_PRIMARY,
             ),
             ft.Text(
-                f"Delta neto entry (edición): {current_value}",
+                f"Delta neto entry (ediciÃ³n): {current_value}",
                 size=11,
                 color=COLOR_TEXT_MUTED,
             ),
@@ -690,7 +690,7 @@ def _build_entry_resources_card(
     if resource_write_pending:
         body_controls.append(
             ft.Text(
-                "Guardando cambios de recursos…",
+                "Guardando cambios de recursosâ€¦",
                 size=12,
                 color=COLOR_TEXT_MUTED,
                 italic=True,
@@ -742,8 +742,8 @@ def _build_sessions_card(
     session_write_error_message: str | None,
     session_write_pending: bool,
     session_status_text: str,
-    on_start_session: Callable[[], None],
-    on_stop_session: Callable[[], None],
+    on_begin_session: Callable[[], None],
+    on_end_session: Callable[[], None],
     on_open_manual_create_session: Callable[[], None],
     on_open_manual_edit_session: Callable[[str], None],
     on_open_manual_delete_session: Callable[[str], None],
@@ -760,18 +760,18 @@ def _build_sessions_card(
             controls=[
                 ft.FilledButton(
                     "Start",
-                    on_click=lambda _e: on_start_session(),
+                    on_click=lambda _e: on_begin_session(),
                     disabled=session_write_pending,
                     height=32,
                 ),
                 ft.OutlinedButton(
                     "Stop",
-                    on_click=lambda _e: on_stop_session(),
+                    on_click=lambda _e: on_end_session(),
                     disabled=session_write_pending or not has_active_session,
                     height=32,
                 ),
                 ft.OutlinedButton(
-                    "Nueva sesión",
+                    "Nueva sesiÃ³n",
                     on_click=lambda _e: on_open_manual_create_session(),
                     disabled=session_write_pending,
                     height=32,
@@ -783,7 +783,7 @@ def _build_sessions_card(
     if session_write_pending:
         body_controls.append(
             ft.Text(
-                "Procesando acción de sesión…",
+                "Procesando acciÃ³n de sesiÃ³nâ€¦",
                 size=12,
                 color=COLOR_TEXT_MUTED,
                 italic=True,
@@ -877,7 +877,7 @@ def _build_sessions_card(
         if len(viewer_sessions) > 8:
             rows.append(
                 ft.Text(
-                    f"… y {len(viewer_sessions) - 8} sesión(es) más",
+                    f"â€¦ y {len(viewer_sessions) - 8} sesiÃ³n(es) mÃ¡s",
                     size=11,
                     color=COLOR_TEXT_MUTED,
                 )
@@ -913,10 +913,10 @@ def _format_session_line(session: object) -> str:
     started = format_dt_short(session.started_at_utc)
     ended = format_dt_short(session.ended_at_utc)
     if session.ended_at_utc is None:
-        return f"{session.session_id}: {started} → activa"
+        return f"{session.session_id}: {started} â†’ activa"
     duration = session_duration(session)
-    duration_text = format_duration(duration) if duration is not None else "duración n/d"
-    return f"{session.session_id}: {started} → {ended} · {duration_text}"
+    duration_text = format_duration(duration) if duration is not None else "duraciÃ³n n/d"
+    return f"{session.session_id}: {started} â†’ {ended} Â· {duration_text}"
 
 
 def _find_selected_week(
@@ -929,3 +929,4 @@ def _find_selected_week(
         if week.week_number == state.selected_week:
             return week
     return None
+

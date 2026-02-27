@@ -5,11 +5,11 @@ from typing import Callable
 import flet as ft
 
 from frosthaven_campaign_journal.state.placeholders import EntryRef, entry_ref_matches_selected_week
-from frosthaven_campaign_journal.ui.views.main_shell_contracts import (
+from frosthaven_campaign_journal.ui.features.main_shell.contracts import (
     MainShellViewActions,
     MainShellViewData,
 )
-from frosthaven_campaign_journal.ui.views.main_shell_shared import (
+from frosthaven_campaign_journal.ui.features.main_shell.components.shared import (
     COLOR_ENTRY_TAB_SELECTED_UNDERLINE,
     COLOR_ENTRY_TABS_BG,
     COLOR_ERROR_TEXT,
@@ -52,7 +52,7 @@ def build_top_temporal_bar(
 
     left_year_action = actions.on_prev_year if has_prev_year and not data.campaign_write_pending else None
     if not has_valid_selected_year:
-        right_year_label = "?"
+        right_year_label = "→"
         right_year_action = None
     elif is_last_year:
         right_year_label = "+"
@@ -60,7 +60,7 @@ def build_top_temporal_bar(
             actions.on_open_extend_year_plus_one_confirm if not data.campaign_write_pending else None
         )
     else:
-        right_year_label = "?"
+        right_year_label = "→"
         right_year_action = actions.on_next_year if has_next_year and not data.campaign_write_pending else None
 
     is_mobile_landscape_topbar = _is_mobile_landscape_topbar(
@@ -145,7 +145,7 @@ def build_top_temporal_bar(
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
         controls=[
             _build_year_nav_button(
-                "?",
+                "←",
                 left_year_action,
                 size=year_nav_button_size,
                 font_size=year_nav_font_size,

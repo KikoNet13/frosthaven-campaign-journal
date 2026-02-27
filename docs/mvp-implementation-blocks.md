@@ -574,6 +574,7 @@ No incluye:
 - [x] `#54` Integración read-only inicial (`Q1/Q2/Q3/Q4/Q6/Q7`)
 - [x] `#86` Selección temporal y feedback semanal en UI (solo tiles + feedback)
 - [x] `#90` Simplificación de complejidad accidental en `app_root`/`main_shell_view`/placeholders
+- [x] `#92` Refactor declarativo completo (MVU) de Main Shell en estructura feature-first (pre-U3)
 
 ### Próxima secuencia técnica esperada (según orden actual)
 
@@ -614,3 +615,4 @@ Al priorizar una unidad, abrir primero su issue y sustituir el identificador `U*
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/18`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/19`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/20`
+- `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/92`

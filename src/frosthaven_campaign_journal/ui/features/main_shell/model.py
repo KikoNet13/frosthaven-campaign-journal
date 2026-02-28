@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Callable
@@ -71,5 +71,3 @@ class MainShellViewActions:
     on_adjust_resource_draft_delta: Callable[[str, int], None]
     on_save_resource_draft: Callable[[], None]
     on_discard_resource_draft: Callable[[], None]
-
-

@@ -802,3 +802,13 @@
 - `rationale`: maximiza valor práctico del proyecto, reduce sobrecarga documental y mantiene aprendizaje aplicable sin frenar entrega de producto.
 - `impact`: se incorpora una guía reusable de arranque de proyectos personales con ingeniería de contexto ligera; se actualiza el estado de fase para priorizar implementación acelerada; y se crea backlog inmediato de issues de desarrollo, incluyendo una de simplificación de código.
 - `references`: `AGENTS.md`, `docs/context-governance.md`, `docs/mvp-implementation-checklist.md`, `learning/personal-context-engineering-quickstart.md`
+
+### DEC-0036
+
+- `date`: 2026-02-27
+- `status`: accepted
+- `problem`: el feature `main_shell` mantenía múltiples capas operativas (acciones tipadas, orquestación, actualización incremental, composición de pantalla por submódulos), lo que dificultaba un flujo directo de mantenimiento para el arranque de implementación.
+- `decision`: consolidar `main_shell` en una arquitectura estricta de tres archivos funcionales (`model.py`, `state.py`, `view.py`) más `__init__.py`, eliminando capas intermedias y conectando `build_app_root(page)` directamente con `MainShellState` + `build_main_shell_view`.
+- `rationale`: reduce complejidad accidental, deja un punto único de estado y otro de render, y mantiene la API pública del root para permitir iteración rápida en UI.
+- `impact`: se eliminaron módulos previos del feature y se creó un documento técnico comparativo (`docs/ui-main-shell-architecture-mvs.md`) para trazabilidad rápida del cambio.
+- `references`: `src/frosthaven_campaign_journal/ui/app_root.py`, `src/frosthaven_campaign_journal/ui/features/main_shell/model.py`, `src/frosthaven_campaign_journal/ui/features/main_shell/state.py`, `src/frosthaven_campaign_journal/ui/features/main_shell/view.py`, `docs/ui-main-shell-architecture-mvs.md`

@@ -6,7 +6,7 @@
 - `purpose`: Registrar decisiones con trazabilidad y precedencia.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-02-26
+- `last_updated`: 2026-02-28
 - `next_review`: 2026-03-12
 
 ## Formato canónico por entrada
@@ -812,3 +812,93 @@
 - `rationale`: reduce complejidad accidental, deja un punto único de estado y otro de render, y mantiene la API pública del root para permitir iteración rápida en UI.
 - `impact`: se eliminaron módulos previos del feature y se creó un documento técnico comparativo (`docs/ui-main-shell-architecture-mvs.md`) para trazabilidad rápida del cambio.
 - `references`: `src/frosthaven_campaign_journal/ui/app_root.py`, `src/frosthaven_campaign_journal/ui/features/main_shell/model.py`, `src/frosthaven_campaign_journal/ui/features/main_shell/state.py`, `src/frosthaven_campaign_journal/ui/features/main_shell/view.py`, `docs/ui-main-shell-architecture-mvs.md`
+
+### DEC-0037
+
+- `date`: 2026-02-28
+- `status`: accepted
+- `problem`: tras la consolidación a MVS (`DEC-0036`), el root de UI quedó en
+  un patrón híbrido (render con `page.add(...)` + `page.update()`), lo que
+  incumplía la guía declarativa recomendada para Flet y mantenía acoplamiento
+  imperativo entre estado y render.
+- `decision`: migrar el runtime del shell a modo declarativo de Flet, usando
+  `page.render(build_app_root, page)` en el entrypoint, `@ft.component` en
+  `build_app_root`, callback `notify_ui` para disparar rerender y eliminación
+  de `page.update()`/`control.update()` en la capa `src/.../ui`.
+- `rationale`: alinea la arquitectura MVS con el modelo declarativo nativo de
+  Flet, reduce efectos laterales de actualización manual y deja un flujo más
+  predecible para evolución del feature sin reabrir la estructura de archivos.
+- `impact`: actualiza `main.py`, `ui/app_root.py` y `state.py` para un ciclo
+  de render declarativo; mantiene contratos de `model.py`; y refuerza la
+  documentación de arquitectura del feature con una regla explícita de no usar
+  `update` manual en UI.
+- `references`: `src/main.py`,
+  `src/frosthaven_campaign_journal/ui/app_root.py`,
+  `src/frosthaven_campaign_journal/ui/features/main_shell/state.py`,
+  `src/frosthaven_campaign_journal/ui/features/main_shell/model.py`,
+  `docs/ui-main-shell-architecture-mvs.md`
+
+### DEC-0038
+
+- `date`: 2026-02-28
+- `status`: accepted
+- `problem`: aunque `DEC-0037` eliminó `page.update()` manual, el feature seguía
+  con un patrón más verboso (`data + actions`) que no aprovechaba el flujo
+  directo recomendado por Flet en ejemplos declarativos (`state observable`
+  consumido por el componente).
+- `decision`: adoptar en `main_shell` un patrón declarativo ligero: estado
+  `@ft.observable` consumido por `@ft.component` con `use_state`, binding directo
+  de handlers del estado desde la vista y eliminación de `MainShellViewActions`.
+- `rationale`: reduce capas accidentales, deja una estructura más simple para
+  iteración rápida y alinea el feature con el patrón práctico tipo `edit_form`
+  de Flet manteniendo separación útil de scripts (`model/state/view`).
+- `impact`: `app_root` pasa a usar `use_state(MainShellState.create)`;
+  `view.py` deja de depender de `actions`; `state.py` concentra handlers y
+  usa `notify()` cuando aplica en mutaciones anidadas; la interacción de la
+  vista se enlaza de forma directa con handlers del estado; `model.py` mantiene
+  solo contrato de datos de vista.
+- `references`: `src/frosthaven_campaign_journal/ui/app_root.py`,
+  `src/frosthaven_campaign_journal/ui/features/main_shell/state.py`,
+  `src/frosthaven_campaign_journal/ui/features/main_shell/view.py`,
+  `src/frosthaven_campaign_journal/ui/features/main_shell/model.py`,
+  `docs/ui-main-shell-architecture-mvs.md`,
+  `https://github.com/flet-dev/flet/blob/main/sdk/python/examples/apps/declarative/edit_form.py`
+
+### DEC-0039
+
+- `date`: 2026-02-28
+- `status`: superseded
+- `problem`: el estado de `main_shell` seguía recibiendo `ft.Page`, lo que
+  mezclaba infraestructura de runtime con estado de pantalla y alejaba el
+  patrón objetivo (`model/state/view`) de una separación limpia.
+- `decision`: desacoplar `MainShellState` de `ft.Page`; mover viewport a campos
+  propios del estado e inyectar cambios de media/viewport desde `app_root`
+  mediante método específico (`on_viewport_change`).
+- `rationale`: mantiene el estado centrado en dominio/UI local y deja `Page`
+  como responsabilidad del componente root, con acoplamiento mínimo y explícito.
+- `impact`: `MainShellState.create(...)` deja de recibir `page`; `build_view_data`
+  usa `viewport_width/viewport_height` internos; `app_root` conserva el puente
+  con `page.on_media_change` y solo reenvía datos primitivos al estado.
+- `references`: `src/frosthaven_campaign_journal/ui/app_root.py`,
+  `src/frosthaven_campaign_journal/ui/features/main_shell/state.py`,
+  `docs/ui-main-shell-architecture-mvs.md`
+
+### DEC-0040
+
+- `date`: 2026-02-28
+- `status`: accepted
+- `problem`: en el flujo actual de app fija en landscape, el puente de
+  `viewport_width/viewport_height` añadía complejidad sin uso funcional real.
+- `decision`: simplificar `main_shell` eliminando viewport del estado y
+  retirando el bridge de `page.on_media_change`; mantener el estado observable
+  centrado en interacción de pantalla y datos de vista necesarios.
+- `rationale`: reduce ruido en el patrón declarativo objetivo (`model/state/view`)
+  y evita transportar datos de infraestructura que no aportan valor en el estado
+  actual de la UI.
+- `impact`: `MainShellViewData` deja de incluir viewport; `MainShellState.create`
+  vuelve a firma sin parámetros; `app_root` usa `use_state(MainShellState.create)`
+  sin hooks adicionales de media.
+- `references`: `src/frosthaven_campaign_journal/ui/features/main_shell/model.py`,
+  `src/frosthaven_campaign_journal/ui/features/main_shell/state.py`,
+  `src/frosthaven_campaign_journal/ui/app_root.py`,
+  `docs/ui-main-shell-architecture-mvs.md`

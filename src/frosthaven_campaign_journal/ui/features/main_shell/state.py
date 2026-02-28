@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import Callable
 from dataclasses import dataclass, field
 
 import flet as ft
@@ -16,7 +15,7 @@ from frosthaven_campaign_journal.state.placeholders import (
     build_initial_main_screen_state,
     build_mock_main_screen_dataset,
 )
-from frosthaven_campaign_journal.ui.features.main_shell.model import MainShellViewActions, MainShellViewData
+from frosthaven_campaign_journal.ui.features.main_shell.model import MainShellViewData
 
 
 @dataclass
@@ -54,13 +53,20 @@ class EntryPanelReadState:
     resource_draft_discard_notice: str | None = None
 
 
+@ft.observable
 @dataclass
 class MainShellState:
-    page: ft.Page
     local_state: MainScreenLocalState = field(default_factory=build_initial_main_screen_state)
     read_state: MainScreenReadState = field(default_factory=MainScreenReadState)
     entry_panel_state: EntryPanelReadState = field(default_factory=EntryPanelReadState)
+    env_name: str = field(default_factory=lambda: load_settings().env)
     _entries_by_week: dict[tuple[int, int], list[MockEntry]] = field(default_factory=dict)
+
+    @classmethod
+    def create(cls) -> MainShellState:
+        state = cls()
+        state.initialize()
+        return state
 
     def initialize(self) -> None:
         dataset = build_mock_main_screen_dataset()
@@ -74,69 +80,99 @@ class MainShellState:
         self._refresh_entries_for_week()
         self.read_state.status = "ready"
 
-    def on_prev_year(self) -> None:
+    def on_prev_year(self, _event: ft.ControlEvent | None = None) -> None:
         self._move_year(-1)
+        self.notify()
 
-    def on_next_year(self) -> None:
+    def on_next_year(self, _event: ft.ControlEvent | None = None) -> None:
         self._move_year(1)
+        self.notify()
 
-    def on_open_extend_year_plus_one_confirm(self) -> None:
+    def on_open_extend_year_plus_one_confirm(self, _event: ft.ControlEvent | None = None) -> None:
         self.read_state.warning_message = "Extensión de año pendiente en MVP."
+        self.notify()
+
+    def on_select_week_click(self, event: ft.ControlEvent) -> None:
+        week_number = event.control.data
+        if isinstance(week_number, int):
+            self.on_select_week(week_number)
 
     def on_select_week(self, week_number: int) -> None:
         self.local_state.selected_week = week_number
         self.local_state.viewer_entry_ref = None
         self._refresh_entries_for_week()
+        self.notify()
+
+    def on_select_entry_click(self, event: ft.ControlEvent) -> None:
+        entry_ref = event.control.data
+        if isinstance(entry_ref, EntryRef):
+            self.on_select_entry(entry_ref)
 
     def on_select_entry(self, entry_ref: EntryRef) -> None:
         self.local_state.viewer_entry_ref = entry_ref
         self.entry_panel_state.viewer_entry_snapshot = self._find_entry(entry_ref)
         self._sync_resource_draft_from_viewer()
+        self.notify()
 
-    def on_manual_refresh(self) -> None:
+    def on_manual_refresh(self, _event: ft.ControlEvent | None = None) -> None:
         self._refresh_entries_for_week()
+        self.notify()
 
-    def on_begin_session(self) -> None:
+    def on_begin_session(self, _event: ft.ControlEvent | None = None) -> None:
         self.read_state.warning_message = "Control de sesiones en modo placeholder."
+        self.notify()
 
-    def on_end_session(self) -> None:
+    def on_end_session(self, _event: ft.ControlEvent | None = None) -> None:
         self.read_state.warning_message = "Control de sesiones en modo placeholder."
+        self.notify()
 
-    def on_open_manual_create_session(self) -> None:
+    def on_open_manual_create_session(self, _event: ft.ControlEvent | None = None) -> None:
         self.read_state.warning_message = "Acción no disponible en este slice."
+        self.notify()
 
     def on_open_manual_edit_session(self, _session_id: str) -> None:
         self.read_state.warning_message = "Acción no disponible en este slice."
+        self.notify()
 
     def on_open_manual_delete_session(self, _session_id: str) -> None:
         self.read_state.warning_message = "Acción no disponible en este slice."
+        self.notify()
 
-    def on_open_week_notes_modal(self) -> None:
+    def on_open_week_notes_modal(self, _event: ft.ControlEvent | None = None) -> None:
         self.read_state.warning_message = "Acción no disponible en este slice."
+        self.notify()
 
-    def on_request_week_close(self) -> None:
+    def on_request_week_close(self, _event: ft.ControlEvent | None = None) -> None:
         self.read_state.warning_message = "Acción no disponible en este slice."
+        self.notify()
 
-    def on_request_week_reopen(self) -> None:
+    def on_request_week_reopen(self, _event: ft.ControlEvent | None = None) -> None:
         self.read_state.warning_message = "Acción no disponible en este slice."
+        self.notify()
 
-    def on_request_week_reclose(self) -> None:
+    def on_request_week_reclose(self, _event: ft.ControlEvent | None = None) -> None:
         self.read_state.warning_message = "Acción no disponible en este slice."
+        self.notify()
 
-    def on_open_entry_add_modal(self) -> None:
+    def on_open_entry_add_modal(self, _event: ft.ControlEvent | None = None) -> None:
         self.read_state.warning_message = "Acción no disponible en este slice."
+        self.notify()
 
-    def on_open_edit_entry_modal(self) -> None:
+    def on_open_edit_entry_modal(self, _event: ft.ControlEvent | None = None) -> None:
         self.read_state.warning_message = "Acción no disponible en este slice."
+        self.notify()
 
-    def on_open_entry_delete_confirm(self) -> None:
+    def on_open_entry_delete_confirm(self, _event: ft.ControlEvent | None = None) -> None:
         self.read_state.warning_message = "Acción no disponible en este slice."
+        self.notify()
 
-    def on_reorder_entry_up(self) -> None:
+    def on_reorder_entry_up(self, _event: ft.ControlEvent | None = None) -> None:
         self.read_state.warning_message = "Acción no disponible en este slice."
+        self.notify()
 
-    def on_reorder_entry_down(self) -> None:
+    def on_reorder_entry_down(self, _event: ft.ControlEvent | None = None) -> None:
         self.read_state.warning_message = "Acción no disponible en este slice."
+        self.notify()
 
     def on_adjust_resource_draft_delta(self, resource_key: str, adjustment_delta: int) -> None:
         if resource_key not in ENTRY_RESOURCE_KEYS:
@@ -148,12 +184,25 @@ class MainShellState:
         else:
             self.entry_panel_state.resource_draft_values[resource_key] = updated
         self.entry_panel_state.resource_draft_dirty = True
+        self.notify()
 
-    def on_save_resource_draft(self) -> None:
+    def on_adjust_resource_draft_delta_click(self, event: ft.ControlEvent) -> None:
+        payload = event.control.data
+        if (
+            isinstance(payload, tuple)
+            and len(payload) == 2
+            and isinstance(payload[0], str)
+            and isinstance(payload[1], int)
+        ):
+            self.on_adjust_resource_draft_delta(payload[0], payload[1])
+
+    def on_save_resource_draft(self, _event: ft.ControlEvent | None = None) -> None:
         self.entry_panel_state.resource_draft_dirty = False
+        self.notify()
 
-    def on_discard_resource_draft(self) -> None:
+    def on_discard_resource_draft(self, _event: ft.ControlEvent | None = None) -> None:
         self._sync_resource_draft_from_viewer()
+        self.notify()
 
     def build_view_data(self) -> MainShellViewData:
         return MainShellViewData(
@@ -188,49 +237,8 @@ class MainShellState:
             read_status=self.read_state.status,
             read_error_message=self.read_state.error_message,
             read_warning_message=self.read_state.warning_message,
-            viewport_width=getattr(self.page, "width", None),
-            viewport_height=getattr(self.page, "height", None),
-            env_name=load_settings().env,
+            env_name=self.env_name,
         )
-
-    def build_actions(self, refresh: Callable[[], None]) -> MainShellViewActions:
-        return MainShellViewActions(
-            on_prev_year=lambda: self._run_and_refresh(self.on_prev_year, refresh),
-            on_next_year=lambda: self._run_and_refresh(self.on_next_year, refresh),
-            on_open_extend_year_plus_one_confirm=lambda: self._run_and_refresh(
-                self.on_open_extend_year_plus_one_confirm, refresh
-            ),
-            on_select_week=lambda week_number: self._run_and_refresh(lambda: self.on_select_week(week_number), refresh),
-            on_select_entry=lambda entry_ref: self._run_and_refresh(lambda: self.on_select_entry(entry_ref), refresh),
-            on_manual_refresh=lambda: self._run_and_refresh(self.on_manual_refresh, refresh),
-            on_begin_session=lambda: self._run_and_refresh(self.on_begin_session, refresh),
-            on_end_session=lambda: self._run_and_refresh(self.on_end_session, refresh),
-            on_open_manual_create_session=lambda: self._run_and_refresh(self.on_open_manual_create_session, refresh),
-            on_open_manual_edit_session=lambda session_id: self._run_and_refresh(
-                lambda: self.on_open_manual_edit_session(session_id), refresh
-            ),
-            on_open_manual_delete_session=lambda session_id: self._run_and_refresh(
-                lambda: self.on_open_manual_delete_session(session_id), refresh
-            ),
-            on_open_week_notes_modal=lambda: self._run_and_refresh(self.on_open_week_notes_modal, refresh),
-            on_request_week_close=lambda: self._run_and_refresh(self.on_request_week_close, refresh),
-            on_request_week_reopen=lambda: self._run_and_refresh(self.on_request_week_reopen, refresh),
-            on_request_week_reclose=lambda: self._run_and_refresh(self.on_request_week_reclose, refresh),
-            on_open_entry_add_modal=lambda: self._run_and_refresh(self.on_open_entry_add_modal, refresh),
-            on_open_edit_entry_modal=lambda: self._run_and_refresh(self.on_open_edit_entry_modal, refresh),
-            on_open_entry_delete_confirm=lambda: self._run_and_refresh(self.on_open_entry_delete_confirm, refresh),
-            on_reorder_entry_up=lambda: self._run_and_refresh(self.on_reorder_entry_up, refresh),
-            on_reorder_entry_down=lambda: self._run_and_refresh(self.on_reorder_entry_down, refresh),
-            on_adjust_resource_draft_delta=lambda key, delta: self._run_and_refresh(
-                lambda: self.on_adjust_resource_draft_delta(key, delta), refresh
-            ),
-            on_save_resource_draft=lambda: self._run_and_refresh(self.on_save_resource_draft, refresh),
-            on_discard_resource_draft=lambda: self._run_and_refresh(self.on_discard_resource_draft, refresh),
-        )
-
-    def _run_and_refresh(self, operation: Callable[[], None], refresh: Callable[[], None]) -> None:
-        operation()
-        refresh()
 
     def _move_year(self, delta: int) -> None:
         if not self.read_state.years:

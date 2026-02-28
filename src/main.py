@@ -14,7 +14,7 @@ def main(page: ft.Page) -> None:
     page.scroll = ft.ScrollMode.HIDDEN
     page.horizontal_alignment = ft.CrossAxisAlignment.STRETCH
     page.vertical_alignment = ft.MainAxisAlignment.START
-    page.add(build_app_root(page))
+    page.render(build_app_root, page)
 
 
 def run() -> None:

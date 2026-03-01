@@ -1,15 +1,17 @@
-# UI Main Shell Architecture (mvs)
+# UI Main Shell Architecture (MVS)
 
 ## 1) Resumen de decisiones
 
-- Se mantiene la estructura de tres capas: `MODEL`, `STATE`, `VIEW`.
-- El runtime de Flet se ejecuta en modo declarativo con `page.render(...)`.
-- `STATE` se modela como `@ft.observable` y expone handlers directos para la vista.
-- Se elimina el wrapper de acciones (`MainShellViewActions`) para reducir complejidad.
-- `VIEW` consume estado observable y mantiene render declarativo sin `update` manual.
-- `STATE` no recibe `ft.Page`; el root solo instancia el estado y renderiza la vista.
+- Se mantiene estructura de tres capas: `model.py`, `state.py`, `view.py`.
+- El runtime sigue siendo declarativo: `page.render(build_app_root, page)`.
+- `MainShellState` es `@ft.observable` y concentra orquestación de lecturas,
+  escrituras y estado local de UI.
+- `build_main_shell_view` es helper puro de render (sin `@ft.component`).
+- No se usa `page.update()` ni `control.update()` en `src/.../ui`.
+- Se recupera paridad funcional pre-`#94` sin reintroducir capas `MVU+effects`
+  eliminadas (`dispatcher/reducer/effects/intents/selectors`).
 
-## 2) Árbol final de archivos de `ui/features/main_shell`
+## 2) Árbol actual del feature
 
 ```text
 src/frosthaven_campaign_journal/ui/features/main_shell/
@@ -21,48 +23,53 @@ src/frosthaven_campaign_journal/ui/features/main_shell/
 
 ## 3) Tabla por archivo
 
-| Archivo | Tipo | Responsabilidad | Modelos que define | Estado que define | Vistas que define |
-|---|---|---|---|---|---|
-| `__init__.py` | Integración | Reexporta API pública del feature. | N/A | N/A | N/A |
-| `model.py` | MODEL | Define contrato de datos para render (`view data`). | `MainShellViewData` | N/A | N/A |
-| `state.py` | STATE | Define estado observable del shell y handlers de interacción. | N/A | `MainScreenReadState`, `EntryPanelReadState`, `MainShellState` | N/A |
-| `view.py` | VIEW | Render Flet declarativo; consume estado y dispara handlers del estado. | N/A | N/A | `build_main_shell_view` y funciones privadas auxiliares |
+| Archivo | Tipo | Responsabilidad |
+| --- | --- | --- |
+| `model.py` | MODEL | Contratos de datos de render (`MainShellViewData` + estados declarativos de confirmación/formularios). |
+| `state.py` | STATE | Estado observable y handlers de UI + wiring real Firestore (`Q1..Q8` + writes). |
+| `view.py` | VIEW | Composición visual y binding directo a handlers del estado. |
+| `__init__.py` | Integración | API pública estable del feature. |
 
-## 4) Flujo de eventos
+## 4) Flujo declarativo
 
-1. Interacción UI en `view.py` (botones, selección de week/entry, recursos).
-2. La UI invoca un método handler de `MainShellState`.
-3. `MainShellState` muta estado local (`local_state`, `read_state`, `entry_panel_state`).
-4. Cuando la mutación es anidada, `MainShellState` ejecuta `notify()` para forzar rerender.
-5. `build_app_root(page)` (componente con `use_state(observable)`) instancia el estado una vez y renderiza en modo declarativo.
-6. `view.py` reconstruye el render desde `MainShellViewData` generado por el estado.
+1. El root crea estado con `ft.use_state(MainShellState.create)`.
+1. La vista llama `data = state.build_view_data()`.
+1. Controles invocan handlers del estado (`on_*`).
+1. El estado muta `local_state`, `read_state`, `entry_panel_state` y UI-state
+   declarativo (confirmaciones, formularios, editor de notas).
+1. El estado dispara `notify()` y la vista se reconstruye.
 
-## 5) Elementos eliminados explícitamente
+## 5) Estado declarativo de UI en `model.py`
 
-- `contracts.py`
-- `dispatcher.py`
-- `effects.py`
-- `reducer.py`
-- `intents.py`
-- `selectors.py`
-- `dialogs.py`
-- `screen.py`
-- carpeta `components/` completa (`shared.py`, `temporal.py`, `status.py`, `focus.py`, `__init__.py`)
-- `ui/app_root_controller.py`
-- `MainShellViewActions` (wrapper de callbacks ya no necesario)
+- `ConfirmationViewState`
+- `EntryFormViewState`
+- `SessionFormViewState`
+- `WeekNotesEditorViewState`
 
-## 6) Regla de runtime declarativo en Flet
+Estos contratos permiten reemplazar modales imperativos por edición/confirmación
+declarativa renderizada en el panel central.
 
-1. El entrypoint monta la UI con `page.render(build_app_root, page)`.
-2. `build_app_root` es un componente con `@ft.component`.
-3. El estado de pantalla se construye con `ft.use_state(MainShellState.create(...))`.
-4. No se usa `page.update()` ni `control.update()` en la capa `ui/`.
+## 6) Cobertura funcional recuperada en `state.py`
 
-## 7) Convención declarativa ligera (proyecto)
+- Lecturas: `load_main_screen_snapshot`, `read_q5_entries_for_selected_week`,
+  `read_entry_by_ref`, `read_q8_sessions_for_entry`.
+- Writes:
+  - campaña: `extend_years_plus_one`
+  - week: `update_week_notes`, `close_week`, `reopen_week`, `reclose_week`
+  - session: `start_session`, `stop_session`, `manual_create_session`,
+    `manual_update_session`, `manual_delete_session`
+  - entry: `create_entry`, `update_entry`, `delete_entry`,
+    `reorder_entry_within_week`
+  - resources: `replace_entry_resource_deltas`
+- Reglas de consistencia:
+  - visor sticky separado de navegación temporal
+  - protección de borrador sucio antes de cambios de contexto
+  - refresh selectivo Q5/Q8 tras operaciones
+  - flags `*_write_pending` + errores por dominio
 
-1. `model.py`: `dataclass` de datos de vista o datos de dominio reutilizables.
-2. `state.py`: `@ft.observable` + handlers de UI + orquestación de pantalla.
-3. `view.py`: render puro y binding directo a handlers del estado (sin lambdas de interacción).
-4. Si una mutación no reasigna campos observables (mutación anidada), usar `state.notify()`.
-5. Evitar clases intermedias de callbacks salvo necesidad real de desacople.
-6. Mantener archivos pequeños: si `state.py` o `view.py` crece demasiado, extraer helpers por sección sin romper API pública del feature.
+## 7) Guardrails de arquitectura
+
+1. Runtime declarativo obligatorio (`page.render` + `@ft.component` en root).
+1. Estado observable único de pantalla (`MainShellState`).
+1. Binding directo desde vista a handlers del estado.
+1. No usar `page.update()` ni `control.update()` en capa `ui`.

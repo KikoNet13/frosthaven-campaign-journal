@@ -5,7 +5,6 @@ from .firestore_client import (
     FirestoreReadError,
     build_firestore_client,
 )
-from .firestore_placeholder import describe_firestore_status
 from .campaign_writes import (
     CampaignWriteResult,
     extend_years_plus_one,
@@ -83,7 +82,6 @@ __all__ = [
     "close_week",
     "create_entry",
     "delete_entry",
-    "describe_firestore_status",
     "extend_years_plus_one",
     "load_main_screen_snapshot",
     "manual_create_session",

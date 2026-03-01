@@ -6,7 +6,7 @@
 - `purpose`: Contrato operativo de trabajo entre IA y humano.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-02-25
+- `last_updated`: 2026-03-01
 - `next_review`: 2026-03-11
 
 ## Propósito
@@ -31,8 +31,9 @@ La prioridad es mantener un flujo profesional, trazable y sencillo.
   registradas en documentación oficial; las de diseño requieren aprobación
   explícita de Kiko.
 - La documentación oficial vive en `AGENTS.md`, `docs/` y `learning/`.
-- `summary_initial_conversation.txt`, `tdd.md`, `important.txt` y `neil.txt`
-  son legado temporal.
+- Los documentos legacy de arranque (`summary_initial_conversation.txt`,
+  `tdd.md`, `important.txt`, `neil.txt`) fueron retirados del repo el
+  `2026-03-01`; su trazabilidad histórica se conserva en `docs/decision-log.md`.
 - Si hay conflicto entre legado y oficial, prevalece lo oficial.
 - Descripciones en castellano.
 - Identificadores técnicos en inglés cuando aplique.
@@ -193,4 +194,4 @@ manualmente o mediante GitHub Actions al crear tags de release.
 
 ## Nota de legado
 
-El legado temporal se mantiene hasta completar dos hitos verificados con éxito.
+El legado textual inicial ya fue retirado del árbol activo.

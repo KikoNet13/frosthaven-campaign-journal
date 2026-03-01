@@ -6,7 +6,7 @@
 - `purpose`: Gobierno de contexto, gate de calidad y estado verificable.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-02-26
+- `last_updated`: 2026-03-01
 - `next_review`: 2026-03-12
 
 ## Alcance de Fase 0
@@ -201,7 +201,12 @@ Se valida:
   - Destino: `AGENTS.md`, `docs/context-checklists.md`.
 - `tdd.md`
   - Migrado: contexto de producto para Fase 1.
-  - Destino: referencia en `docs/system-map.md`.
+  - Destino: decisión documental y trazabilidad histórica.
+
+### Estado actual de legacy textual
+
+- Los archivos legacy de arranque fueron retirados del repo activo el `2026-03-01`.
+- Las referencias históricas permanecen únicamente en `docs/decision-log.md`.
 
 ## Decisiones de producto pospuestas a Fase 1
 

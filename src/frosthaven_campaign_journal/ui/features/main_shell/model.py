@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Literal
 
-from frosthaven_campaign_journal.state.placeholders import (
+from frosthaven_campaign_journal.state.models import (
     EntryRef,
+    EntrySummary,
     MainScreenLocalState,
-    MockEntry,
-    MockWeek,
     ViewerSessionItem,
+    WeekSummary,
 )
 
 
@@ -15,9 +16,9 @@ from frosthaven_campaign_journal.state.placeholders import (
 class MainShellViewData:
     state: MainScreenLocalState
     years: list[int]
-    weeks_for_selected_year: list[MockWeek]
-    entries_for_selected_week: list[MockEntry]
-    viewer_entry: MockEntry | None
+    weeks_for_selected_year: list[WeekSummary]
+    entries_for_selected_week: list[EntrySummary]
+    viewer_entry: EntrySummary | None
     viewer_sessions: list[ViewerSessionItem]
     entries_panel_error_message: str | None
     viewer_sessions_error_message: str | None
@@ -41,3 +42,42 @@ class MainShellViewData:
     read_error_message: str | None
     read_warning_message: str | None
     env_name: str
+    info_message: str | None
+    confirmation: "ConfirmationViewState | None"
+    entry_form: "EntryFormViewState | None"
+    session_form: "SessionFormViewState | None"
+    week_notes_editor: "WeekNotesEditorViewState | None"
+
+
+@dataclass(frozen=True)
+class ConfirmationViewState:
+    key: str
+    title: str
+    body: str
+    confirm_label: str
+
+
+@dataclass(frozen=True)
+class EntryFormViewState:
+    mode: Literal["create", "edit"]
+    entry_type: str
+    scenario_ref_text: str
+    error_message: str | None
+
+
+@dataclass(frozen=True)
+class SessionFormViewState:
+    mode: Literal["create", "edit"]
+    session_id: str | None
+    started_date_local: str
+    started_time_local: str
+    ended_date_local: str
+    ended_time_local: str
+    active_without_end: bool
+    error_message: str | None
+
+
+@dataclass(frozen=True)
+class WeekNotesEditorViewState:
+    notes_value: str
+    error_message: str | None

@@ -6,7 +6,7 @@
 - `purpose`: Checklist técnico base para preparar la implementación del MVP con orden, dependencias y verificación mínima.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-02-27
+- `last_updated`: 2026-03-01
 - `next_review`: 2026-03-13
 
 ## Objetivo
@@ -243,10 +243,10 @@ Usar esta plantilla mínima en cada issue/bloque del checklist:
 - [x] Completar selección temporal y feedback semanal en UI (Issue #86)
 - [x] Simplificar complejidad accidental en `app_root`/`main_shell_view`/placeholders (Issue #90)
 - [x] Refactor declarativo completo (MVU) de Main Shell en estructura feature-first (Issue #92)
+- [x] Recuperación funcional pre-#94 sobre MVS declarativo (Q1..Q8 + writes de panel central)
 
 ### Próximas unidades propuestas (sin issue abierta)
 
-- [ ] `U3-panel-actions-real-handlers`: conectar acciones principales del panel central (`start`, `stop`, `add session`, `delete entry`) con handlers reales y mensajes de error básicos.
 - [ ] `U4-mobile-robustness-min`: robustez móvil mínima (`portrait` + `landscape`) para barra temporal y panel central con validación visual rápida.
 - [ ] `U5-read-write-vertical-slice`: cerrar vertical read/write MVP de una operación completa (crear sesión + impacto en recursos + refresco visible en pantalla principal).
 
@@ -254,7 +254,6 @@ Al priorizar una unidad, abrir primero su issue y sustituir el identificador `U*
 
 #### Orden recomendado inmediato
 
-1. `U3-panel-actions-real-handlers`
 1. `U4-mobile-robustness-min`
 1. `U5-read-write-vertical-slice`
 

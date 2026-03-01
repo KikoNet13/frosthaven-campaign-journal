@@ -1,1 +1,1 @@
-"""Adapters between app layers and domain contracts (placeholders)."""
+"""Adapters between app layers and domain contracts."""

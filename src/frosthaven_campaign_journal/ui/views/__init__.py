@@ -1,3 +1,3 @@
-"""Legacy views package (kept for non-main-shell placeholders)."""
+"""Legacy views package kept for backward-compatible imports only."""
 
 __all__: list[str] = []

@@ -1,29 +1,28 @@
-# Frosthaven Campaign Journal
+﻿# Frosthaven Campaign Journal
 
-Aplicación de apoyo para campaña de Frosthaven con enfoque en dos objetivos:
+Aplicación de apoyo para campaña de Frosthaven con foco en:
 
-1. Simplificar el registro de recursos de campaña.
-1. Aprender un flujo profesional de trabajo con agentes IA.
+1. Registro fiable de recursos, weeks, entries y sesiones.
+1. Flujo de trabajo profesional con trazabilidad técnica.
 
 ## Estado del proyecto
 
-- Fase actual: bootstrap de organización y contexto.
-- Implementación de app: pendiente.
-- Stack objetivo: Flet (Python) + Firestore.
+- Estado: implementación activa del MVP.
+- UI: arquitectura declarativa MVS (`model/state/view`) con Flet.
+- Datos: Firestore real (sin fallback automático a mocks).
 
 ## Estructura del repositorio
 
 - `AGENTS.md`: contrato operativo de trabajo.
-- `docs/`: documentación operativa del proyecto.
-- `learning/`: guías de aprendizaje reutilizables.
-- `summary_initial_conversation.txt`, `important.txt`, `neil.txt`, `tdd.md`:
-  legado de arranque y contexto inicial.
+- `docs/`: documentación oficial operativa.
+- `learning/`: guías reutilizables de aprendizaje.
+- `src/`: código de aplicación.
 
 ## Flujo de trabajo GitHub (resumen)
 
 - Modelo: GitHub Flow minimalista.
 - Tareas: GitHub Issues como fuente principal.
-- Commits: Conventional Commits en español.
+- Commits: Conventional Commits en castellano.
 - Ramas: `tipo/<issue-id>-slug`.
 - PR: obligatoria en cambios relevantes.
 - Cambios triviales: se permite `main` directo.
@@ -40,10 +39,8 @@ Aplicación de apoyo para campaña de Frosthaven con enfoque en dos objetivos:
 - [Gobierno de contexto](docs/context-governance.md)
 - [Flujo de repositorio](docs/repo-workflow.md)
 - [Guía de contribución](CONTRIBUTING.md)
-- [Handbook de contexto](learning/handbook.md)
-- [Handbook de flujo Git](learning/git-workflow-handbook.md)
 
-## Arranque local del bootstrap de app (`#51`)
+## Arranque local
 
 Requisitos:
 
@@ -54,14 +51,9 @@ Comandos:
 
 ```powershell
 pipenv --python 3.12
-pipenv install flet
-pipenv run flet run src/main.py
+pipenv install
+pipenv run flet run src/main.py --web -d -r --port 8550 --host 127.0.0.1
 ```
-
-Notas:
-
-- Este slice no integra aún Firestore (solo placeholders de configuración).
-- `pyproject.toml` se pospone a una issue posterior de build/publicación.
 
 ## Licencia
 

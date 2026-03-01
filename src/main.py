@@ -11,7 +11,6 @@ APP_TITLE = "Frosthaven Campaign Journal"
 def main(page: ft.Page) -> None:
     page.title = APP_TITLE
     page.padding = 0
-    page.scroll = ft.ScrollMode.HIDDEN
     page.horizontal_alignment = ft.CrossAxisAlignment.STRETCH
     page.vertical_alignment = ft.MainAxisAlignment.START
     page.render(build_app_root, page)

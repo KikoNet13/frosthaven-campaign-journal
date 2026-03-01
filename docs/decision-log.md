@@ -6,7 +6,7 @@
 - `purpose`: Registrar decisiones con trazabilidad y precedencia.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-02-28
+- `last_updated`: 2026-03-01
 - `next_review`: 2026-03-12
 
 ## Formato canónico por entrada
@@ -902,3 +902,59 @@
   `src/frosthaven_campaign_journal/ui/features/main_shell/state.py`,
   `src/frosthaven_campaign_journal/ui/app_root.py`,
   `docs/ui-main-shell-architecture-mvs.md`
+
+### DEC-0041
+
+- `date`: 2026-03-01
+- `status`: accepted
+- `problem`: el refactor `#94` simplificó la estructura `main_shell` pero dejó
+  una regresión funcional severa: se perdió wiring real de Firestore
+  (lecturas/escrituras) y gran parte del panel central operativo.
+- `decision`: recuperar la paridad funcional pre-`#94` sobre arquitectura
+  declarativa MVS, manteniendo `page.render(...)`, `@ft.component` en root,
+  `@ft.observable` en estado y sin reintroducir `page.update()` ni
+  `control.update()` en `src/.../ui`.
+- `rationale`: restaura valor funcional del MVP sin volver al patrón híbrido
+  imperativo ni reabrir capas eliminadas (`dispatcher/reducer/effects`).
+- `impact`: `model.py` amplía contrato de vista con estado declarativo de
+  confirmaciones/formularios; `state.py` reintegra Q1..Q8 y operaciones de
+  campaña/week/session/entry/resources con handlers directos; `view.py`
+  recupera panel central funcional (modo vacío/week/entry, sesiones, recursos,
+  acciones y editores inline).
+- `references`: `src/main.py`,
+  `src/frosthaven_campaign_journal/ui/app_root.py`,
+  `src/frosthaven_campaign_journal/ui/features/main_shell/model.py`,
+  `src/frosthaven_campaign_journal/ui/features/main_shell/state.py`,
+  `src/frosthaven_campaign_journal/ui/features/main_shell/view.py`,
+  `docs/ui-main-shell-architecture-mvs.md`,
+  `docs/mvp-implementation-checklist.md`,
+  `docs/mvp-implementation-blocks.md`
+
+### DEC-0042
+
+- `date`: 2026-03-01
+- `status`: accepted
+- `problem`: tras recuperar la funcionalidad real, seguían rastros de etapa
+  bootstrap (`Mock*`, módulos `placeholders` y archivos legacy de arranque)
+  que añadían ruido semántico y deuda de mantenimiento.
+- `decision`: retirar del árbol activo los mocks/placeholders residuales y
+  eliminar los documentos legacy de arranque, manteniendo solo trazabilidad
+  histórica en documentación oficial.
+- `rationale`: reduce ambigüedad entre runtime real y artefactos de
+  preparación, simplifica imports/modelos y evita depender de fuentes no
+  canónicas ya migradas.
+- `impact`: se reemplaza `state/placeholders.py` por `state/models.py`,
+  `main_shell` y `data` consumen tipos neutrales (`EntrySummary`,
+  `WeekSummary`); se eliminan `data/firestore_placeholder.py` y
+  `domain_adapters/placeholders.py`; y se retiran
+  `summary_initial_conversation.txt`, `tdd.md`, `important.txt`, `neil.txt`.
+- `references`: `src/frosthaven_campaign_journal/state/models.py`,
+  `src/frosthaven_campaign_journal/state/__init__.py`,
+  `src/frosthaven_campaign_journal/data/__init__.py`,
+  `src/frosthaven_campaign_journal/ui/features/main_shell/model.py`,
+  `src/frosthaven_campaign_journal/ui/features/main_shell/state.py`,
+  `src/frosthaven_campaign_journal/ui/features/main_shell/view.py`,
+  `AGENTS.md`,
+  `README.md`,
+  `docs/system-map.md`,
+  `docs/context-governance.md`

@@ -13,7 +13,7 @@ from frosthaven_campaign_journal.data.write_errors import (
     FirestoreValidationError,
     FirestoreWriteError,
 )
-from frosthaven_campaign_journal.state.models import EntryRef
+from frosthaven_campaign_journal.models import EntryRef
 
 
 CAMPAIGN_ID = "01"

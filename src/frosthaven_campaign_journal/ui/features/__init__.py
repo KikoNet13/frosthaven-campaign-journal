@@ -1,2 +1,0 @@
-"""Feature-first UI modules."""
-

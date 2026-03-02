@@ -2,8 +2,7 @@ from __future__ import annotations
 
 import flet as ft
 
-from frosthaven_campaign_journal.ui.features.main_shell.state import MainShellState
-from frosthaven_campaign_journal.ui.features.main_shell.view import build_main_shell_view
+from frosthaven_campaign_journal.ui.main_shell import MainShellState, build_main_shell_view
 
 
 @ft.component

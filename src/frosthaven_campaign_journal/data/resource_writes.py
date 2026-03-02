@@ -12,7 +12,7 @@ from frosthaven_campaign_journal.data.write_errors import (
     FirestoreValidationError,
     FirestoreWriteError,
 )
-from frosthaven_campaign_journal.state.models import EntryRef
+from frosthaven_campaign_journal.models import EntryRef
 
 
 CAMPAIGN_ID = "01"
@@ -182,7 +182,7 @@ def replace_entry_resource_deltas(
             raise FirestoreTransitionInvalidError("La entry ya no existe.")
         campaign_snapshot = _get_doc_snapshot(txn, campaign_doc_ref)
         if not campaign_snapshot.exists:
-            raise FirestoreConflictError("La campaÃ±a ya no existe. Pulsa Refresh y reintenta.")
+            raise FirestoreConflictError("La campaña ya no existe. Pulsa Refresh y reintenta.")
 
         entry_data = entry_snapshot.to_dict() or {}
         campaign_data = campaign_snapshot.to_dict() or {}
@@ -196,7 +196,7 @@ def replace_entry_resource_deltas(
             field_label="campaign.resource_totals",
         )
 
-        # Preservar cualquier clave fuera del catÃ¡logo MVP para no borrar datos inesperados.
+        # Preservar cualquier clave fuera del catálogo MVP para no borrar datos inesperados.
         current_entry_supported = {
             key: value for key, value in current_entry_deltas.items() if key in RESOURCE_KEYS
         }
@@ -226,7 +226,7 @@ def replace_entry_resource_deltas(
             next_campaign_total = current_campaign_total + delta_to_apply
             if next_campaign_total < 0:
                 raise FirestoreValidationError(
-                    f"La operaciÃ³n dejarÃ­a `campaign.resource_totals[{resource_key}]` en negativo."
+                    f"La operación dejaría `campaign.resource_totals[{resource_key}]` en negativo."
                 )
 
             changed_totals_after[resource_key] = next_campaign_total
@@ -344,3 +344,5 @@ def _map_firestore_write_exception(exc: Exception) -> None:
             "La operación de escritura entró en conflicto. Pulsa Refresh y reintenta."
         ) from exc
     raise FirestoreWriteError(f"Error de escritura en Firestore: {exc}") from exc
+
+

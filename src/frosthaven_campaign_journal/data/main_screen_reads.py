@@ -8,7 +8,7 @@ from google.cloud import firestore
 from google.cloud.firestore_v1.base_query import FieldFilter
 
 from frosthaven_campaign_journal.data.firestore_client import FirestoreReadError
-from frosthaven_campaign_journal.state.models import EntryRef
+from frosthaven_campaign_journal.models import EntryRef
 
 
 CAMPAIGN_ID = "01"

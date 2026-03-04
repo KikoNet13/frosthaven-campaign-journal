@@ -28,6 +28,7 @@ from .entry_writes import (
     delete_entry,
     reorder_entry_within_week,
     update_entry,
+    update_entry_notes,
 )
 from .resource_writes import (
     ResourceBulkWriteResult,
@@ -97,5 +98,6 @@ __all__ = [
     "start_session",
     "stop_session",
     "update_entry",
+    "update_entry_notes",
     "update_week_notes",
 ]

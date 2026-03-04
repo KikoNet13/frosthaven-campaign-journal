@@ -6,7 +6,7 @@
 - `purpose`: Mapa navegable de la documentación oficial y su trazabilidad.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-03-01
+- `last_updated`: 2026-03-04
 - `next_review`: 2026-03-15
 
 ## Objetivo
@@ -31,6 +31,8 @@ Este documento permite entender rápidamente:
   - Flujo Git/GitHub del repo.
 - `docs/domain-glossary.md`
   - Contrato de modelo de dominio e invariantes.
+- `docs/resource-ui-catalog.md`
+  - Catálogo UI de recursos (EN->ES), agrupación y mapeo de iconos.
 - `docs/sync-strategy.md`
   - Estrategia de sincronización MVP.
 - `docs/conflict-policy.md`

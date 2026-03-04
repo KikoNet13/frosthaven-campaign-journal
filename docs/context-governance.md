@@ -6,8 +6,8 @@
 - `purpose`: Gobierno de contexto, gate de calidad y estado verificable.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-03-01
-- `next_review`: 2026-03-12
+- `last_updated`: 2026-03-02
+- `next_review`: 2026-03-13
 
 ## Alcance de Fase 0
 
@@ -186,6 +186,32 @@ Se valida:
   - Se adopta modo `development_first_light_context`.
   - La documentación pasa a criterio de soporte a implementación, no de protagonismo.
   - Se mantiene trazabilidad mínima profesional (issue/commit/PR) para cambios no triviales.
+
+### Hito H1-06
+
+- Fecha: 2026-03-02
+- Objetivo: rediseñar la selección de entries en el visor central para flujo
+  semanal con tiles y acciones icon-only, eliminando el sticky del visor.
+- Resultado: completado
+- Verificación A: aprobado (cambios aplicados en modelo, estado, lecturas/escrituras y vistas del `main_shell`)
+- Verificación B: aprobado (validación técnica con compilación completa de `src/frosthaven_campaign_journal`)
+- Evidencia:
+  - `src/frosthaven_campaign_journal/models/__init__.py`
+  - `src/frosthaven_campaign_journal/data/main_screen_reads.py`
+  - `src/frosthaven_campaign_journal/data/entry_writes.py`
+  - `src/frosthaven_campaign_journal/ui/main_shell/state/navigation.py`
+  - `src/frosthaven_campaign_journal/ui/main_shell/state/week_entry_resources.py`
+  - `src/frosthaven_campaign_journal/ui/main_shell/view/center_focus.py`
+  - `src/frosthaven_campaign_journal/ui/main_shell/view/center_forms.py`
+  - `src/frosthaven_campaign_journal/ui/main_shell/view/shell_view.py`
+  - `docs/domain-glossary.md`
+  - `docs/firestore-operation-contract.md`
+  - `docs/decision-log.md` (DEC-0043)
+- Resumen:
+  - Semana seleccionada => listado de entries en visor central.
+  - Cada tile expone `subir/bajar/eliminar/editar notas` por icono.
+  - Se añade persistencia de `Entry.notes` y `Entry.scenario_outcome` (read-only en UI para outcome).
+  - Se elimina selector externo de entries y comportamiento sticky al cambiar semana/año.
 
 
 ## Conocimiento migrado desde legado

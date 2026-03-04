@@ -6,7 +6,7 @@
 - `purpose`: Registrar decisiones con trazabilidad y precedencia.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-03-01
+- `last_updated`: 2026-03-04
 - `next_review`: 2026-03-12
 
 ## Formato canónico por entrada
@@ -958,3 +958,64 @@
   `README.md`,
   `docs/system-map.md`,
   `docs/context-governance.md`
+
+### DEC-0043
+
+- `date`: 2026-03-02
+- `status`: accepted
+- `problem`: el selector de entries fuera del visor central y el comportamiento
+  sticky del visor al cambiar de semana generaban una UX poco coherente con el
+  objetivo de foco semanal y edición rápida por entry.
+- `decision`: mover la selección/gestión de entries al visor central con
+  listado vertical por semana y acciones por icono en cada tile
+  (`subir/bajar/eliminar/editar notas`), eliminar la barra externa de entries y
+  retirar el sticky del visor al cambiar de semana o año. Además, extender el
+  modelo de `Entry` con `notes` y `scenario_outcome` (`victory|defeat|null`),
+  dejando `scenario_outcome` en modo solo lectura en UI en esta iteración.
+- `rationale`: simplifica el flujo mental (semana -> entries -> entry),
+  reduce navegación lateral redundante y habilita edición rápida de notas sin
+  abrir la vista completa de entry.
+- `impact`: se actualizan lecturas/escrituras para persistir `notes` y
+  `scenario_outcome`; se añade `update_entry_notes`; se rediseña `center_focus`
+  con tiles semanales y acciones icon-only; y se alinea documentación de dominio
+  y contrato Firestore con el nuevo alcance.
+- `references`: `src/frosthaven_campaign_journal/models/__init__.py`,
+  `src/frosthaven_campaign_journal/data/main_screen_reads.py`,
+  `src/frosthaven_campaign_journal/data/entry_writes.py`,
+  `src/frosthaven_campaign_journal/ui/main_shell/state/navigation.py`,
+  `src/frosthaven_campaign_journal/ui/main_shell/state/week_entry_resources.py`,
+  `src/frosthaven_campaign_journal/ui/main_shell/view/center_focus.py`,
+  `src/frosthaven_campaign_journal/ui/main_shell/view/shell_view.py`,
+  `docs/domain-glossary.md`,
+  `docs/firestore-operation-contract.md`
+
+### DEC-0044
+
+- `date`: 2026-03-04
+- `status`: accepted
+- `problem`: la UI de recursos del visor y la barra inferior seguía orientada a
+  un subconjunto reducido y no tenía catálogo único reusable para 12 claves,
+  iconografía oficial ni layout agrupado estable en móvil.
+- `decision`: unificar catálogo de recursos del runtime en una fuente única
+  compartida de 12 claves (`resource_catalog`), introducir control reusable de
+  fila de delta para edición por entry, rediseñar barra inferior con 4 columnas
+  fijas y scroll horizontal, y fijar oficialmente mapeo EN->ES + assets en
+  `docs/resource-ui-catalog.md`.
+- `rationale`: reduce duplicidad entre dominio/UI/writes, facilita evolución de
+  controles reusables en modo declarativo Flet y deja trazabilidad explícita de
+  nomenclatura/iconos alineada con el glosario del MVP.
+- `impact`: `ENTRY_RESOURCE_KEYS` pasa a depender de catálogo único de 12
+  claves; validación de writes de recursos usa la misma fuente; el editor de
+  recursos renderiza 12 filas agrupadas con total proyectado; la barra inferior
+  muestra siempre los 12 totales guardados con icono y nombre completo; se
+  oficializa carpeta `assets/resource-icons/` y se añaden iconos de
+  `inspiration`, `morale` y `soldiers` en SVG+PNG.
+- `references`: `src/frosthaven_campaign_journal/resource_catalog.py`,
+  `src/frosthaven_campaign_journal/models/__init__.py`,
+  `src/frosthaven_campaign_journal/data/resource_writes.py`,
+  `src/frosthaven_campaign_journal/ui/main_shell/view/resource_delta_row.py`,
+  `src/frosthaven_campaign_journal/ui/main_shell/view/center_focus.py`,
+  `src/frosthaven_campaign_journal/ui/main_shell/view/status_bar.py`,
+  `assets/resource-icons/`,
+  `docs/resource-ui-catalog.md`,
+  `docs/domain-glossary.md`

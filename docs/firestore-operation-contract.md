@@ -6,8 +6,8 @@
 - `purpose`: Definir el contrato documental de operaciones de escritura por agregado del MVP (precondiciones, validaciones, rechazos y postcondiciones), alineado con sincronización, conflictos, temporalidad y editabilidad.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-02-24
-- `next_review`: 2026-03-10
+- `last_updated`: 2026-03-02
+- `next_review`: 2026-03-16
 
 ## Objetivo
 
@@ -82,6 +82,7 @@ No incluye:
 - `entry`
   - `Entry.create`
   - `Entry.update`
+  - `Entry.update_notes`
   - `Entry.delete`
   - `Entry.reorder_within_week`
   - `Entry.adjust_resource_delta`
@@ -115,6 +116,7 @@ No incluye:
 | `Week.update_notes` | `week` | `week` | `simple` | edición de notas | `activa` | `#8`, `#37` | permitido en `open|closed` |
 | `Entry.create` | `entry` | `entry`, `week` | `compuesta` | creación manual de entry | `activa` | `#37`, glosario | auto-normaliza `order_index` si detecta secuencia inconsistente |
 | `Entry.update` | `entry` | `entry` | `simple` | edición manual de entry | `activa` | `#37`, glosario | alcance amplio; sin mover de `Week` |
+| `Entry.update_notes` | `entry` | `entry` | `simple` | edición rápida de notas de entry | `activa` | `#37`, glosario | permitido en `open|closed`; no cambia tipo/orden |
 | `Entry.delete` | `entry` | `entry`, `session`, `campaign` | `compuesta` | borrado manual de entry | `activa` | glosario, `#37`, `#40` | hard delete real; auto-stop si entry activa; elimina `resource_deltas` con la entry |
 | `Entry.reorder_within_week` | `entry` | `entry`, `week` | `compuesta` | mover una entry en la misma week | `activa` | `#8`, `#37` | resecuencia densa `1..N` |
 | `Entry.adjust_resource_delta` | `entry` | `entry`, `campaign` | `compuesta` | tap `+/-` de recurso en una entry | `activa` | `#8`, `#37`, `#40`, glosario | ajusta delta neto en `Entry.resource_deltas` y valida totales |
@@ -139,6 +141,7 @@ No incluye:
 | `Week.update_notes` | week existe | base de `updated_at_utc`/versión no obsoleta | edición de texto válida; permitido en `open|closed` | `notes` actualizadas | base obsoleta; payload inválido | `conflicto` / `validacion` | una actualización simple | `refrescar + reingresar cambios` si conflicto; error local si payload inválido | sin LWW |
 | `Entry.create` | week existe; ownership por ruta válido | base de orden (`entries` de la week) no obsoleta para inserción | `Entry.type` válido; `scenario_ref` obligatorio si `scenario`; si secuencia `order_index` inconsistente, auto-normalizar denso `1..N` antes/asociado a inserción | nueva entry creada con `order_index` válido y secuencia consistente | payload inválido; week inexistente; base obsoleta no resoluble | `validacion` / `conflicto` | normalización de orden + creación forman operación lógica única | error local si payload inválido; `refrescar + reintentar` si conflicto | permitido en week `open|closed` |
 | `Entry.update` | entry existe | base de entry no obsoleta | edición amplia de campos funcionales; `scenario_ref` consistente; no cambiar de `Week` | entry actualizada en la misma week | payload inválido; intento de mover de week; base obsoleta | `validacion` / `conflicto` | actualización simple | error local si validación; `refrescar + reintentar` si conflicto | sin reparenting |
+| `Entry.update_notes` | entry existe | base de entry no obsoleta | `notes` es string; permitido en `open|closed` | notas de entry actualizadas sin modificar tipo/orden | payload inválido; base obsoleta | `validacion` / `conflicto` | actualización simple | error local si validación; `refrescar + reintentar` si conflicto | operación enfocada para edición rápida en listado semanal |
 | `Entry.delete` | entry existe | base de entry e hijos relevantes no obsoletas | hard delete; si entry activa, `auto-stop`; borrado de `sessions`; eliminación implícita de `resource_deltas` con la `Entry` | entry eliminada con sus `sessions` y `resource_deltas`; no queda sesión activa asociada a esa entry | entry ya borrada; base obsoleta; cascada inválida por conflicto | `transicion_invalida` / `conflicto` | auto-stop + borrado de hijos + borrado de entry se tratan como operación lógica única | error local si ya no existe; `refrescar + reintentar` si conflicto | hard delete real (sin soft delete funcional) |
 | `Entry.reorder_within_week` | entry existe y pertenece a la week objetivo; misma week | base del orden de la week no obsoleta | posición destino válida; resecuencia densa `1..N`; no mover entre weeks | orden de entries de la week queda consistente | entry inexistente; week inconsistente; base obsoleta | `validacion` / `conflicto` | mover + resecuencia como operación lógica única | error local si validación; `refrescar + reintentar` si conflicto | permitido en week `open|closed` |
 | `Entry.adjust_resource_delta` | entry existe; `resource_key` pertenece al catálogo MVP | base de entry y `resource_totals` relevantes no obsoletas | ajuste entero firmado; cálculo de delta neto; eliminar clave si resultado `0`; totales finales no negativos | `Entry.resource_deltas` actualizado (neto); `campaign.resource_totals` consistente | `resource_key` inválida; payload inválido; totales negativos; base obsoleta | `validacion` / `conflicto` | recálculo de totales + actualización de `Entry.resource_deltas` como operación lógica única | error local si validación; `refrescar + reintentar` si conflicto | permitido en week `open|closed`; no crea log incremental |
@@ -227,6 +230,8 @@ Operaciones compuestas mínimas:
 1. `Session.manual_update` no permite reparenting.
 1. `Entry.create` auto-normaliza `order_index` cuando detecta secuencia
    inconsistente.
+1. `Entry.update_notes` permite editar notas de `Entry` sin cambiar
+   `type/scenario_ref/order_index`.
 1. `Entry.reorder_within_week` funciona también en weeks `closed` y resecuencia
    a `1..N`.
 1. Las operaciones de recursos del contrato se expresan sobre

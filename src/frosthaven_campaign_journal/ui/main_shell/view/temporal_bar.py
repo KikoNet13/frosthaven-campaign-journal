@@ -3,23 +3,30 @@ from __future__ import annotations
 import flet as ft
 
 from frosthaven_campaign_journal.models import WeekSummary
-from frosthaven_campaign_journal.ui.main_shell.model import MainShellViewData
-from frosthaven_campaign_journal.ui.main_shell.state import MainShellState
-from frosthaven_campaign_journal.ui.main_shell.view.theme import (
+from frosthaven_campaign_journal.ui.common.components import LabeledGroupBox
+from frosthaven_campaign_journal.ui.common.theme.colors import (
     COLOR_ERROR_TEXT,
+    COLOR_SEASON_LABEL_BG,
+    COLOR_SEASON_LABEL_BORDER,
+    COLOR_SEASON_LABEL_TEXT,
+    COLOR_TOP_BAR_TEXT,
     COLOR_TEXT_MUTED,
     COLOR_TEXT_PRIMARY,
     COLOR_TOP_NAV_BUTTON_BG,
     COLOR_TOP_NAV_BUTTON_DISABLED_BG,
+    COLOR_TOP_NAV_BUTTON_TEXT_DISABLED,
     COLOR_WEEK_BLOCK_BORDER,
     COLOR_WEEK_BLOCK_SUMMER_BG,
     COLOR_WEEK_BLOCK_WINTER_BG,
     COLOR_WEEK_TILE_BG,
     COLOR_WEEK_TILE_CLOSED_BG,
+    COLOR_WEEK_TILE_CLOSED_TEXT,
+    COLOR_WEEK_TILE_SELECTED_BG,
     COLOR_WEEK_TILE_SELECTED_BORDER,
-    COLOR_TEXT_DIMMED,
     COLOR_WHITE,
 )
+from frosthaven_campaign_journal.ui.main_shell.model import MainShellViewData
+from frosthaven_campaign_journal.ui.main_shell.state import MainShellState
 
 
 def build_top_temporal_bar(data: MainShellViewData, state: MainShellState) -> ft.Control:
@@ -76,6 +83,7 @@ def build_top_temporal_bar(data: MainShellViewData, state: MainShellState) -> ft
                     disabled=data.campaign_write_pending,
                     on_select_week_click=state.on_select_week_click,
                     block_bgcolor=COLOR_WEEK_BLOCK_SUMMER_BG,
+                    season_label="Verano",
                 )
             )
         if winter_weeks:
@@ -86,6 +94,7 @@ def build_top_temporal_bar(data: MainShellViewData, state: MainShellState) -> ft
                     disabled=data.campaign_write_pending,
                     on_select_week_click=state.on_select_week_click,
                     block_bgcolor=COLOR_WEEK_BLOCK_WINTER_BG,
+                    season_label="Invierno",
                 )
             )
 
@@ -105,7 +114,7 @@ def build_top_temporal_bar(data: MainShellViewData, state: MainShellState) -> ft
                 year_title,
                 size=42,
                 weight=ft.FontWeight.BOLD,
-                color=COLOR_TEXT_PRIMARY,
+                color=COLOR_TOP_BAR_TEXT,
             ),
             _build_year_nav_button(right_year_label, right_year_action),
         ],
@@ -121,7 +130,7 @@ def build_top_temporal_bar(data: MainShellViewData, state: MainShellState) -> ft
                 year_group,
                 ft.Container(
                     expand=True,
-                    clip_behavior=ft.ClipBehavior.HARD_EDGE,
+                    clip_behavior=ft.ClipBehavior.NONE,
                     content=week_strip_content,
                 ),
             ],
@@ -146,12 +155,10 @@ def _build_week_season_block(
     disabled: bool,
     on_select_week_click: ft.OptionalEventCallable["ControlEvent"],
     block_bgcolor: str,
+    season_label: str,
 ) -> ft.Control:
-    return ft.Container(
-        bgcolor=block_bgcolor,
-        border=ft.Border.all(1, COLOR_WEEK_BLOCK_BORDER),
-        border_radius=6,
-        padding=ft.Padding(left=4, top=4, right=4, bottom=4),
+    return LabeledGroupBox(
+        label=season_label,
         content=ft.Row(
             spacing=6,
             controls=[
@@ -164,6 +171,12 @@ def _build_week_season_block(
                 for week in weeks
             ],
         ),
+        bgcolor=block_bgcolor,
+        border_color=COLOR_WEEK_BLOCK_BORDER,
+        label_bgcolor=COLOR_SEASON_LABEL_BG,
+        label_border_color=COLOR_SEASON_LABEL_BORDER,
+        label_text_color=COLOR_SEASON_LABEL_TEXT,
+        padding=ft.Padding(left=4, top=8, right=4, bottom=4),
     )
 
 
@@ -184,7 +197,7 @@ def _build_year_nav_button(
             label,
             size=16 if is_extended_label else 24,
             weight=ft.FontWeight.BOLD,
-            color=COLOR_WHITE if enabled else "#ECEBFF",
+            color=COLOR_WHITE if enabled else COLOR_TOP_NAV_BUTTON_TEXT_DISABLED,
         ),
     )
 
@@ -197,8 +210,11 @@ def _build_week_tile(
     on_select_week_click: ft.OptionalEventCallable["ControlEvent"],
 ) -> ft.Control:
     border = ft.Border.all(2, COLOR_WEEK_TILE_SELECTED_BORDER) if is_selected else None
-    bgcolor = COLOR_WEEK_TILE_CLOSED_BG if week.is_closed else COLOR_WEEK_TILE_BG
-    text_color = COLOR_TEXT_DIMMED if week.is_closed else COLOR_TEXT_PRIMARY
+    if is_selected:
+        bgcolor = COLOR_WEEK_TILE_SELECTED_BG
+    else:
+        bgcolor = COLOR_WEEK_TILE_CLOSED_BG if week.is_closed else COLOR_WEEK_TILE_BG
+    text_color = COLOR_WEEK_TILE_CLOSED_TEXT if week.is_closed else COLOR_TEXT_PRIMARY
     return ft.Container(
         width=46,
         height=42,

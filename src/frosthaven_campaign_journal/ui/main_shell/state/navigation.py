@@ -1,35 +1,10 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
-
 import flet as ft
 
-from frosthaven_campaign_journal.data import (
-    EntryWriteResult,
-    create_entry,
-    extend_years_plus_one,
-    manual_create_session,
-    manual_update_session,
-    reorder_entry_within_week,
-    replace_entry_resource_deltas,
-    start_session,
-    stop_session,
-    update_entry,
-    update_week_notes,
-)
-from frosthaven_campaign_journal.models import ENTRY_RESOURCE_KEYS, EntryRef, entry_ref_matches_selected_week
-from frosthaven_campaign_journal.ui.main_shell.state.types import (
-    EntryFormState,
-    SessionFormState,
-    WeekNotesEditorState,
-)
-from frosthaven_campaign_journal.ui.main_shell.state.utils import (
-    find_viewer_session_item,
-    parse_entry_form_values,
-    parse_local_datetime,
-    parse_optional_local_datetime,
-    to_local_strings,
-)
+from frosthaven_campaign_journal.data import extend_years_plus_one, manual_delete_session
+from frosthaven_campaign_journal.models import EntryRef
+
 
 class MainShellNavigationMixin:
     def initialize(self) -> None:
@@ -53,9 +28,17 @@ class MainShellNavigationMixin:
         def _action() -> None:
             self.local_state.selected_year = target_year
             self.local_state.selected_week = None
+            self.local_state.viewer_entry_ref = None
             self._clear_write_errors()
             self.entry_panel_state.entries_for_selected_week = []
             self.entry_panel_state.entries_panel_error_message = None
+            self.entry_panel_state.viewer_entry_snapshot = None
+            self.entry_panel_state.viewer_sessions = []
+            self.entry_panel_state.viewer_sessions_error_message = None
+            self.entry_panel_state.sessions_by_entry_ref = {}
+            self.entry_panel_state.sessions_error_by_entry_ref = {}
+            self.entry_notes_editor_state = None
+            self._clear_resource_draft_state()
             self._refresh_and_reload(
                 selected_year_override=self.local_state.selected_year,
                 reload_q5=False,
@@ -75,9 +58,17 @@ class MainShellNavigationMixin:
         def _action() -> None:
             self.local_state.selected_year = target_year
             self.local_state.selected_week = None
+            self.local_state.viewer_entry_ref = None
             self._clear_write_errors()
             self.entry_panel_state.entries_for_selected_week = []
             self.entry_panel_state.entries_panel_error_message = None
+            self.entry_panel_state.viewer_entry_snapshot = None
+            self.entry_panel_state.viewer_sessions = []
+            self.entry_panel_state.viewer_sessions_error_message = None
+            self.entry_panel_state.sessions_by_entry_ref = {}
+            self.entry_panel_state.sessions_error_by_entry_ref = {}
+            self.entry_notes_editor_state = None
+            self._clear_resource_draft_state()
             self._refresh_and_reload(
                 selected_year_override=self.local_state.selected_year,
                 reload_q5=False,
@@ -99,7 +90,13 @@ class MainShellNavigationMixin:
 
         def _action() -> None:
             self.local_state.selected_week = week_number
+            self.local_state.viewer_entry_ref = None
             self._clear_write_errors()
+            self.entry_panel_state.viewer_entry_snapshot = None
+            self.entry_panel_state.viewer_sessions = []
+            self.entry_panel_state.viewer_sessions_error_message = None
+            self.entry_notes_editor_state = None
+            self._clear_resource_draft_state()
             self._load_entries_for_selected_week()
 
         self._run_or_confirm_resource_draft_before_context_change(_action, action_label="cambiar de semana")
@@ -113,6 +110,7 @@ class MainShellNavigationMixin:
         def _action() -> None:
             self.local_state.viewer_entry_ref = entry_ref
             self._clear_write_errors()
+            self.entry_notes_editor_state = None
             self._load_viewer_entry_and_sessions()
 
         self._run_or_confirm_resource_draft_before_context_change(_action, action_label="cambiar de entrada")
@@ -123,7 +121,7 @@ class MainShellNavigationMixin:
             self._refresh_and_reload(
                 selected_year_override=self.local_state.selected_year,
                 reload_q5=(self.local_state.selected_week is not None),
-                reload_q8=(self.local_state.viewer_entry_ref is not None),
+                reload_q8=False,
             )
 
         self._run_or_confirm_resource_draft_before_context_change(_action, action_label="refrescar")
@@ -166,10 +164,18 @@ class MainShellNavigationMixin:
             if result is not None:
                 self.local_state.selected_year = result.new_year_number
                 self.local_state.selected_week = None
+                self.local_state.viewer_entry_ref = None
+                self.entry_panel_state.viewer_entry_snapshot = None
+                self.entry_panel_state.viewer_sessions = []
+                self.entry_panel_state.viewer_sessions_error_message = None
+                self.entry_panel_state.sessions_by_entry_ref = {}
+                self.entry_panel_state.sessions_error_by_entry_ref = {}
+                self.entry_notes_editor_state = None
+                self._clear_resource_draft_state()
                 self._refresh_and_reload(
                     selected_year_override=result.new_year_number,
                     reload_q5=False,
-                    reload_q8=(self.local_state.viewer_entry_ref is not None),
+                    reload_q8=False,
                 )
                 self.info_message = (
                     f"Año {result.new_year_number} creado "
@@ -191,8 +197,19 @@ class MainShellNavigationMixin:
             self.notify()
             return
 
-        if key == "session_delete" and isinstance(payload, str):
-            self._confirm_delete_session(payload)
+        if key == "session_delete":
+            if isinstance(payload, tuple) and len(payload) == 2 and isinstance(payload[0], EntryRef) and isinstance(payload[1], str):
+                self._run_session_write(
+                    lambda client, entry_ref: manual_delete_session(
+                        client,
+                        entry_ref=entry_ref,
+                        session_id=payload[1],
+                    ),
+                    success_message="Sesión borrada.",
+                    entry_ref=payload[0],
+                )
+            elif isinstance(payload, str):
+                self._confirm_delete_session(payload)
             self.notify()
             return
 
@@ -202,4 +219,3 @@ class MainShellNavigationMixin:
         self._clear_confirmation()
         self._clear_pending_context_action()
         self.notify()
-

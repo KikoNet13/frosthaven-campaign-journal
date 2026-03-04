@@ -4,33 +4,15 @@ from typing import Any, Callable
 
 from frosthaven_campaign_journal.config import load_settings
 from frosthaven_campaign_journal.data import (
-    CampaignWriteResult,
-    EntryWriteResult,
     FirestoreConfigError,
-    FirestoreConflictError,
     FirestoreReadError,
-    FirestoreTransitionInvalidError,
-    FirestoreValidationError,
-    FirestoreWriteError,
-    ResourceBulkWriteResult,
-    WeekWriteResult,
     build_firestore_client,
-    close_week,
-    delete_entry,
     load_main_screen_snapshot,
-    manual_delete_session,
     read_entry_by_ref,
     read_q5_entries_for_selected_week,
     read_q8_sessions_for_entry,
-    reclose_week,
-    reopen_week,
 )
-from frosthaven_campaign_journal.models import (
-    ENTRY_RESOURCE_KEYS,
-    EntryRef,
-    WeekSummary,
-    entry_ref_matches_selected_week,
-)
+from frosthaven_campaign_journal.models import EntryRef, WeekSummary, entry_ref_matches_selected_week
 from frosthaven_campaign_journal.ui.main_shell.state.types import ConfirmationState
 from frosthaven_campaign_journal.ui.main_shell.state.utils import (
     find_entry_in_list,
@@ -38,6 +20,7 @@ from frosthaven_campaign_journal.ui.main_shell.state.utils import (
     map_session_read_to_viewer_session,
     map_week_read_to_summary,
 )
+
 
 class MainShellRuntimeReadMixin:
     def _build_client(self):
@@ -54,7 +37,7 @@ class MainShellRuntimeReadMixin:
         self._load_readonly_snapshot(selected_year_override=selected_year_override)
         if reload_q5:
             self._load_entries_for_selected_week()
-        if reload_q8:
+        elif reload_q8:
             self._load_viewer_entry_and_sessions()
 
     def _load_readonly_snapshot(self, *, selected_year_override: int | None) -> bool:
@@ -88,6 +71,14 @@ class MainShellRuntimeReadMixin:
         }
         if self.local_state.selected_week is not None and self.local_state.selected_week not in visible_week_numbers:
             self.local_state.selected_week = None
+            self.local_state.viewer_entry_ref = None
+            self.entry_panel_state.viewer_entry_snapshot = None
+            self.entry_panel_state.viewer_sessions = []
+            self.entry_panel_state.viewer_sessions_error_message = None
+            self.entry_panel_state.sessions_by_entry_ref = {}
+            self.entry_panel_state.sessions_error_by_entry_ref = {}
+            self.entry_notes_editor_state = None
+            self._clear_resource_draft_state()
 
         if snapshot.active_entry is None:
             self.read_state.active_entry_ref = None
@@ -95,6 +86,9 @@ class MainShellRuntimeReadMixin:
         else:
             self.read_state.active_entry_ref = snapshot.active_entry.entry_ref
             self.read_state.active_entry_label = snapshot.active_entry.label
+        self.read_state.active_session_started_at_utc = (
+            snapshot.active_session.started_at_utc if snapshot.active_session is not None else None
+        )
         self.read_state.active_status_error_message = snapshot.active_status_error_message
         return True
 
@@ -102,7 +96,10 @@ class MainShellRuntimeReadMixin:
         if self.local_state.selected_year is None or self.local_state.selected_week is None:
             self.entry_panel_state.entries_for_selected_week = []
             self.entry_panel_state.entries_panel_error_message = None
+            self.entry_panel_state.sessions_by_entry_ref = {}
+            self.entry_panel_state.sessions_error_by_entry_ref = {}
             return
+
         try:
             client = self._build_client()
             entries = read_q5_entries_for_selected_week(
@@ -113,59 +110,113 @@ class MainShellRuntimeReadMixin:
         except (FirestoreConfigError, FirestoreReadError) as exc:
             self.entry_panel_state.entries_for_selected_week = []
             self.entry_panel_state.entries_panel_error_message = str(exc)
+            self.entry_panel_state.sessions_by_entry_ref = {}
+            self.entry_panel_state.sessions_error_by_entry_ref = {}
             return
 
-        self.entry_panel_state.entries_for_selected_week = [map_entry_read_to_summary(entry) for entry in entries]
+        mapped_entries = [map_entry_read_to_summary(entry) for entry in entries]
+        self.entry_panel_state.entries_for_selected_week = mapped_entries
         self.entry_panel_state.entries_panel_error_message = None
 
+        sessions_by_entry_ref: dict[EntryRef, list[Any]] = {}
+        sessions_error_by_entry_ref: dict[EntryRef, str | None] = {}
+        for entry in mapped_entries:
+            try:
+                entry_sessions = read_q8_sessions_for_entry(client, entry_ref=entry.ref)
+            except FirestoreReadError as exc:
+                sessions_by_entry_ref[entry.ref] = []
+                sessions_error_by_entry_ref[entry.ref] = str(exc)
+                continue
+            sessions_by_entry_ref[entry.ref] = [
+                map_session_read_to_viewer_session(session)
+                for session in entry_sessions
+            ]
+            sessions_error_by_entry_ref[entry.ref] = None
+
+        self.entry_panel_state.sessions_by_entry_ref = sessions_by_entry_ref
+        self.entry_panel_state.sessions_error_by_entry_ref = sessions_error_by_entry_ref
+
+        self._sync_resource_draft_from_entries()
+
+        valid_refs = {entry.ref for entry in mapped_entries}
+        for stale_ref in list(self.entry_panel_state.session_write_pending_by_entry_ref):
+            if stale_ref not in valid_refs:
+                self.entry_panel_state.session_write_pending_by_entry_ref.pop(stale_ref, None)
+                self.entry_panel_state.session_write_error_by_entry_ref.pop(stale_ref, None)
+        for stale_ref in list(self.entry_panel_state.resource_write_pending_by_entry_ref):
+            if stale_ref not in valid_refs:
+                self.entry_panel_state.resource_write_pending_by_entry_ref.pop(stale_ref, None)
+                self.entry_panel_state.resource_write_error_by_entry_ref.pop(stale_ref, None)
+
         if self.local_state.viewer_entry_ref is None:
-            return
-        if not entry_ref_matches_selected_week(self.local_state, self.local_state.viewer_entry_ref):
+            self.entry_panel_state.viewer_entry_snapshot = None
+            self.entry_panel_state.viewer_sessions = []
+            self.entry_panel_state.viewer_sessions_error_message = None
             return
 
-        updated_entry = find_entry_in_list(
-            self.entry_panel_state.entries_for_selected_week,
-            self.local_state.viewer_entry_ref,
+        if not entry_ref_matches_selected_week(self.local_state, self.local_state.viewer_entry_ref):
+            self.entry_panel_state.viewer_entry_snapshot = None
+            self.entry_panel_state.viewer_sessions = []
+            self.entry_panel_state.viewer_sessions_error_message = None
+            return
+
+        updated_entry = find_entry_in_list(mapped_entries, self.local_state.viewer_entry_ref)
+        if updated_entry is None:
+            self.entry_panel_state.viewer_entry_snapshot = None
+            self.entry_panel_state.viewer_sessions = []
+            self.entry_panel_state.viewer_sessions_error_message = None
+            return
+
+        self.entry_panel_state.viewer_entry_snapshot = updated_entry
+        self.entry_panel_state.viewer_sessions = list(
+            self.entry_panel_state.sessions_by_entry_ref.get(updated_entry.ref, [])
         )
-        if updated_entry is not None:
-            self.entry_panel_state.viewer_entry_snapshot = updated_entry
-            self._sync_resource_draft_from_viewer_snapshot()
+        self.entry_panel_state.viewer_sessions_error_message = (
+            self.entry_panel_state.sessions_error_by_entry_ref.get(updated_entry.ref)
+        )
 
     def _load_viewer_entry_and_sessions(self) -> None:
         if self.local_state.viewer_entry_ref is None:
             self.entry_panel_state.viewer_entry_snapshot = None
             self.entry_panel_state.viewer_sessions = []
             self.entry_panel_state.viewer_sessions_error_message = None
-            self._clear_resource_draft_state()
             return
+
+        entry_ref = self.local_state.viewer_entry_ref
         try:
             client = self._build_client()
-            viewer_entry_read = read_entry_by_ref(client, self.local_state.viewer_entry_ref)
+            viewer_entry_read = read_entry_by_ref(client, entry_ref)
+            entry_summary = map_entry_read_to_summary(viewer_entry_read)
         except (FirestoreConfigError, FirestoreReadError) as exc:
             self.entry_panel_state.viewer_sessions_error_message = str(exc)
             self.entry_panel_state.viewer_sessions = []
             if (
                 self.entry_panel_state.viewer_entry_snapshot is not None
-                and self.entry_panel_state.viewer_entry_snapshot.ref != self.local_state.viewer_entry_ref
+                and self.entry_panel_state.viewer_entry_snapshot.ref != entry_ref
             ):
                 self.entry_panel_state.viewer_entry_snapshot = None
             return
 
-        self.entry_panel_state.viewer_entry_snapshot = map_entry_read_to_summary(viewer_entry_read)
-        self._sync_resource_draft_from_viewer_snapshot()
+        self.entry_panel_state.viewer_entry_snapshot = entry_summary
+        self._sync_resource_draft_from_entry_snapshot(entry_summary)
 
         try:
-            sessions = read_q8_sessions_for_entry(client, entry_ref=self.local_state.viewer_entry_ref)
+            sessions = read_q8_sessions_for_entry(client, entry_ref=entry_ref)
         except FirestoreReadError as exc:
             self.entry_panel_state.viewer_sessions = []
             self.entry_panel_state.viewer_sessions_error_message = str(exc)
+            self.entry_panel_state.sessions_by_entry_ref[entry_ref] = []
+            self.entry_panel_state.sessions_error_by_entry_ref[entry_ref] = str(exc)
             return
 
-        self.entry_panel_state.viewer_sessions = [
+        viewer_sessions = [
             map_session_read_to_viewer_session(session)
             for session in sessions
         ]
+        self.entry_panel_state.viewer_sessions = viewer_sessions
         self.entry_panel_state.viewer_sessions_error_message = None
+        self.entry_panel_state.sessions_by_entry_ref[entry_ref] = viewer_sessions
+        self.entry_panel_state.sessions_error_by_entry_ref[entry_ref] = None
 
     def _find_selected_week_for_write(self) -> WeekSummary | None:
         if self.local_state.selected_year is None or self.local_state.selected_week is None:
@@ -230,13 +281,13 @@ class MainShellRuntimeReadMixin:
         *,
         action_label: str,
     ) -> None:
-        if self._has_dirty_resource_draft_attached_to_viewer():
+        if self._has_any_dirty_resource_draft():
             self._queue_pending_context_action(action, action_label=action_label)
             self._set_confirmation(
                 key="discard_resource_draft_context_change",
                 title="Cambios de recursos sin guardar",
                 body=(
-                    "Hay cambios de recursos sin guardar. "
+                    "Hay cambios de recursos sin guardar en la semana visible. "
                     f"Si continúas para {action_label}, se descartarán."
                 ),
                 confirm_label="Descartar y continuar",

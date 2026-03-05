@@ -49,7 +49,6 @@ from .week_writes import (
     close_week,
     reopen_week,
     reclose_week,
-    update_week_notes,
 )
 from .write_errors import (
     FirestoreConflictError,
@@ -99,5 +98,4 @@ __all__ = [
     "stop_session",
     "update_entry",
     "update_entry_notes",
-    "update_week_notes",
 ]

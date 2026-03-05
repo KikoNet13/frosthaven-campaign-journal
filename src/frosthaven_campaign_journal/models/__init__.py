@@ -44,7 +44,6 @@ class WeekSummary:
     week_number: int
     is_closed: bool
     status_label: str
-    notes_preview: str
 
 
 @dataclass

@@ -64,7 +64,6 @@ class MainShellViewData:
     entry_form: "EntryFormViewState | None"
     entry_notes_editor: "EntryNotesEditorViewState | None"
     session_form: "SessionFormViewState | None"
-    week_notes_editor: "WeekNotesEditorViewState | None"
 
 
 @dataclass(frozen=True)
@@ -104,7 +103,3 @@ class SessionFormViewState:
     error_message: str | None
 
 
-@dataclass(frozen=True)
-class WeekNotesEditorViewState:
-    notes_value: str
-    error_message: str | None

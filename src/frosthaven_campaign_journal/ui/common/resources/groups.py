@@ -13,6 +13,7 @@ class ResourceUiGroup:
 
 
 _RESOURCE_UI_GROUP_DEFS: tuple[tuple[str, str, tuple[tuple[str, ...], ...]], ...] = (
+    ("others", "Otros", (("inspiration", "morale", "soldiers"),)),
     ("materials", "Materiales", (("lumber", "metal", "hide"),)),
     (
         "plants",
@@ -22,7 +23,6 @@ _RESOURCE_UI_GROUP_DEFS: tuple[tuple[str, str, tuple[tuple[str, ...], ...]], ...
             ("flamefruit", "rockroot", "snowthistle"),
         ),
     ),
-    ("others", "Otros", (("inspiration", "morale", "soldiers"),)),
 )
 
 

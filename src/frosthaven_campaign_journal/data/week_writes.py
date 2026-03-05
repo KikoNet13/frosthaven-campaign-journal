@@ -28,42 +28,6 @@ class WeekWriteResult:
     auto_stopped_session_id: str | None = None
 
 
-def update_week_notes(
-    client: firestore.Client,
-    *,
-    year_number: int,
-    week_number: int,
-    notes: str,
-) -> WeekWriteResult:
-    if not isinstance(notes, str):
-        raise FirestoreValidationError("Las notas de week deben ser texto.")
-
-    week_doc_ref = _week_doc_ref(client, year_number=year_number, week_number=week_number)
-    transaction = client.transaction()
-
-    @firestore.transactional
-    def _run(txn: firestore.Transaction) -> None:
-        snapshot = _get_doc_snapshot(txn, week_doc_ref)
-        if not snapshot.exists:
-            raise FirestoreTransitionInvalidError("La week ya no existe.")
-        txn.update(
-            week_doc_ref,
-            {
-                "notes": notes,
-                "updated_at_utc": firestore.SERVER_TIMESTAMP,
-            },
-        )
-
-    try:
-        _run(transaction)
-    except (FirestoreWriteError, FirestoreConflictError, FirestoreTransitionInvalidError, FirestoreValidationError):
-        raise
-    except Exception as exc:  # pragma: no cover - defensive mapping
-        _map_firestore_write_exception(exc)
-
-    return WeekWriteResult(week_number=week_number)
-
-
 def close_week(
     client: firestore.Client,
     *,

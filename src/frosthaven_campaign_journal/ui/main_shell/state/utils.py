@@ -8,13 +8,11 @@ from frosthaven_campaign_journal.models import EntryRef, EntrySummary, ViewerSes
 
 def map_week_read_to_summary(week: WeekRead) -> WeekSummary:
     is_closed = week.status == "closed"
-    notes_preview = week.notes or ""
     return WeekSummary(
         year_number=week.year_number,
         week_number=week.week_number,
         is_closed=is_closed,
         status_label=week.status,
-        notes_preview=notes_preview,
     )
 
 

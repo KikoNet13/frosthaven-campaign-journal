@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -26,7 +26,6 @@ class WeekRead:
     year_number: int
     week_number: int
     status: str
-    notes: str | None
 
 
 @dataclass(frozen=True)
@@ -86,21 +85,21 @@ def read_q1_campaign_main(client: firestore.Client) -> CampaignMainRead:
         raise FirestoreReadError(f"Error leyendo Q1 (`campaigns/{CAMPAIGN_ID}`): {exc}") from exc
 
     if not snapshot.exists:
-        raise FirestoreReadError(f"No existe el documento de campaña `campaigns/{CAMPAIGN_ID}`.")
+        raise FirestoreReadError(f"No existe el documento de campaÃ±a `campaigns/{CAMPAIGN_ID}`.")
 
     data = snapshot.to_dict() or {}
 
     resource_totals_raw = data.get("resource_totals") or {}
     if not isinstance(resource_totals_raw, dict):
-        raise FirestoreReadError("Q1 inválido: `resource_totals` debe ser un mapa.")
+        raise FirestoreReadError("Q1 invÃ¡lido: `resource_totals` debe ser un mapa.")
 
     resource_totals: dict[str, int] = {}
     for key, value in resource_totals_raw.items():
         if not isinstance(key, str):
-            raise FirestoreReadError("Q1 inválido: `resource_totals` contiene una clave no string.")
+            raise FirestoreReadError("Q1 invÃ¡lido: `resource_totals` contiene una clave no string.")
         if isinstance(value, bool) or not isinstance(value, int):
             raise FirestoreReadError(
-                f"Q1 inválido: `resource_totals[{key}]` debe ser entero, recibido {type(value).__name__}."
+                f"Q1 invÃ¡lido: `resource_totals[{key}]` debe ser entero, recibido {type(value).__name__}."
             )
         resource_totals[key] = value
 
@@ -127,11 +126,11 @@ def read_q2_years_list(client: firestore.Client) -> list[int]:
                     year_number = int(snapshot.id)
                 except ValueError as exc:
                     raise FirestoreReadError(
-                        f"Q2 inválido: year `{snapshot.id}` sin `year_number` parseable."
+                        f"Q2 invÃ¡lido: year `{snapshot.id}` sin `year_number` parseable."
                     ) from exc
             if not isinstance(year_number, int) or year_number <= 0:
                 raise FirestoreReadError(
-                    f"Q2 inválido: `year_number` no válido en doc `{snapshot.id}`."
+                    f"Q2 invÃ¡lido: `year_number` no vÃ¡lido en doc `{snapshot.id}`."
                 )
             years.append(year_number)
     except FirestoreReadError:
@@ -175,19 +174,13 @@ def _read_weeks_for_season(
                     week_number = int(snapshot.id)
                 except Exception as exc:
                     raise FirestoreReadError(
-                        f"Q3/Q4 inválido: `week_number` no válido en `{snapshot.reference.path}`."
+                        f"Q3/Q4 invÃ¡lido: `week_number` no vÃ¡lido en `{snapshot.reference.path}`."
                     ) from exc
 
             status = data.get("status")
             if status not in {"open", "closed"}:
                 raise FirestoreReadError(
-                    f"Q3/Q4 inválido: `status` no válido en `{snapshot.reference.path}`."
-                )
-
-            notes = data.get("notes")
-            if notes is not None and not isinstance(notes, str):
-                raise FirestoreReadError(
-                    f"Q3/Q4 inválido: `notes` debe ser string/null en `{snapshot.reference.path}`."
+                    f"Q3/Q4 invÃ¡lido: `status` no vÃ¡lido en `{snapshot.reference.path}`."
                 )
 
             weeks.append(
@@ -195,14 +188,13 @@ def _read_weeks_for_season(
                     year_number=year_number,
                     week_number=week_number,
                     status=status,
-                    notes=notes,
                 )
             )
     except FirestoreReadError:
         raise
     except Exception as exc:
         raise FirestoreReadError(
-            f"Error leyendo weeks de `{season_type}` para año {year_number}: {exc}"
+            f"Error leyendo weeks de `{season_type}` para aÃ±o {year_number}: {exc}"
         ) from exc
 
     return weeks
@@ -259,7 +251,7 @@ def read_q5_entries_for_selected_week(
         raise
     except Exception as exc:
         raise FirestoreReadError(
-            f"Error leyendo Q5 (`entries_selected_week`) para week {week_number} (año {year_number}): {exc}"
+            f"Error leyendo Q5 (`entries_selected_week`) para week {week_number} (aÃ±o {year_number}): {exc}"
         ) from exc
 
     return sorted(
@@ -366,12 +358,12 @@ def read_q7_active_entry_doc_if_needed(
 
     entry_doc_ref = active_session.session_ref.parent.parent
     if entry_doc_ref is None:
-        raise FirestoreReadError("Q7 inválido: no se pudo resolver la Entry owner desde la sesión activa.")
+        raise FirestoreReadError("Q7 invÃ¡lido: no se pudo resolver la Entry owner desde la sesiÃ³n activa.")
 
     active_entry_ref = _entry_ref_from_entry_doc_ref(entry_doc_ref)
 
     # Q7 es condicional; en #54 lo usamos siempre para label del activo.
-    # Mantenemos el parámetro para alineación con #16 y facilitar #54+.
+    # Mantenemos el parÃ¡metro para alineaciÃ³n con #16 y facilitar #54+.
     _ = viewer_entry_ref
 
     try:
@@ -380,7 +372,7 @@ def read_q7_active_entry_doc_if_needed(
         raise FirestoreReadError(f"Error leyendo Q7 (`active_entry_doc_if_needed`): {exc}") from exc
 
     if not entry_snapshot.exists:
-        raise FirestoreReadError("Q7 inválido: la Entry owner de la sesión activa no existe.")
+        raise FirestoreReadError("Q7 invÃ¡lido: la Entry owner de la sesiÃ³n activa no existe.")
 
     data = entry_snapshot.to_dict() or {}
     entry_type_raw = data.get("type")
@@ -391,7 +383,7 @@ def read_q7_active_entry_doc_if_needed(
     if scenario_ref_raw is None:
         scenario_ref = None
     elif isinstance(scenario_ref_raw, bool) or not isinstance(scenario_ref_raw, int):
-        raise FirestoreReadError("Q7 inválido: `scenario_ref` debe ser entero o null.")
+        raise FirestoreReadError("Q7 invÃ¡lido: `scenario_ref` debe ser entero o null.")
     else:
         scenario_ref = scenario_ref_raw
 
@@ -413,7 +405,7 @@ def load_main_screen_snapshot(
     campaign_main = read_q1_campaign_main(client)
     years = read_q2_years_list(client)
     if not years:
-        raise FirestoreReadError("Q2 inválido: no hay años provisionados en la campaña.")
+        raise FirestoreReadError("Q2 invÃ¡lido: no hay aÃ±os provisionados en la campaÃ±a.")
 
     if selected_year is not None and selected_year in years:
         effective_year = selected_year
@@ -463,7 +455,7 @@ def _resolve_season_type_for_week(*, year_number: int, week_number: int) -> str:
     local_week = week_number - ((year_number - 1) * WEEKS_PER_YEAR)
     if not 1 <= local_week <= WEEKS_PER_YEAR:
         raise FirestoreReadError(
-            f"Week {week_number} no pertenece al año {year_number} según el template temporal MVP."
+            f"Week {week_number} no pertenece al aÃ±o {year_number} segÃºn el template temporal MVP."
         )
     return "summer" if local_week <= 10 else "winter"
 
@@ -472,12 +464,12 @@ def _map_entry_snapshot(snapshot: Any, *, year_number: int, week_number: int) ->
     data = snapshot.to_dict() or {}
     entry_type = data.get("type")
     if not isinstance(entry_type, str) or not entry_type:
-        raise FirestoreReadError(f"Q5/Q7 inválido: `type` no válido en `{snapshot.reference.path}`.")
+        raise FirestoreReadError(f"Q5/Q7 invÃ¡lido: `type` no vÃ¡lido en `{snapshot.reference.path}`.")
 
     order_index = data.get("order_index")
     if isinstance(order_index, bool) or not isinstance(order_index, int) or order_index <= 0:
         raise FirestoreReadError(
-            f"Q5/Q7 inválido: `order_index` no válido en `{snapshot.reference.path}`."
+            f"Q5/Q7 invÃ¡lido: `order_index` no vÃ¡lido en `{snapshot.reference.path}`."
         )
 
     scenario_ref_raw = data.get("scenario_ref")
@@ -486,20 +478,19 @@ def _map_entry_snapshot(snapshot: Any, *, year_number: int, week_number: int) ->
         scenario_ref = None
     elif isinstance(scenario_ref_raw, bool) or not isinstance(scenario_ref_raw, int):
         raise FirestoreReadError(
-            f"Q5/Q7 inválido: `scenario_ref` no válido en `{snapshot.reference.path}`."
+            f"Q5/Q7 invÃ¡lido: `scenario_ref` no vÃ¡lido en `{snapshot.reference.path}`."
         )
     else:
         scenario_ref = scenario_ref_raw
 
     notes_raw = data.get("notes")
-    notes: str | None
     if notes_raw is None:
         notes = None
     elif isinstance(notes_raw, str):
         notes = notes_raw
     else:
         raise FirestoreReadError(
-            f"Q5/Q7 inválido: `notes` debe ser string/null en `{snapshot.reference.path}`."
+            f"Q5/Q7 invÃ¡lido: `notes` debe ser string/null en `{snapshot.reference.path}`."
         )
 
     scenario_outcome_raw = data.get("scenario_outcome")
@@ -510,23 +501,23 @@ def _map_entry_snapshot(snapshot: Any, *, year_number: int, week_number: int) ->
         scenario_outcome = scenario_outcome_raw
     else:
         raise FirestoreReadError(
-            f"Q5/Q7 inválido: `scenario_outcome` debe ser victory/defeat/null en `{snapshot.reference.path}`."
+            f"Q5/Q7 invÃ¡lido: `scenario_outcome` debe ser victory/defeat/null en `{snapshot.reference.path}`."
         )
 
     resource_deltas_raw = data.get("resource_deltas") or {}
     if not isinstance(resource_deltas_raw, dict):
         raise FirestoreReadError(
-            f"Q5/Q7 inválido: `resource_deltas` debe ser mapa en `{snapshot.reference.path}`."
+            f"Q5/Q7 invÃ¡lido: `resource_deltas` debe ser mapa en `{snapshot.reference.path}`."
         )
     resource_deltas: dict[str, int] = {}
     for key, value in resource_deltas_raw.items():
         if not isinstance(key, str):
             raise FirestoreReadError(
-                f"Q5/Q7 inválido: clave de `resource_deltas` no string en `{snapshot.reference.path}`."
+                f"Q5/Q7 invÃ¡lido: clave de `resource_deltas` no string en `{snapshot.reference.path}`."
             )
         if isinstance(value, bool) or not isinstance(value, int):
             raise FirestoreReadError(
-                f"Q5/Q7 inválido: `resource_deltas[{key}]` no entero en `{snapshot.reference.path}`."
+                f"Q5/Q7 invÃ¡lido: `resource_deltas[{key}]` no entero en `{snapshot.reference.path}`."
             )
         resource_deltas[key] = value
 
@@ -550,16 +541,16 @@ def _entry_ref_from_entry_doc_ref(entry_doc_ref: Any) -> EntryRef:
         season_doc_ref = week_doc_ref.parent.parent
         year_doc_ref = season_doc_ref.parent.parent
     except Exception as exc:
-        raise FirestoreReadError("Q7 inválido: no se pudo reconstruir la jerarquía de la Entry activa.") from exc
+        raise FirestoreReadError("Q7 invÃ¡lido: no se pudo reconstruir la jerarquÃ­a de la Entry activa.") from exc
 
     if week_doc_ref is None or year_doc_ref is None:
-        raise FirestoreReadError("Q7 inválido: jerarquía incompleta al resolver la Entry activa.")
+        raise FirestoreReadError("Q7 invÃ¡lido: jerarquÃ­a incompleta al resolver la Entry activa.")
 
     try:
         year_number = int(year_doc_ref.id)
         week_number = int(week_doc_ref.id)
     except ValueError as exc:
-        raise FirestoreReadError("Q7 inválido: IDs de year/week no parseables en la ruta de la Entry activa.") from exc
+        raise FirestoreReadError("Q7 invÃ¡lido: IDs de year/week no parseables en la ruta de la Entry activa.") from exc
 
     return EntryRef(
         year_number=year_number,
@@ -590,3 +581,4 @@ def _sortable_dt_desc(value: Any | None) -> tuple[int, float]:
     except Exception:
         return (1, 0.0)
     return (0, -ts)
+

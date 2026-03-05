@@ -6,8 +6,8 @@
 - `purpose`: Definir catálogo UI único de recursos (claves internas, etiquetas, grupos, orden e iconos) para edición de deltas y visualización de totales.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-03-04
-- `next_review`: 2026-03-18
+- `last_updated`: 2026-03-05
+- `next_review`: 2026-03-19
 
 ## Objetivo
 
@@ -22,6 +22,10 @@ Este documento alinea implementación UI con el glosario de dominio vigente (`do
 
 ## Orden canónico y agrupación
 
+1. Otros:
+   - `inspiration`
+   - `morale`
+   - `soldiers`
 1. Materiales:
    - `lumber`
    - `metal`
@@ -34,12 +38,11 @@ Este documento alinea implementación UI con el glosario de dominio vigente (`do
    - `flamefruit`
    - `rockroot`
    - `snowthistle`
-1. Otros:
-   - `inspiration`
-   - `morale`
-   - `soldiers`
 
 ## Mapeo UI (EN -> ES) y assets
+
+Nota de orden visual activo en runtime: `Otros -> Materiales -> Plantas` (las
+dos columnas de plantas se renderizan como un único bloque `Plantas`).
 
 | resource_key | etiqueta_ui_es | grupo_ui | icon_filename_png |
 | --- | --- | --- | --- |

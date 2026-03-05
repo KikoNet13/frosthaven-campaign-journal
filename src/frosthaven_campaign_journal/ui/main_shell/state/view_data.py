@@ -10,7 +10,6 @@ from frosthaven_campaign_journal.ui.main_shell.model import (
     MainShellViewData,
     SessionFormViewState,
     WeekEntryCardViewData,
-    WeekNotesEditorViewState,
 )
 
 
@@ -53,13 +52,6 @@ class MainShellViewDataMixin:
                 active_without_end=self.session_form_state.active_without_end,
                 error_message=self.session_form_state.error_message,
             )
-        week_notes_view: WeekNotesEditorViewState | None = None
-        if self.week_notes_editor_state is not None:
-            week_notes_view = WeekNotesEditorViewState(
-                notes_value=self.week_notes_editor_state.notes_value,
-                error_message=self.week_notes_editor_state.error_message,
-            )
-
         week_entry_cards = [
             _build_week_entry_card_view_data(
                 entry=entry,
@@ -119,7 +111,6 @@ class MainShellViewDataMixin:
             entry_form=entry_form_view,
             entry_notes_editor=entry_notes_view,
             session_form=session_form_view,
-            week_notes_editor=week_notes_view,
         )
 
 

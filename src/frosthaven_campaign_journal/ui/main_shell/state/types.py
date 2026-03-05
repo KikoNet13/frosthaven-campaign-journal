@@ -85,9 +85,3 @@ class SessionFormState:
     ended_time_local: str
     active_without_end: bool
     error_message: str | None = None
-
-
-@dataclass
-class WeekNotesEditorState:
-    notes_value: str
-    error_message: str | None = None

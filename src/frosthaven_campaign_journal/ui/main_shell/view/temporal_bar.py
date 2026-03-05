@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import flet as ft
 
@@ -9,9 +9,10 @@ from frosthaven_campaign_journal.ui.common.theme.colors import (
     COLOR_SEASON_LABEL_BG,
     COLOR_SEASON_LABEL_BORDER,
     COLOR_SEASON_LABEL_TEXT,
-    COLOR_TOP_BAR_TEXT,
     COLOR_TEXT_MUTED,
     COLOR_TEXT_PRIMARY,
+    COLOR_TOP_BAR_BG,
+    COLOR_TOP_BAR_TEXT,
     COLOR_TOP_NAV_BUTTON_BG,
     COLOR_TOP_NAV_BUTTON_DISABLED_BG,
     COLOR_TOP_NAV_BUTTON_TEXT_DISABLED,
@@ -49,7 +50,7 @@ def build_top_temporal_bar(data: MainShellViewData, state: MainShellState) -> ft
         right_year_label = ">"
         right_year_action = None
     elif is_last_year:
-        right_year_label = "+ Año"
+        right_year_label = "+"
         right_year_action = (
             state.on_open_extend_year_plus_one_confirm if not data.campaign_write_pending else None
         )
@@ -99,20 +100,20 @@ def build_top_temporal_bar(data: MainShellViewData, state: MainShellState) -> ft
             )
 
         week_strip_content = ft.Row(
-            spacing=8,
+            spacing=6,
             wrap=False,
             scroll=ft.ScrollMode.AUTO,
             controls=season_blocks,
         )
 
     year_group = ft.Row(
-        spacing=12,
+        spacing=10,
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
         controls=[
             _build_year_nav_button("<", left_year_action),
             ft.Text(
                 year_title,
-                size=42,
+                size=34,
                 weight=ft.FontWeight.BOLD,
                 color=COLOR_TOP_BAR_TEXT,
             ),
@@ -121,9 +122,10 @@ def build_top_temporal_bar(data: MainShellViewData, state: MainShellState) -> ft
     )
 
     return ft.Container(
-        padding=ft.Padding(left=12, top=10, right=12, bottom=10),
+        bgcolor=COLOR_TOP_BAR_BG,
+        padding=ft.Padding(left=12, top=8, right=12, bottom=8),
         content=ft.Row(
-            spacing=16,
+            spacing=12,
             alignment=ft.MainAxisAlignment.START,
             vertical_alignment=ft.CrossAxisAlignment.CENTER,
             controls=[
@@ -160,7 +162,7 @@ def _build_week_season_block(
     return LabeledGroupBox(
         label=season_label,
         content=ft.Row(
-            spacing=6,
+            spacing=4,
             controls=[
                 _build_week_tile(
                     week=week,
@@ -176,7 +178,7 @@ def _build_week_season_block(
         label_bgcolor=COLOR_SEASON_LABEL_BG,
         label_border_color=COLOR_SEASON_LABEL_BORDER,
         label_text_color=COLOR_SEASON_LABEL_TEXT,
-        padding=ft.Padding(left=4, top=8, right=4, bottom=4),
+        padding=ft.Padding(left=4, top=8, right=4, bottom=3),
     )
 
 
@@ -185,17 +187,16 @@ def _build_year_nav_button(
     on_click: ft.OptionalEventCallable["ControlEvent"],
 ) -> ft.Control:
     enabled = on_click is not None
-    is_extended_label = label == "+ Año"
     return ft.Container(
-        width=88 if is_extended_label else 52,
-        height=40 if is_extended_label else 52,
+        width=50,
+        height=50,
         border_radius=999,
         bgcolor=COLOR_TOP_NAV_BUTTON_BG if enabled else COLOR_TOP_NAV_BUTTON_DISABLED_BG,
         alignment=ft.Alignment.CENTER,
         on_click=on_click,
         content=ft.Text(
             label,
-            size=16 if is_extended_label else 24,
+            size=24,
             weight=ft.FontWeight.BOLD,
             color=COLOR_WHITE if enabled else COLOR_TOP_NAV_BUTTON_TEXT_DISABLED,
         ),
@@ -216,8 +217,8 @@ def _build_week_tile(
         bgcolor = COLOR_WEEK_TILE_CLOSED_BG if week.is_closed else COLOR_WEEK_TILE_BG
     text_color = COLOR_WEEK_TILE_CLOSED_TEXT if week.is_closed else COLOR_TEXT_PRIMARY
     return ft.Container(
-        width=46,
-        height=42,
+        width=40,
+        height=36,
         bgcolor=bgcolor,
         border=border,
         border_radius=2,
@@ -226,7 +227,7 @@ def _build_week_tile(
         on_click=None if disabled else on_select_week_click,
         content=ft.Text(
             str(week.week_number),
-            size=13,
+            size=12,
             weight=ft.FontWeight.W_600,
             color=text_color,
         ),

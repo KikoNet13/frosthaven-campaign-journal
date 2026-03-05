@@ -6,7 +6,7 @@
 - `purpose`: Definir la polÃ­tica de resoluciÃ³n de conflictos concurrentes del MVP.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-02-24
+- `last_updated`: 2026-03-05
 - `next_review`: 2026-03-10
 
 ## Objetivo
@@ -57,7 +57,6 @@ No incluye:
 | `Entry.reorder_within_week` | `week` + `entry` | Medio/Alto | `rechazar` | `refrescar` + `reintentar` | Resecuencia densa `1..N`; detalle contractual en #12 |
 | `Session.manual_create/update/delete` | `session` + `campaign` | Alto | `rechazar` | `refrescar` + `reintentar` | Mantener `0..1` sesiÃ³n activa global; detalle contractual en #12 |
 | Borrado de `Entry` activa (con cascada) | `entry` + `session` + `campaign` | Alto | `rechazar` | `refrescar` + `reintentar` | Incluye auto-stop; borra `sessions` y elimina `resource_deltas` embebidos con la `Entry`; contrato tÃ©cnico en #12 |
-| EdiciÃ³n de `Week.notes` | `week` | Medio | `rechazar` | `refrescar` + reingresar cambios | No usar `last-write-wins` en MVP |
 | `Entry.adjust_resource_delta` | `entry` (+ totales derivados) | Medio/Alto | `rechazar` | `refrescar` + `reintentar` | Ajusta delta neto en `Entry.resource_deltas`; valida totales finales no negativos |
 | `Entry.set_resource_delta` | `entry` (+ totales derivados) | Alto | `rechazar` | `refrescar` + `reintentar` | EdiciÃ³n manual directa del delta neto; opera sobre `Entry` y totales |
 | `Entry.clear_resource_delta` | `entry` (+ totales derivados) | Medio/Alto | `rechazar` | `refrescar` + `reintentar` | Elimina clave del mapa (`delta -> 0`); rechazar si base estÃ¡ obsoleta |
@@ -106,9 +105,6 @@ No incluye:
 - Dos dispositivos intentan iniciar sesiÃ³n activa casi a la vez.
   - Resultado MVP: uno de los intentos puede quedar invÃ¡lido tras refresco;
     conflicto se resuelve por rechazo y reintento.
-- Un dispositivo cierra una `Week` mientras otro edita `Week.notes`.
-  - Resultado MVP: la ediciÃ³n depende del estado actual; si el estado cambiÃ³ de
-    forma incompatible, se rechaza y se refresca.
 - Un dispositivo reabre una `Week` mientras otro la re-cierra o cierra una week
   distinta que afecta al `week_cursor`.
   - Resultado MVP: una de las operaciones puede quedar obsoleta; se rechaza y
@@ -166,4 +162,6 @@ No incluye:
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/15`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/18`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/17`
+
+
 

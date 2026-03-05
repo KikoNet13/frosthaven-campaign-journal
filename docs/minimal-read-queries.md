@@ -6,7 +6,7 @@
 - `purpose`: Definir el inventario mÃ­nimo de lecturas/consultas para la pantalla principal del MVP (superficies visibles, triggers, orden y lÃ­mites de carga).
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-02-24
+- `last_updated`: 2026-03-05
 - `next_review`: 2026-03-10
 
 ## Objetivo
@@ -93,7 +93,7 @@ No incluye:
 | `top_year_selector` | Barra superior con aÃ±o actual seleccionado, navegaciÃ³n prev/next y `+` de extensiÃ³n | Todos | aÃ±os provisionados, aÃ±o seleccionado, condiciÃ³n de Ãºltimo aÃ±o | `+` depende del Ãºltimo aÃ±o provisionado (`#9`) |
 | `top_week_selector` | Tira de semanas del aÃ±o seleccionado (navegaciÃ³n/foco temporal) | Todos | weeks del aÃ±o seleccionado (`week_number`, `status`), marcador `current week` (semana actual derivada) | Seleccionar week no cambia la semana actual derivada (`#9`) |
 | `top_entry_selector_tabs` | Selector de `Entry` de la week seleccionada (tabs) | `week_selected_no_entry`, `entry_selected_*` | entries de la week seleccionada ordenadas | Puede mostrar estado vacÃ­o/acciÃ³n de creaciÃ³n si no hay entries |
-| `focus_panel_week_state` | Panel central en modo `Week` (semana seleccionada, notas, estado) | `week_selected_no_entry` | `Week` seleccionada (`status`, `notes`) | Consume datos ya presentes en lecturas de weeks |
+| `focus_panel_week_state` | Panel central en modo `Week` (semana seleccionada y estado) | `week_selected_no_entry` | `Week` seleccionada (`status`) | Consume datos ya presentes en lecturas de weeks |
 | `focus_panel_entry_state` | Panel central en modo `Entry` (datos de entry, recursos, bloque sesiÃ³n) | `entry_selected_*` | `Entry` seleccionada + sesiones de esa entry | `total jugado` y desplegable de sesiones dependen de lectura de `sessions` |
 | `bottom_totals_bar` | Barra inferior con totales globales y resumen de activo | Todos | `campaign.resource_totals`, resumen de sesiÃ³n activa, label del activo si aplica | El detalle visual no cambia las lecturas mÃ­nimas |
 | `active_session_indicator_summary` | Indicadores de foco vs activo / estado de sesiÃ³n global | Todos (condicional si hay activa) | sesiÃ³n activa global + owner (`Entry`) si no coincide con la seleccionada | Alineado con separaciÃ³n foco/activo de `#14` |
@@ -148,7 +148,6 @@ Estados de pantalla del MVP (canon para lecturas):
 - **Campos lÃ³gicos mÃ­nimos**:
   - `week_number`
   - `status`
-  - `notes`
   - `updated_at_utc` (opcional tÃ©cnico)
 - **Uso**:
   - tira de weeks del aÃ±o seleccionado
@@ -211,8 +210,8 @@ Estados de pantalla del MVP (canon para lecturas):
 | --- | --- | --- | --- | --- | --- | --- |
 | `Q1 campaign_main_doc` | `campaign` | `resource_totals`, `updated_at_utc` | N/A | `resource_totals` | `updated_at_utc` | `week_cursor` solo en implementaciÃ³n transitoria previa a `#81` |
 | `Q2 years_list` | `year` | `year_number` | `year_number` | `year_number` | `updated_at_utc` opcional | AuditorÃ­a no es primaria de UI |
-| `Q3 weeks_selected_year_summer` | `week` | `week_number`, `status`, `notes` | `week_number` | `week_number`, `status`, `notes` | `status`, `updated_at_utc` | Parte `summer` del aÃ±o |
-| `Q4 weeks_selected_year_winter` | `week` | `week_number`, `status`, `notes` | `week_number` | `week_number`, `status`, `notes` | `status`, `updated_at_utc` | Parte `winter` del aÃ±o |
+| `Q3 weeks_selected_year_summer` | `week` | `week_number`, `status` | `week_number` | `week_number`, `status` | `status`, `updated_at_utc` | Parte `summer` del aÃ±o |
+| `Q4 weeks_selected_year_winter` | `week` | `week_number`, `status` | `week_number` | `week_number`, `status` | `status`, `updated_at_utc` | Parte `winter` del aÃ±o |
 | `Q5 entries_selected_week` | `entry` | `type`, `scenario_ref`, `order_index`, `resource_deltas`, `created_at_utc`, `updated_at_utc` | `order_index`, `created_at_utc`, `entry_id` | `type`, `scenario_ref`, `resource_deltas` | `updated_at_utc`, `order_index` | `entry_id` viene del doc id |
 | `Q6 active_session_global` | `session` | `started_at_utc`, `ended_at_utc`, `created_at_utc`, `updated_at_utc` + ruta | `N/A (single)` | `started_at_utc`, `ended_at_utc` | `ended_at_utc`, `updated_at_utc` | `limit 1` por invariante |
 | `Q7 active_entry_doc_if_needed` | `entry` | `type`, `scenario_ref` | N/A | `type`, `scenario_ref` | `updated_at_utc` opcional | Solo si activa != seleccionada |
@@ -263,7 +262,7 @@ Notas de implementaciÃ³n posteriores (`#53+`):
 | `ui.select_year` | Q3, Q4 (resetea navegaciÃ³n de `Week`) | Cambia el conjunto de weeks visibles | No | Puede mantenerse una entry en visor sticky; Q5/Q8 no cargan hasta nueva selecciÃ³n de entry |
 | `ui.select_week` | Q5 | Cargar entries de la week seleccionada | No | No cambia la semana actual derivada ni obliga a limpiar la entry en visor sticky |
 | `ui.select_entry` | Q8 (+ Q7 solo si sigue activo global en otra entry y la UI lo necesita) | Cargar sesiones de la entry seleccionada para el visor | No | Q5 ya aporta datos base de la entry |
-| `Week.close/reopen/reclose/update_notes` | Q1 (si cambia estado de campaÃ±a / transiciÃ³n temporal), Q3/Q4 (aÃ±o visible), Q6 (si hubo `auto-stop`) | Reflejar estado de week, semana actual derivada y sesiÃ³n activa | No (post-escritura local) | Si la week afectada no estÃ¡ en aÃ±o visible, Q3/Q4 puede diferirse a refresh manual |
+| `Week.close/reopen/reclose` | Q1 (si cambia estado de campaÃ±a / transiciÃ³n temporal), Q3/Q4 (aÃ±o visible), Q6 (si hubo `auto-stop`) | Reflejar estado de week, semana actual derivada y sesiÃ³n activa | No (post-escritura local) | Si la week afectada no estÃ¡ en aÃ±o visible, Q3/Q4 puede diferirse a refresh manual |
 | `Campaign.extend_years_plus_one` | Q1, Q2, Q3/Q4 si el aÃ±o visible queda afectado | Reflejar nuevo aÃ±o / estado de campaÃ±a | No (post-escritura local) | `+` vive en selector de aÃ±o (`#9`) |
 | `Entry.create/update/delete/reorder` sobre `selected_week` | Q5 (+ Q8 si afecta la entry en visor) | Actualizar tabs/lista y panel de entry | No (post-escritura local) | `Entry.delete` puede requerir tambiÃ©n Q6 si habÃ­a activa |
 | `Entry.adjust/set/clear_resource_delta` sobre la entry en visor | Q1, Q5 | Totales globales + `resource_deltas` de entry | No (post-escritura local) | Reglas de recursos en `#15` |
@@ -308,8 +307,8 @@ se tratarÃ¡ como ampliaciÃ³n posterior (no bloquea `#16`).
    - Riesgo: degradar UX si se recarga toda la pantalla tras cada operaciÃ³n.
    - MitigaciÃ³n: refresco por Ã¡mbito (tabla 4) y refresh manual para conflictos.
 
-1. **Q3+Q4 incluyen `notes`**
-   - Riesgo: cargar campos de week que no siempre se muestran.
+1. **Q3+Q4 incluyen solo estado (`status`)**
+   - Riesgo: bajo; se mantiene lectura mínima de week para selector temporal.
    - MitigaciÃ³n: aceptar el coste por simplicidad del MVP; evita query extra
      para panel `Week`.
 
@@ -327,7 +326,7 @@ se tratarÃ¡ como ampliaciÃ³n posterior (no bloquea `#16`).
 ### Supuestos de lectura por superficies incompletas (obligatorios)
 
 1. **Bloque central**
-   - modo `Week`: consume `status` + `notes` desde Q3/Q4 (sin query extra)
+   - modo `Week`: consume `status` desde Q3/Q4 (sin query extra)
    - modo `Entry`: consume `Entry` desde Q5 y sesiones desde Q8
 1. **Barra inferior**
    - requiere Q1 (`resource_totals`) + Q6 (activo global) + Q7 (label del
@@ -398,4 +397,6 @@ se tratarÃ¡ como ampliaciÃ³n posterior (no bloquea `#16`).
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/17`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/37`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/40`
+
+
 

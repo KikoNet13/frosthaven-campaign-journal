@@ -9,13 +9,11 @@ from frosthaven_campaign_journal.data import (
     replace_entry_resource_deltas,
     update_entry,
     update_entry_notes,
-    update_week_notes,
 )
 from frosthaven_campaign_journal.models import ENTRY_RESOURCE_KEYS, EntryRef, entry_ref_matches_selected_week
 from frosthaven_campaign_journal.ui.main_shell.state.types import (
     EntryFormState,
     EntryNotesEditorState,
-    WeekNotesEditorState,
 )
 from frosthaven_campaign_journal.ui.main_shell.state.utils import (
     find_entry_in_list,
@@ -24,51 +22,6 @@ from frosthaven_campaign_journal.ui.main_shell.state.utils import (
 
 
 class MainShellWeekEntryResourceActionsMixin:
-    def on_open_week_notes_modal(self, _event: ft.ControlEvent | None = None) -> None:
-        selected_week = self._find_selected_week_for_write()
-        if selected_week is None:
-            self._set_week_error("No hay semana seleccionada para editar notas.")
-            self.notify()
-            return
-        self.week_notes_editor_state = WeekNotesEditorState(
-            notes_value=selected_week.notes_preview or "",
-            error_message=None,
-        )
-        self.notify()
-
-    def on_week_notes_change(self, event: ft.ControlEvent) -> None:
-        if self.week_notes_editor_state is None:
-            return
-        self.week_notes_editor_state.notes_value = event.control.value or ""
-        self.week_notes_editor_state.error_message = None
-        self.notify()
-
-    def on_cancel_week_notes_editor(self, _event: ft.ControlEvent | None = None) -> None:
-        self.week_notes_editor_state = None
-        self.notify()
-
-    def on_submit_week_notes(self, _event: ft.ControlEvent | None = None) -> None:
-        editor = self.week_notes_editor_state
-        selected_week = self._find_selected_week_for_write()
-        if editor is None:
-            return
-        if selected_week is None:
-            editor.error_message = "No hay semana seleccionada para guardar notas."
-            self.notify()
-            return
-        result = self._run_week_write(
-            lambda client: update_week_notes(
-                client,
-                year_number=selected_week.year_number,
-                week_number=selected_week.week_number,
-                notes=editor.notes_value,
-            ),
-            success_message="Notas de semana actualizadas.",
-        )
-        if result is not None:
-            self.week_notes_editor_state = None
-        self.notify()
-
     def on_request_week_close(self, _event: ft.ControlEvent | None = None) -> None:
         selected_week = self._find_selected_week_for_write()
         if selected_week is None:

@@ -29,30 +29,6 @@ def _build_confirmation_card(data: MainShellViewData, state: MainShellState) -> 
     )
 
 
-def _build_week_notes_editor(data: MainShellViewData, state: MainShellState) -> ft.Control:
-    assert data.week_notes_editor is not None
-    return build_panel(
-        controls=[
-            ft.Text("Editar notas de semana", size=14, weight=ft.FontWeight.BOLD, color=COLOR_TEXT_HEADING),
-            ft.TextField(
-                value=data.week_notes_editor.notes_value,
-                multiline=True,
-                min_lines=3,
-                max_lines=6,
-                on_change=state.on_week_notes_change,
-            ),
-            ft.Row(
-                spacing=8,
-                controls=[
-                    ft.TextButton("Cancelar", on_click=state.on_cancel_week_notes_editor),
-                    ft.FilledButton("Guardar notas", on_click=state.on_submit_week_notes),
-                ],
-            ),
-            ft.Text(data.week_notes_editor.error_message or "", size=12, color=COLOR_ERROR_TEXT),
-        ],
-    )
-
-
 def _build_entry_form_editor(data: MainShellViewData, state: MainShellState) -> ft.Control:
     assert data.entry_form is not None
     is_scenario = data.entry_form.entry_type == "scenario"

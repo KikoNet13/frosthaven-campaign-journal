@@ -6,7 +6,7 @@
 - `purpose`: Gobierno de contexto, gate de calidad y estado verificable.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-03-02
+- `last_updated`: 2026-03-05
 - `next_review`: 2026-03-13
 
 ## Alcance de Fase 0
@@ -212,6 +212,48 @@ Se valida:
   - Cada tile expone `subir/bajar/eliminar/editar notas` por icono.
   - Se añade persistencia de `Entry.notes` y `Entry.scenario_outcome` (read-only en UI para outcome).
   - Se elimina selector externo de entries y comportamiento sticky al cambiar semana/año.
+
+### Hito H1-07
+
+- Fecha: 2026-03-05
+- Objetivo: adaptar la shell principal a tablet (compactación visual, acciones
+  flotantes y barra inferior solo de recursos) y retirar `Week.update_notes` de
+  runtime + documentación activa.
+- Resultado: completado
+- Verificación A: aprobado (estructura de código/documentación actualizada en
+  UI, estado, lecturas y writes)
+- Verificación B: aprobado (compilación completa de `src` y búsqueda sin
+  referencias activas a `Week.update_notes`/`Week.notes` en contratos MVP)
+- Evidencia:
+  - `src/frosthaven_campaign_journal/ui/main_shell/view/temporal_bar.py`
+  - `src/frosthaven_campaign_journal/ui/main_shell/view/shell_view.py`
+  - `src/frosthaven_campaign_journal/ui/main_shell/view/center_focus.py`
+  - `src/frosthaven_campaign_journal/ui/main_shell/view/center_panel.py`
+  - `src/frosthaven_campaign_journal/ui/main_shell/view/status_bar.py`
+  - `src/frosthaven_campaign_journal/ui/common/resources/groups.py`
+  - `src/frosthaven_campaign_journal/ui/common/resources/resource_total_row.py`
+  - `src/frosthaven_campaign_journal/models/__init__.py`
+  - `src/frosthaven_campaign_journal/data/main_screen_reads.py`
+  - `src/frosthaven_campaign_journal/data/week_writes.py`
+  - `docs/firestore-operation-contract.md`
+  - `docs/conflict-policy.md`
+  - `docs/editability-policy.md`
+  - `docs/minimal-read-queries.md`
+  - `docs/timestamp-order-policy.md`
+  - `docs/concurrency-sync-edge-case-matrix.md`
+  - `docs/ui-main-shell-architecture-mvs.md`
+  - `docs/resource-ui-catalog.md`
+  - `docs/decision-log.md` (DEC-0045)
+- Resumen:
+  - Barra superior con fondo visible y controles temporales compactados.
+  - Acciones semanales movidas a menú flotante contextual con `Crear`,
+    `Cerrar/Reabrir/Recerrar` y `Refrescar`.
+  - Cabecera de semana eliminada del visor y metadatos redundantes retirados en
+    tarjetas de entry.
+  - Barra inferior simplificada a recursos totales (sin estado textual),
+    incluyendo orden visual `Otros -> Materiales -> Plantas`.
+  - Soporte de notas de semana eliminado de modelos, estado, writes y contratos
+    activos del MVP.
 
 
 ## Conocimiento migrado desde legado

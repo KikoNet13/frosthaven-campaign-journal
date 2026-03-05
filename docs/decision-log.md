@@ -6,7 +6,7 @@
 - `purpose`: Registrar decisiones con trazabilidad y precedencia.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-03-04
+- `last_updated`: 2026-03-05
 - `next_review`: 2026-03-12
 
 ## Formato canónico por entrada
@@ -1019,3 +1019,43 @@
   `assets/resource-icons/`,
   `docs/resource-ui-catalog.md`,
   `docs/domain-glossary.md`
+
+### DEC-0045
+
+- `date`: 2026-03-05
+- `status`: accepted
+- `problem`: la UI del shell principal en tablet no mantenía densidad útil
+  (barra superior y visor central), el bloque de estado inferior ocupaba espacio
+  crítico y el soporte de notas de semana dejó de ser necesario para el flujo
+  objetivo.
+- `decision`: rediseñar la shell para tablet con acciones contextuales en botón
+  flotante (`+`), eliminar la cabecera de semana y metadatos redundantes por
+  entry, mantener solo recursos totales en barra inferior (orden visual:
+  `Otros -> Materiales -> Plantas`) y retirar por completo `Week.update_notes`
+  del runtime y de los contratos activos del MVP.
+- `rationale`: prioriza legibilidad y acciones frecuentes en viewport reducido,
+  simplifica el modelo operativo semanal y elimina una vía de edición que ya no
+  aporta valor al flujo de juego.
+- `impact`: se compacta la barra temporal superior, se sustituye la fila de
+  refresco por menú flotante contextual, se simplifica el visor semanal,
+  desaparece el estado textual de la barra inferior, se actualiza el modelo
+  (`WeekRead`/`WeekSummary`) sin notas de semana y se alinea la documentación
+  oficial eliminando referencias activas a `Week.update_notes`.
+- `references`: `src/frosthaven_campaign_journal/ui/main_shell/view/temporal_bar.py`,
+  `src/frosthaven_campaign_journal/ui/main_shell/view/shell_view.py`,
+  `src/frosthaven_campaign_journal/ui/main_shell/view/center_focus.py`,
+  `src/frosthaven_campaign_journal/ui/main_shell/view/center_panel.py`,
+  `src/frosthaven_campaign_journal/ui/main_shell/view/status_bar.py`,
+  `src/frosthaven_campaign_journal/ui/common/resources/groups.py`,
+  `src/frosthaven_campaign_journal/ui/common/resources/resource_total_row.py`,
+  `src/frosthaven_campaign_journal/models/__init__.py`,
+  `src/frosthaven_campaign_journal/data/main_screen_reads.py`,
+  `src/frosthaven_campaign_journal/data/week_writes.py`,
+  `docs/firestore-operation-contract.md`,
+  `docs/conflict-policy.md`,
+  `docs/editability-policy.md`,
+  `docs/minimal-read-queries.md`,
+  `docs/timestamp-order-policy.md`,
+  `docs/concurrency-sync-edge-case-matrix.md`,
+  `docs/resource-ui-catalog.md`,
+  `docs/ui-main-shell-architecture-mvs.md`

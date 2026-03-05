@@ -31,7 +31,6 @@ from frosthaven_campaign_journal.ui.main_shell.view.center_helpers import (
     _build_card,
     _format_navigation_line,
     _format_session_line,
-    _format_week_status_label,
 )
 
 WEEK_ENTRY_CARD_WIDTH = 540
@@ -54,84 +53,8 @@ def _build_focus_empty_mode(data: MainShellViewData) -> ft.Control:
     )
 
 
-def _build_focus_week_mode(data: MainShellViewData, state: MainShellState, week: WeekSummary) -> ft.Control:
-    return ft.Column(
-        expand=True,
-        spacing=12,
-        controls=[
-            _build_week_header_card(data, state, week),
-            _build_week_cards_lane(data, state),
-        ],
-    )
-
-
-def _build_week_header_card(data: MainShellViewData, state: MainShellState, week: WeekSummary) -> ft.Control:
-    week_actions: list[ft.Control] = [
-        ft.OutlinedButton(
-            "Editar notas semana",
-            on_click=state.on_open_week_notes_modal,
-            disabled=data.week_write_pending,
-            height=32,
-        ),
-        ft.OutlinedButton(
-            "Crear entrada",
-            on_click=state.on_open_entry_add_modal,
-            disabled=data.entry_write_pending,
-            height=32,
-        ),
-    ]
-
-    if week.is_closed:
-        week_actions.append(
-            ft.FilledButton(
-                "Reabrir",
-                on_click=state.on_request_week_reopen,
-                disabled=data.week_write_pending,
-                height=32,
-            )
-        )
-    else:
-        week_actions.extend(
-            [
-                ft.FilledButton(
-                    "Cerrar",
-                    on_click=state.on_request_week_close,
-                    disabled=data.week_write_pending,
-                    height=32,
-                ),
-                ft.OutlinedButton(
-                    "Recerrar",
-                    on_click=state.on_request_week_reclose,
-                    disabled=data.week_write_pending,
-                    height=32,
-                ),
-            ]
-        )
-
-    body_lines = [
-        f"Estado: {_format_week_status_label(week.status_label)}",
-        f"Notas de semana: {week.notes_preview or 'Sin notas'}",
-        _format_navigation_line(data),
-    ]
-    if data.week_write_error_message:
-        body_lines.append(f"Error de semana: {data.week_write_error_message}")
-    if data.entry_write_error_message:
-        body_lines.append(f"Error de entrada: {data.entry_write_error_message}")
-
-    return ft.Container(
-        padding=ft.Padding.all(12),
-        bgcolor=COLOR_PANEL_BG,
-        border=ft.Border.all(1, COLOR_PANEL_BORDER),
-        border_radius=8,
-        content=ft.Column(
-            spacing=8,
-            controls=[
-                ft.Text(f"Semana {week.week_number}", size=22, weight=ft.FontWeight.BOLD),
-                ft.Row(spacing=8, wrap=True, controls=week_actions),
-                ft.Text("\n".join(body_lines), size=13, color=COLOR_TEXT_MUTED),
-            ],
-        ),
-    )
+def _build_focus_week_mode(data: MainShellViewData, state: MainShellState, _week: WeekSummary) -> ft.Control:
+    return _build_week_cards_lane(data, state)
 
 
 def _build_week_cards_lane(data: MainShellViewData, state: MainShellState) -> ft.Control:
@@ -144,7 +67,7 @@ def _build_week_cards_lane(data: MainShellViewData, state: MainShellState) -> ft
     if not data.week_entry_cards:
         return _build_card(
             title="Entradas de la semana",
-            body="Semana sin entradas. Usa 'Crear entrada' para añadir un escenario o un puesto fronterizo.",
+            body="Semana sin entradas. Usa el botón + para crear un escenario o un puesto fronterizo.",
         )
 
     card_count = len(data.week_entry_cards)
@@ -212,20 +135,10 @@ def _build_entry_card_header(
     card: WeekEntryCardViewData,
 ) -> ft.Control:
     entry = card.entry
-    header_badges: list[ft.Control] = []
     outcome_icon = _build_entry_outcome_icon(entry)
+    title_controls: list[ft.Control] = [ft.Text(entry.label, size=18, weight=ft.FontWeight.BOLD, color=COLOR_TEXT_HEADING)]
     if outcome_icon is not None:
-        header_badges.append(outcome_icon)
-
-    header_badges.append(
-        ft.Container(
-            padding=ft.Padding(left=8, top=2, right=8, bottom=2),
-            bgcolor=COLOR_PANEL_INNER_BG,
-            border=ft.Border.all(1, COLOR_PANEL_INNER_BORDER),
-            border_radius=999,
-            content=ft.Text(_format_entry_type_label(entry), size=11, color=COLOR_TEXT_MUTED),
-        )
-    )
+        title_controls.append(outcome_icon)
 
     action_buttons: list[ft.Control] = [
         ft.IconButton(
@@ -282,24 +195,18 @@ def _build_entry_card_header(
                         expand=True,
                         spacing=2,
                         controls=[
-                            ft.Text(entry.label, size=18, weight=ft.FontWeight.BOLD, color=COLOR_TEXT_HEADING),
-                            ft.Row(spacing=6, wrap=True, controls=header_badges),
+                            ft.Row(spacing=6, wrap=True, controls=title_controls),
                         ],
                     ),
                     ft.Row(spacing=2, controls=action_buttons),
                 ],
-            ),
-            ft.Text(
-                f"Semana {entry.ref.week_number} · Año {entry.ref.year_number}",
-                size=12,
-                color=COLOR_TEXT_MUTED,
             ),
         ],
     )
 
 
 def _build_entry_card_details(entry: EntrySummary) -> ft.Control:
-    detail_lines: list[str] = [f"Tipo: {_format_entry_type_label(entry)}"]
+    detail_lines: list[str] = []
     if entry.scenario_ref is not None:
         detail_lines.append(f"Referencia de escenario: {entry.scenario_ref}")
 
@@ -547,14 +454,6 @@ def _build_entry_outcome_icon(entry: EntrySummary) -> ft.Control | None:
     if entry.scenario_outcome == "defeat":
         return ft.Icon(ft.Icons.CANCEL, size=18, color=COLOR_DEFEAT_ICON, tooltip="Derrota")
     return None
-
-
-def _format_entry_type_label(entry: EntrySummary) -> str:
-    if entry.entry_type == "scenario":
-        return "Escenario"
-    if entry.entry_type == "outpost":
-        return "Puesto fronterizo"
-    return entry.entry_type
 
 
 def _build_entry_card_status_texts(

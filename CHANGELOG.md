@@ -11,6 +11,11 @@ y usa versionado
 
 ### AÃ±adido
 
+- Flujo operativo manual de releases Android en `docs/android-release-flow.md`
+  (Issue #105).
+- Contrato de empaquetado Flet en `pyproject.toml` para build Android.
+- ConvenciÃ³n de assets de app para build en `src/assets/` (`icon*` y
+  `splash*`).
 - Reglas explÃ­citas de colaboraciÃ³n Kiko-Codex en `AGENTS.md`.
 - Estrategia de divisiÃ³n de tareas mÃºltiples en `docs/context-checklists.md`.
 - Cierre de alcance MVP v1 documentado en `tdd.md` (Issue #5).
@@ -20,6 +25,10 @@ y usa versionado
 
 ### Cambiado
 
+- Estrategia de `.apk` en releases actualizada a flujo manual operativo con
+  referencia oficial en `docs/repo-workflow.md`.
+- `docs/system-map.md` incorpora `docs/android-release-flow.md` como documento
+  oficial de implementaciÃ³n.
 - Recuperada la paridad funcional pre-`#94` en `main_shell` manteniendo
   arquitectura declarativa MVS.
 - `MainShellState` vuelve a integrar wiring real de Firestore para

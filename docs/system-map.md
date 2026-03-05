@@ -6,7 +6,7 @@
 - `purpose`: Mapa navegable de la documentación oficial y su trazabilidad.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-03-04
+- `last_updated`: 2026-03-05
 - `next_review`: 2026-03-15
 
 ## Objetivo
@@ -29,6 +29,8 @@ Este documento permite entender rápidamente:
   - Checklists por trigger.
 - `docs/repo-workflow.md`
   - Flujo Git/GitHub del repo.
+- `docs/android-release-flow.md`
+  - Flujo operativo manual para build y publicación de `.apk` en releases.
 - `docs/domain-glossary.md`
   - Contrato de modelo de dominio e invariantes.
 - `docs/resource-ui-catalog.md`

@@ -1,0 +1,31 @@
+[project]
+name = "frosthaven-campaign-journal"
+version = "0.1.0"
+description = "Aplicación de apoyo para campaña de Frosthaven."
+requires-python = ">=3.12"
+dependencies = [
+  "flet",
+  "google-cloud-firestore",
+  "python-dotenv",
+]
+
+[tool.flet]
+product = "Frosthaven Campaign Journal"
+artifact = "frosthaven_campaign_journal"
+org = "com.kikonet13"
+bundle_id = "com.kikonet13.frosthaven_campaign_journal"
+
+[tool.flet.app]
+path = "src"
+module = "main"
+
+[tool.flet.android]
+adaptive_icon_background = "#F1FAEE"
+split_per_abi = false
+
+[tool.flet.splash]
+color = "#1D3557"
+dark_color = "#1D3557"
+android = true
+ios = true
+web = true

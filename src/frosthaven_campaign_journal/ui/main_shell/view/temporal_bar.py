@@ -23,6 +23,7 @@ from frosthaven_campaign_journal.ui.common.theme.colors import (
     COLOR_WEEK_TILE_CLOSED_TEXT,
     COLOR_WEEK_TILE_SELECTED_BG,
     COLOR_WEEK_TILE_SELECTED_BORDER,
+    COLOR_WEEK_TILE_SELECTED_TEXT,
     COLOR_WHITE,
 )
 from frosthaven_campaign_journal.ui.main_shell.model import MainShellViewData
@@ -214,7 +215,10 @@ def _build_week_tile(
         bgcolor = COLOR_WEEK_TILE_SELECTED_BG
     else:
         bgcolor = COLOR_WEEK_TILE_CLOSED_BG if week.is_closed else COLOR_WEEK_TILE_BG
-    text_color = COLOR_WEEK_TILE_CLOSED_TEXT if week.is_closed else COLOR_TEXT_PRIMARY
+    if is_selected:
+        text_color = COLOR_WEEK_TILE_SELECTED_TEXT
+    else:
+        text_color = COLOR_WEEK_TILE_CLOSED_TEXT if week.is_closed else COLOR_TEXT_PRIMARY
     return ft.Container(
         width=40,
         height=36,

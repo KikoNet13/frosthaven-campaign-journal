@@ -6,10 +6,10 @@ from frosthaven_campaign_journal.models import WeekSummary
 from frosthaven_campaign_journal.ui.main_shell.model import MainShellViewData
 from frosthaven_campaign_journal.ui.main_shell.state import MainShellState
 from frosthaven_campaign_journal.ui.common.theme.colors import (
+    COLOR_ACCENT_BG,
     COLOR_BOTTOM_BAR_BG,
     COLOR_CENTER_BG,
     COLOR_TOP_BAR_BG,
-    COLOR_TOP_NAV_BUTTON_BG,
     COLOR_WHITE,
 )
 from frosthaven_campaign_journal.ui.common.theme.layout import (
@@ -21,7 +21,6 @@ from frosthaven_campaign_journal.ui.main_shell.view.status_bar import build_stat
 from frosthaven_campaign_journal.ui.main_shell.view.temporal_bar import build_top_temporal_bar
 
 _FAB_MENU_TEXT_STYLE = ft.TextStyle(color=COLOR_WHITE, size=15, weight=ft.FontWeight.W_600)
-_FAB_MENU_ITEM_MIN_WIDTH = 228
 _FAB_TRIGGER_SIZE = 56
 
 
@@ -73,22 +72,16 @@ def _build_fab_menu_item(
     disabled: bool,
 ) -> ft.PopupMenuItem:
     return ft.PopupMenuItem(
-        padding=0,
-        height=48,
-        content=ft.Container(
-            width=_FAB_MENU_ITEM_MIN_WIDTH,
-            bgcolor=COLOR_TOP_BAR_BG,
-            padding=ft.Padding(left=14, top=10, right=14, bottom=10),
-            content=ft.Row(
-                spacing=10,
-                vertical_alignment=ft.CrossAxisAlignment.CENTER,
-                controls=[
-                    ft.Icon(icon, size=18, color=COLOR_WHITE),
-                    ft.Text(label, style=_FAB_MENU_TEXT_STYLE),
-                ],
-            ),
+        content=ft.Row(
+            spacing=10,
+            vertical_alignment=ft.CrossAxisAlignment.CENTER,
+            controls=[
+                ft.Icon(icon, size=18, color=COLOR_WHITE),
+                ft.Text(label, style=_FAB_MENU_TEXT_STYLE),
+            ],
         ),
-        label_text_style=_FAB_MENU_TEXT_STYLE,
+        height=46,
+        padding=ft.Padding(left=14, top=9, right=14, bottom=9),
         on_click=on_click,
         disabled=disabled,
     )
@@ -150,7 +143,7 @@ def _build_week_actions_fab(data: MainShellViewData, state: MainShellState) -> f
             width=_FAB_TRIGGER_SIZE,
             height=_FAB_TRIGGER_SIZE,
             alignment=ft.Alignment.CENTER,
-            bgcolor=COLOR_TOP_NAV_BUTTON_BG,
+            bgcolor=COLOR_ACCENT_BG,
             border=ft.Border.all(1.5, COLOR_WHITE),
             border_radius=16,
             shadow=ft.BoxShadow(

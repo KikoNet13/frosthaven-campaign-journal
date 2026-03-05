@@ -6,7 +6,6 @@ import flet as ft
 
 from frosthaven_campaign_journal.models import EntryRef, EntrySummary, ViewerSessionItem, WeekSummary
 from frosthaven_campaign_journal.ui.common.components import LabeledGroupBox
-from frosthaven_campaign_journal.ui.common.components.surfaces import build_inner_surface
 from frosthaven_campaign_journal.ui.common.resources import ResourceDeltaRow, iter_resource_ui_groups
 from frosthaven_campaign_journal.ui.common.theme.colors import (
     COLOR_BOTTOM_BAR_BG,
@@ -21,7 +20,6 @@ from frosthaven_campaign_journal.ui.common.theme.colors import (
     COLOR_SEASON_LABEL_BG,
     COLOR_SEASON_LABEL_BORDER,
     COLOR_SEASON_LABEL_TEXT,
-    COLOR_TEXT_HEADING,
     COLOR_TEXT_MUTED,
     COLOR_TEXT_PRIMARY,
     COLOR_VICTORY_ICON,
@@ -41,7 +39,6 @@ MAX_SESSIONS_PREVIEW = 8
 
 @dataclass(frozen=True)
 class _EntryCardStatusTexts:
-    resources_status: str
     sessions_status: str
 
 
@@ -120,8 +117,7 @@ def _build_week_entry_card(
                         spacing=10,
                         padding=0,
                         controls=[
-                            _build_entry_card_details(card.entry),
-                            _build_entry_resources_card(data, state, card, status_texts.resources_status),
+                            _build_entry_resources_card(data, state, card),
                             _build_entry_sessions_card(data, state, card, status_texts.sessions_status),
                         ],
                     ),
@@ -211,27 +207,10 @@ def _build_entry_card_header(
     )
 
 
-def _build_entry_card_details(entry: EntrySummary) -> ft.Control:
-    detail_lines: list[str] = []
-    if entry.scenario_ref is not None:
-        detail_lines.append(f"Referencia de escenario: {entry.scenario_ref}")
-
-    notes_text = (entry.notes or "").strip()
-    detail_lines.append(f"Notas: {notes_text if notes_text else 'Sin notas'}")
-
-    if entry.order_index is not None:
-        detail_lines.append(f"Índice de orden: {entry.order_index}")
-
-    return build_inner_surface(
-        content=ft.Text("\n".join(detail_lines), size=12, color=COLOR_TEXT_MUTED),
-    )
-
-
 def _build_entry_resources_card(
     data: MainShellViewData,
     state: MainShellState,
     card: WeekEntryCardViewData,
-    status_line: str,
 ) -> ft.Control:
     draft_controls_disabled = card.resource_write_pending
     campaign_resource_totals = data.campaign_resource_totals
@@ -297,10 +276,7 @@ def _build_entry_resources_card(
             )
         )
 
-    controls: list[ft.Control] = [
-        ft.Text("Recursos", size=14, weight=ft.FontWeight.BOLD, color=COLOR_TEXT_HEADING),
-        ft.Text(status_line, size=12, color=COLOR_TEXT_MUTED),
-    ]
+    controls: list[ft.Control] = []
 
     if card.resource_write_error_message:
         controls.append(ft.Text(card.resource_write_error_message, size=12, color=COLOR_ERROR_TEXT))
@@ -328,12 +304,15 @@ def _build_entry_resources_card(
 
     controls.extend(group_cards)
 
-    return ft.Container(
-        padding=ft.Padding.all(12),
-        bgcolor=COLOR_PANEL_INNER_BG,
-        border=ft.Border.all(1, COLOR_PANEL_INNER_BORDER),
-        border_radius=8,
+    return LabeledGroupBox(
+        label="Recursos",
         content=ft.Column(spacing=8, controls=controls),
+        bgcolor=COLOR_PANEL_INNER_BG,
+        border_color=COLOR_PANEL_INNER_BORDER,
+        label_bgcolor=COLOR_SEASON_LABEL_BG,
+        label_border_color=COLOR_SEASON_LABEL_BORDER,
+        label_text_color=COLOR_SEASON_LABEL_TEXT,
+        padding=ft.Padding.all(12),
     )
 
 
@@ -362,7 +341,6 @@ def _build_entry_sessions_card(
         rows.insert(0, ft.Text(f"Error Q8: {card.sessions_error_message}", size=12, color=COLOR_ERROR_TEXT))
 
     controls: list[ft.Control] = [
-        ft.Text("Sesiones", size=14, weight=ft.FontWeight.BOLD, color=COLOR_TEXT_HEADING),
         ft.Text(status_line, size=12, color=COLOR_TEXT_MUTED),
         ft.Text(f"Total jugado (Q8): {card.sessions_total_text}", size=12, color=COLOR_TEXT_MUTED),
         ft.Row(
@@ -395,12 +373,15 @@ def _build_entry_sessions_card(
 
     controls.extend(rows)
 
-    return ft.Container(
-        padding=ft.Padding.all(12),
-        bgcolor=COLOR_PANEL_INNER_BG,
-        border=ft.Border.all(1, COLOR_PANEL_INNER_BORDER),
-        border_radius=8,
+    return LabeledGroupBox(
+        label="Sesiones",
         content=ft.Column(spacing=8, controls=controls),
+        bgcolor=COLOR_PANEL_INNER_BG,
+        border_color=COLOR_PANEL_INNER_BORDER,
+        label_bgcolor=COLOR_SEASON_LABEL_BG,
+        label_border_color=COLOR_SEASON_LABEL_BORDER,
+        label_text_color=COLOR_SEASON_LABEL_TEXT,
+        padding=ft.Padding.all(12),
     )
 
 
@@ -466,11 +447,6 @@ def _build_entry_card_status_texts(
     data: MainShellViewData,
     card: WeekEntryCardViewData,
 ) -> _EntryCardStatusTexts:
-    if card.resource_draft_dirty:
-        resources_status = "Borrador en edición."
-    else:
-        resources_status = "Borrador sincronizado con recursos persistidos."
-
     if data.active_entry_ref is None:
         sessions_status = "Sin sesión activa real."
     elif card.is_active_session_owner:
@@ -479,6 +455,5 @@ def _build_entry_card_status_texts(
         sessions_status = f"Con sesión activa en otra entrada: {data.active_entry_label or 'Entrada activa'}."
 
     return _EntryCardStatusTexts(
-        resources_status=resources_status,
         sessions_status=sessions_status,
     )

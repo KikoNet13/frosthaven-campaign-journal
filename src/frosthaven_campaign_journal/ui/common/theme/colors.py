@@ -39,24 +39,29 @@ def _blend(base: str, target: str, ratio: float) -> str:
 
 
 class SemanticColor(str, Enum):
+    ACCENT_BG = PaletteColor.PUNCH_RED.value
+    ACCENT_TEXT = NEUTRAL_WHITE
+    ACCENT_BG_DISABLED = _blend(PaletteColor.PUNCH_RED.value, NEUTRAL_WHITE, 0.58)
+
     BOTTOM_BAR_BG = PaletteColor.CERULEAN.value
     TOP_BAR_BG = BOTTOM_BAR_BG
     TOP_BAR_TEXT = NEUTRAL_WHITE
-    TOP_NAV_BUTTON_BG = _blend(PaletteColor.OXFORD_NAVY.value, PaletteColor.CERULEAN.value, 0.32)
-    TOP_NAV_BUTTON_DISABLED_BG = _blend(PaletteColor.CERULEAN.value, NEUTRAL_WHITE, 0.48)
-    TOP_NAV_BUTTON_TEXT_DISABLED = _blend(PaletteColor.OXFORD_NAVY.value, NEUTRAL_WHITE, 0.58)
+    TOP_NAV_BUTTON_BG = ACCENT_BG
+    TOP_NAV_BUTTON_DISABLED_BG = ACCENT_BG_DISABLED
+    TOP_NAV_BUTTON_TEXT_DISABLED = _blend(PaletteColor.PUNCH_RED.value, PaletteColor.OXFORD_NAVY.value, 0.55)
 
     WEEK_TILE_BG = _blend(PaletteColor.FROSTED_BLUE.value, NEUTRAL_WHITE, 0.36)
     WEEK_TILE_CLOSED_BG = _blend(PaletteColor.OXFORD_NAVY.value, PaletteColor.FROSTED_BLUE.value, 0.70)
     WEEK_TILE_CLOSED_TEXT = _blend(PaletteColor.OXFORD_NAVY.value, NEUTRAL_WHITE, 0.50)
-    WEEK_TILE_SELECTED_BG = _blend(PaletteColor.CERULEAN.value, NEUTRAL_WHITE, 0.84)
-    WEEK_TILE_SELECTED_BORDER = PaletteColor.CERULEAN.value
+    WEEK_TILE_SELECTED_BG = ACCENT_BG
+    WEEK_TILE_SELECTED_BORDER = _blend(PaletteColor.PUNCH_RED.value, PaletteColor.OXFORD_NAVY.value, 0.18)
+    WEEK_TILE_SELECTED_TEXT = ACCENT_TEXT
     WEEK_BLOCK_SUMMER_BG = _blend(PaletteColor.FROSTED_BLUE.value, PaletteColor.HONEYDEW.value, 0.45)
     WEEK_BLOCK_WINTER_BG = _blend(PaletteColor.FROSTED_BLUE.value, PaletteColor.HONEYDEW.value, 0.45)
     WEEK_BLOCK_BORDER = _blend(PaletteColor.CERULEAN.value, PaletteColor.OXFORD_NAVY.value, 0.25)
-    SEASON_LABEL_BG = _blend(PaletteColor.HONEYDEW.value, NEUTRAL_WHITE, 0.50)
-    SEASON_LABEL_BORDER = _blend(PaletteColor.CERULEAN.value, PaletteColor.OXFORD_NAVY.value, 0.18)
-    SEASON_LABEL_TEXT = _blend(PaletteColor.OXFORD_NAVY.value, NEUTRAL_BLACK, 0.12)
+    SEASON_LABEL_BG = ACCENT_BG
+    SEASON_LABEL_BORDER = _blend(PaletteColor.PUNCH_RED.value, PaletteColor.OXFORD_NAVY.value, 0.18)
+    SEASON_LABEL_TEXT = ACCENT_TEXT
 
     ENTRY_TAB_BG = _blend(PaletteColor.FROSTED_BLUE.value, PaletteColor.HONEYDEW.value, 0.60)
     ENTRY_TAB_SELECTED_UNDERLINE = PaletteColor.CERULEAN.value
@@ -70,9 +75,9 @@ class SemanticColor(str, Enum):
 
     STATUS_GROUP_BG = _blend(PaletteColor.FROSTED_BLUE.value, PaletteColor.HONEYDEW.value, 0.45)
     STATUS_GROUP_BORDER = _blend(PaletteColor.CERULEAN.value, PaletteColor.OXFORD_NAVY.value, 0.25)
-    STATUS_LABEL_BG = _blend(PaletteColor.FROSTED_BLUE.value, NEUTRAL_WHITE, 0.32)
-    STATUS_LABEL_BORDER = _blend(PaletteColor.FROSTED_BLUE.value, PaletteColor.OXFORD_NAVY.value, 0.20)
-    STATUS_LABEL_TEXT = _blend(PaletteColor.OXFORD_NAVY.value, NEUTRAL_BLACK, 0.12)
+    STATUS_LABEL_BG = ACCENT_BG
+    STATUS_LABEL_BORDER = SEASON_LABEL_BORDER
+    STATUS_LABEL_TEXT = ACCENT_TEXT
     STATUS_TEXT_SECONDARY = _blend(NEUTRAL_WHITE, PaletteColor.FROSTED_BLUE.value, 0.28)
     STATUS_TEXT_TERTIARY = _blend(NEUTRAL_WHITE, PaletteColor.FROSTED_BLUE.value, 0.40)
     RESOURCE_TOTAL_VALUE = NEUTRAL_WHITE
@@ -104,6 +109,9 @@ class SemanticColor(str, Enum):
 
 
 COLOR_BOTTOM_BAR_BG = SemanticColor.BOTTOM_BAR_BG.value
+COLOR_ACCENT_BG = SemanticColor.ACCENT_BG.value
+COLOR_ACCENT_BG_DISABLED = SemanticColor.ACCENT_BG_DISABLED.value
+COLOR_ACCENT_TEXT = SemanticColor.ACCENT_TEXT.value
 COLOR_TOP_BAR_BG = COLOR_BOTTOM_BAR_BG
 COLOR_TOP_BAR_TEXT = SemanticColor.TOP_BAR_TEXT.value
 COLOR_TOP_NAV_BUTTON_BG = SemanticColor.TOP_NAV_BUTTON_BG.value
@@ -114,6 +122,7 @@ COLOR_WEEK_TILE_CLOSED_BG = SemanticColor.WEEK_TILE_CLOSED_BG.value
 COLOR_WEEK_TILE_CLOSED_TEXT = SemanticColor.WEEK_TILE_CLOSED_TEXT.value
 COLOR_WEEK_TILE_SELECTED_BG = SemanticColor.WEEK_TILE_SELECTED_BG.value
 COLOR_WEEK_TILE_SELECTED_BORDER = SemanticColor.WEEK_TILE_SELECTED_BORDER.value
+COLOR_WEEK_TILE_SELECTED_TEXT = SemanticColor.WEEK_TILE_SELECTED_TEXT.value
 COLOR_WEEK_BLOCK_SUMMER_BG = SemanticColor.WEEK_BLOCK_SUMMER_BG.value
 COLOR_WEEK_BLOCK_WINTER_BG = SemanticColor.WEEK_BLOCK_WINTER_BG.value
 COLOR_WEEK_BLOCK_BORDER = SemanticColor.WEEK_BLOCK_BORDER.value

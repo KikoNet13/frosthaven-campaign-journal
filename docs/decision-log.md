@@ -1059,3 +1059,35 @@
   `docs/concurrency-sync-edge-case-matrix.md`,
   `docs/resource-ui-catalog.md`,
   `docs/ui-main-shell-architecture-mvs.md`
+
+### DEC-0046
+
+- `date`: 2026-03-05
+- `status`: accepted
+- `problem`: la UI principal seguía sin usar acento de fondo en elementos clave
+  de interacción, los iconos de recursos no cargaban de forma fiable con
+  `flet run src/main.py -d -r` por ubicación de assets y la tarjeta de entry
+  mantenía bloques textuales redundantes para el flujo tablet.
+- `decision`: aplicar acento rojo `PUNCH_RED` en fondos de botones de año,
+  semana seleccionada, FAB y etiquetas de todas las `LabeledGroupBox`;
+  reubicar iconos de `assets/resource-icons/` a
+  `src/assets/resource-icons/`; simplificar la tarjeta de entry retirando el
+  bloque de detalle textual y dejando `Recursos`/`Sesiones` como etiquetas de
+  caja.
+- `rationale`: mejora jerarquía visual y legibilidad de estados seleccionados,
+  alinea la resolución de assets con el modo de arranque real del repo y reduce
+  ruido visual en el visor semanal sin tocar contratos de dominio.
+- `impact`: se introducen semánticos de acento en `colors.py`, la barra
+  temporal y el FAB usan fondo de acento en estado habilitado, las cajas
+  etiquetadas de recursos/sesiones/estaciones pasan a etiqueta roja, y los
+  assets oficiales quedan bajo `src/assets`. Se abren follow-ups de UX:
+  `#102`, `#103`, `#104`.
+- `references`: `src/frosthaven_campaign_journal/ui/common/theme/colors.py`,
+  `src/frosthaven_campaign_journal/ui/main_shell/view/temporal_bar.py`,
+  `src/frosthaven_campaign_journal/ui/main_shell/view/shell_view.py`,
+  `src/frosthaven_campaign_journal/ui/main_shell/view/center_focus.py`,
+  `docs/resource-ui-catalog.md`,
+  `src/assets/resource-icons/`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/102`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/103`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/104`

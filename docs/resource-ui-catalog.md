@@ -62,9 +62,9 @@ dos columnas de plantas se renderizan como un único bloque `Plantas`).
 ## Ubicación oficial de assets
 
 - PNG operativos para UI:
-  - `assets/resource-icons/`
+  - `src/assets/resource-icons/`
 - Fuentes SVG base (custom):
-  - `assets/resource-icons/svg/`
+  - `src/assets/resource-icons/svg/`
 
 ### Convención de nombres
 

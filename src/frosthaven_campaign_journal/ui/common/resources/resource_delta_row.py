@@ -35,13 +35,26 @@ class ResourceDeltaRow(ft.Row):
         if self.on_increment_click is not None:
             self.on_increment_click(event)
 
-    def _build_controls(self) -> list[ft.Control]:
-        return [
-            ft.Image(
+    def _build_resource_icon(self) -> ft.Control:
+        return ft.Container(
+            width=24,
+            alignment=ft.Alignment.CENTER_LEFT,
+            content=ft.Image(
                 src=self.icon_src,
                 width=24,
                 height=24,
+                fit=ft.BoxFit.CONTAIN,
+                error_content=ft.Icon(
+                    ft.Icons.CATEGORY,
+                    size=18,
+                    color=COLOR_TEXT_PRIMARY,
+                ),
             ),
+        )
+
+    def _build_controls(self) -> list[ft.Control]:
+        return [
+            self._build_resource_icon(),
             ft.Row(
                 expand=True,
                 spacing=4,

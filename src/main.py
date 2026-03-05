@@ -3,6 +3,7 @@ from __future__ import annotations
 import flet as ft
 
 from frosthaven_campaign_journal.ui.app_root import build_app_root
+from frosthaven_campaign_journal.ui.common.theme.colors import COLOR_TOP_BAR_BG, COLOR_WHITE
 from examples.app3 import AppExample
 
 
@@ -14,6 +15,20 @@ def main(page: ft.Page) -> None:
     page.padding = 0
     page.horizontal_alignment = ft.CrossAxisAlignment.STRETCH
     page.vertical_alignment = ft.MainAxisAlignment.START
+    page.theme = ft.Theme(
+        popup_menu_theme=ft.PopupMenuTheme(
+            color=COLOR_TOP_BAR_BG,
+            icon_color=COLOR_WHITE,
+            label_text_style=ft.TextStyle(
+                color=COLOR_WHITE,
+                size=15,
+                weight=ft.FontWeight.W_600,
+            ),
+            menu_padding=0,
+            shape=ft.RoundedRectangleBorder(radius=12),
+            elevation=6,
+        )
+    )
     page.render(build_app_root, page)
 
 
@@ -22,7 +37,7 @@ def main_example(page: ft.Page):
 
 
 def run() -> None:
-    ft.run(main)
+    ft.run(main, assets_dir="assets")
     # ft.run(main_example)
 
 

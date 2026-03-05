@@ -19,18 +19,28 @@ class ResourceTotalRow(ft.Row):
     label_width: int = 136
     value_width: int = 44
 
+    def _build_resource_icon(self) -> ft.Control:
+        icon_color = self.icon_color or self.text_color
+        return ft.Image(
+            src=self.icon_src,
+            width=18,
+            height=18,
+            fit=ft.BoxFit.CONTAIN,
+            color=self.icon_color,
+            color_blend_mode=ft.BlendMode.SRC_IN if self.icon_color else None,
+            error_content=ft.Icon(
+                ft.Icons.CATEGORY,
+                size=16,
+                color=icon_color,
+            ),
+        )
+
     def _build_controls(self) -> list[ft.Control]:
         return [
             ft.Container(
                 width=self.icon_width,
                 alignment=ft.Alignment.CENTER_LEFT,
-                content=ft.Image(
-                    src=self.icon_src,
-                    width=18,
-                    height=18,
-                    color=self.icon_color,
-                    color_blend_mode=ft.BlendMode.SRC_IN if self.icon_color else None,
-                ),
+                content=self._build_resource_icon(),
             ),
             ft.Container(
                 width=self.label_width,

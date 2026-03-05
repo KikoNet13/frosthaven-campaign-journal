@@ -6,8 +6,8 @@
 - `purpose`: Definir el modelo de dominio e invariantes operativas del MVP.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-02-24
-- `next_review`: 2026-03-10
+- `last_updated`: 2026-03-02
+- `next_review`: 2026-03-16
 
 ## Objetivo
 
@@ -64,6 +64,9 @@ entidad `Entry` (`scenario|outpost`) y jerarquía temporal explícita:
     resecuenciación densa `1..N`.
 - `type`: `scenario|outpost`.
 - `scenario_ref`: entero positivo obligatorio cuando `type=scenario`.
+- `notes`: texto opcional editable en `open|closed`.
+- `scenario_outcome`: `victory|defeat|null` (solo aplica a `scenario`; en
+  `outpost` se mantiene `null`).
 - `resource_deltas`: mapa `resource_key -> int` (delta neto por recurso en la
   `Entry`; solo claves con delta `!= 0`, ausencia de clave = `0`).
 - `created_at_utc`, `updated_at_utc`: auditoría mínima (server-only).
@@ -147,6 +150,7 @@ entidad `Entry` (`scenario|outpost`) y jerarquía temporal explícita:
 1. Cada `Entry.resource_deltas[resource_key]` es entero firmado y se valida que
    el estado final de totales no sea negativo.
 1. `scenario_ref` es obligatorio y entero positivo para `scenario`.
+1. `scenario_outcome` solo permite `victory|defeat|null`.
 1. No se fija cardinalidad explícita de `outpost` en esta issue.
 
 ## Casos borde y validación
@@ -165,6 +169,8 @@ entidad `Entry` (`scenario|outpost`) y jerarquía temporal explícita:
 1. Borrar `Entry` debe eliminar en cascada sus hijos.
 1. Si el delta neto de un recurso en `Entry.resource_deltas` llega a `0`, la
    clave se elimina del mapa.
+1. `scenario_outcome` con valor distinto de `victory|defeat|null` debe
+   rechazarse.
 1. Reabrir o re-cerrar una `Week` recalcula la semana actual derivada a la
    primera `Week` abierta.
 1. No se permite cerrar/re-cerrar una `Week` si la operación dejaría `0` weeks

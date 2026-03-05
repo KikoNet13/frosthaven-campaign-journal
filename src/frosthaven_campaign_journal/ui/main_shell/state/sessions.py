@@ -5,31 +5,20 @@ from datetime import datetime, timezone
 import flet as ft
 
 from frosthaven_campaign_journal.data import (
-    EntryWriteResult,
-    create_entry,
-    extend_years_plus_one,
     manual_create_session,
     manual_update_session,
-    reorder_entry_within_week,
-    replace_entry_resource_deltas,
     start_session,
     stop_session,
-    update_entry,
-    update_week_notes,
 )
-from frosthaven_campaign_journal.models import ENTRY_RESOURCE_KEYS, EntryRef, entry_ref_matches_selected_week
-from frosthaven_campaign_journal.ui.main_shell.state.types import (
-    EntryFormState,
-    SessionFormState,
-    WeekNotesEditorState,
-)
+from frosthaven_campaign_journal.models import EntryRef
+from frosthaven_campaign_journal.ui.main_shell.state.types import SessionFormState
 from frosthaven_campaign_journal.ui.main_shell.state.utils import (
     find_viewer_session_item,
-    parse_entry_form_values,
     parse_local_datetime,
     parse_optional_local_datetime,
     to_local_strings,
 )
+
 
 class MainShellSessionActionsMixin:
     def on_begin_session(self, _event: ft.ControlEvent | None = None) -> None:
@@ -39,25 +28,49 @@ class MainShellSessionActionsMixin:
         self.on_stop_session(_event)
 
     def on_start_session(self, _event: ft.ControlEvent | None = None) -> None:
-        self._run_session_write(
-            lambda client, entry_ref: start_session(client, entry_ref=entry_ref),
-            success_message="Sesión iniciada.",
-        )
+        if self.local_state.viewer_entry_ref is None:
+            self._set_session_error("No hay entrada en foco para iniciar sesión.")
+            self.notify()
+            return
+        self.on_start_session_for_entry(self.local_state.viewer_entry_ref)
 
     def on_stop_session(self, _event: ft.ControlEvent | None = None) -> None:
+        if self.local_state.viewer_entry_ref is None:
+            self._set_session_error("No hay entrada en foco para detener sesión.")
+            self.notify()
+            return
+        self.on_stop_session_for_entry(self.local_state.viewer_entry_ref)
+
+    def on_start_session_for_entry(self, entry_ref: EntryRef) -> None:
+        self.local_state.viewer_entry_ref = entry_ref
         self._run_session_write(
-            lambda client, entry_ref: stop_session(client, entry_ref=entry_ref),
-            success_message="Sesión detenida.",
+            lambda client, target_ref: start_session(client, entry_ref=target_ref),
+            success_message="Sesión iniciada.",
+            entry_ref=entry_ref,
         )
+        self.notify()
+
+    def on_stop_session_for_entry(self, entry_ref: EntryRef) -> None:
+        self.local_state.viewer_entry_ref = entry_ref
+        self._run_session_write(
+            lambda client, target_ref: stop_session(client, entry_ref=target_ref),
+            success_message="Sesión detenida.",
+            entry_ref=entry_ref,
+        )
+        self.notify()
 
     def on_open_manual_create_session(self, _event: ft.ControlEvent | None = None) -> None:
         if self.local_state.viewer_entry_ref is None:
-            self._set_session_error("No hay entrada en el visor para crear sesión.")
+            self._set_session_error("No hay entrada en foco para crear sesión.")
             self.notify()
             return
+        self.on_open_manual_create_session_for_entry(self.local_state.viewer_entry_ref)
+
+    def on_open_manual_create_session_for_entry(self, entry_ref: EntryRef) -> None:
         now_date, now_time = to_local_strings(datetime.now(timezone.utc))
         self.session_form_state = SessionFormState(
             mode="create",
+            entry_ref=entry_ref,
             session_id=None,
             started_date_local=now_date,
             started_time_local=now_time,
@@ -66,21 +79,56 @@ class MainShellSessionActionsMixin:
             active_without_end=False,
             error_message=None,
         )
+        self.local_state.viewer_entry_ref = entry_ref
         self.notify()
 
     def on_open_manual_edit_session(self, session_id: str) -> None:
         session = find_viewer_session_item(self.entry_panel_state.viewer_sessions, session_id)
-        if session is None:
+        if session is None or self.local_state.viewer_entry_ref is None:
             self._set_session_error("La sesión seleccionada ya no está visible en el visor.")
             self.notify()
             return
+        self._open_manual_edit_session_state(
+            entry_ref=self.local_state.viewer_entry_ref,
+            session_id=session.session_id,
+            started_at_utc=session.started_at_utc,
+            ended_at_utc=session.ended_at_utc,
+        )
+        self.notify()
 
-        started_date, started_time = to_local_strings(session.started_at_utc)
-        ended_date, ended_time = to_local_strings(session.ended_at_utc)
-        is_active = session.ended_at_utc is None
+    def on_open_manual_edit_session_for_entry(self, entry_ref: EntryRef, session_id: str) -> None:
+        session = next(
+            (item for item in self.entry_panel_state.sessions_by_entry_ref.get(entry_ref, []) if item.session_id == session_id),
+            None,
+        )
+        if session is None:
+            self._set_session_error("La sesión seleccionada ya no está visible en la tarjeta.", entry_ref=entry_ref)
+            self.notify()
+            return
+        self._open_manual_edit_session_state(
+            entry_ref=entry_ref,
+            session_id=session.session_id,
+            started_at_utc=session.started_at_utc,
+            ended_at_utc=session.ended_at_utc,
+        )
+        self.local_state.viewer_entry_ref = entry_ref
+        self.notify()
+
+    def _open_manual_edit_session_state(
+        self,
+        *,
+        entry_ref: EntryRef,
+        session_id: str,
+        started_at_utc: object | None,
+        ended_at_utc: object | None,
+    ) -> None:
+        started_date, started_time = to_local_strings(started_at_utc)
+        ended_date, ended_time = to_local_strings(ended_at_utc)
+        is_active = ended_at_utc is None
         self.session_form_state = SessionFormState(
             mode="edit",
-            session_id=session.session_id,
+            entry_ref=entry_ref,
+            session_id=session_id,
             started_date_local=started_date,
             started_time_local=started_time,
             ended_date_local="" if is_active else ended_date,
@@ -88,17 +136,29 @@ class MainShellSessionActionsMixin:
             active_without_end=is_active,
             error_message=None,
         )
-        self.notify()
 
     def on_open_manual_edit_session_click(self, event: ft.ControlEvent) -> None:
-        session_id = event.control.data
-        if isinstance(session_id, str):
-            self.on_open_manual_edit_session(session_id)
+        payload = event.control.data
+        if isinstance(payload, tuple) and len(payload) == 2 and isinstance(payload[0], EntryRef) and isinstance(payload[1], str):
+            self.on_open_manual_edit_session_for_entry(payload[0], payload[1])
+            return
+        if isinstance(payload, str):
+            self.on_open_manual_edit_session(payload)
 
     def on_open_manual_delete_session(self, session_id: str) -> None:
-        session = find_viewer_session_item(self.entry_panel_state.viewer_sessions, session_id)
+        if self.local_state.viewer_entry_ref is None:
+            self._set_session_error("No hay entrada en foco para borrar sesión.")
+            self.notify()
+            return
+        self.on_open_manual_delete_session_for_entry(self.local_state.viewer_entry_ref, session_id)
+
+    def on_open_manual_delete_session_for_entry(self, entry_ref: EntryRef, session_id: str) -> None:
+        session = next(
+            (item for item in self.entry_panel_state.sessions_by_entry_ref.get(entry_ref, []) if item.session_id == session_id),
+            None,
+        )
         if session is None:
-            self._set_session_error("La sesión seleccionada ya no está visible en el visor.")
+            self._set_session_error("La sesión seleccionada ya no está visible en la tarjeta.", entry_ref=entry_ref)
             self.notify()
             return
         self._set_confirmation(
@@ -106,14 +166,17 @@ class MainShellSessionActionsMixin:
             title="Borrar sesión",
             body=f"¿Seguro que quieres borrar la sesión '{session_id}'? Esta acción es irreversible.",
             confirm_label="Borrar",
-            payload=session_id,
+            payload=(entry_ref, session_id),
         )
         self.notify()
 
     def on_open_manual_delete_session_click(self, event: ft.ControlEvent) -> None:
-        session_id = event.control.data
-        if isinstance(session_id, str):
-            self.on_open_manual_delete_session(session_id)
+        payload = event.control.data
+        if isinstance(payload, tuple) and len(payload) == 2 and isinstance(payload[0], EntryRef) and isinstance(payload[1], str):
+            self.on_open_manual_delete_session_for_entry(payload[0], payload[1])
+            return
+        if isinstance(payload, str):
+            self.on_open_manual_delete_session(payload)
 
     def on_session_form_set_started_date(self, event: ft.ControlEvent) -> None:
         if self.session_form_state is None:
@@ -188,6 +251,7 @@ class MainShellSessionActionsMixin:
                     ended_at_utc=ended_at_utc,
                 ),
                 success_message="Sesión creada.",
+                entry_ref=form.entry_ref,
             )
         else:
             if not form.session_id:
@@ -203,9 +267,8 @@ class MainShellSessionActionsMixin:
                     ended_at_utc=ended_at_utc,
                 ),
                 success_message="Sesión actualizada.",
+                entry_ref=form.entry_ref,
             )
         if ok:
             self.session_form_state = None
         self.notify()
-
-    # Week

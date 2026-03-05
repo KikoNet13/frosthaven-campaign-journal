@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import Literal
 
+from frosthaven_campaign_journal.resource_catalog import RESOURCE_KEYS
 
-ENTRY_RESOURCE_KEYS = ("lumber", "metal", "hide")
+ENTRY_RESOURCE_KEYS = RESOURCE_KEYS
 
 
 @dataclass(frozen=True)
@@ -19,6 +21,8 @@ class EntrySummary:
     label: str
     entry_type: str
     scenario_ref: int | None = None
+    notes: str | None = None
+    scenario_outcome: Literal["victory", "defeat"] | None = None
     order_index: int | None = None
     resource_deltas: dict[str, int] = field(default_factory=dict)
     created_at_utc: object | None = None

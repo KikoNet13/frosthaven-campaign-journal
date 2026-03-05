@@ -24,6 +24,8 @@ def map_entry_read_to_summary(entry: EntryRead) -> EntrySummary:
         label=entry.label,
         entry_type=entry.entry_type,
         scenario_ref=entry.scenario_ref,
+        notes=entry.notes,
+        scenario_outcome=entry.scenario_outcome,
         order_index=entry.order_index,
         resource_deltas=dict(entry.resource_deltas),
         created_at_utc=entry.created_at_utc,

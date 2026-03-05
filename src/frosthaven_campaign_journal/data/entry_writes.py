@@ -58,6 +58,8 @@ def create_entry(
             {
                 "type": normalized_type,
                 "scenario_ref": normalized_scenario_ref,
+                "notes": "",
+                "scenario_outcome": None,
                 "order_index": next_order,
                 "resource_deltas": {},
                 "created_at_utc": firestore.SERVER_TIMESTAMP,
@@ -101,6 +103,41 @@ def update_entry(
             {
                 "type": normalized_type,
                 "scenario_ref": normalized_scenario_ref,
+                "updated_at_utc": firestore.SERVER_TIMESTAMP,
+            },
+        )
+
+    try:
+        _run(transaction)
+    except (FirestoreWriteError, FirestoreConflictError, FirestoreTransitionInvalidError, FirestoreValidationError):
+        raise
+    except Exception as exc:  # pragma: no cover
+        _map_firestore_write_exception(exc)
+
+    return EntryWriteResult(entry_ref=entry_ref)
+
+
+def update_entry_notes(
+    client: firestore.Client,
+    *,
+    entry_ref: EntryRef,
+    notes: str,
+) -> EntryWriteResult:
+    if not isinstance(notes, str):
+        raise FirestoreValidationError("`notes` debe ser string.")
+
+    entry_doc_ref = _entry_doc_ref(client, entry_ref)
+    transaction = client.transaction()
+
+    @firestore.transactional
+    def _run(txn: firestore.Transaction) -> None:
+        snapshot = _get_doc_snapshot(txn, entry_doc_ref)
+        if not snapshot.exists:
+            raise FirestoreTransitionInvalidError("La entry ya no existe.")
+        txn.update(
+            entry_doc_ref,
+            {
+                "notes": notes,
                 "updated_at_utc": firestore.SERVER_TIMESTAMP,
             },
         )

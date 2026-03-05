@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import Any
+from typing import Any, Literal
 
 from google.cloud import firestore
 from google.cloud.firestore_v1.base_query import FieldFilter
@@ -35,6 +35,8 @@ class EntryRead:
     label: str
     entry_type: str
     scenario_ref: int | None
+    notes: str | None
+    scenario_outcome: Literal["victory", "defeat"] | None
     order_index: int
     resource_deltas: dict[str, int]
     created_at_utc: Any | None
@@ -489,6 +491,28 @@ def _map_entry_snapshot(snapshot: Any, *, year_number: int, week_number: int) ->
     else:
         scenario_ref = scenario_ref_raw
 
+    notes_raw = data.get("notes")
+    notes: str | None
+    if notes_raw is None:
+        notes = None
+    elif isinstance(notes_raw, str):
+        notes = notes_raw
+    else:
+        raise FirestoreReadError(
+            f"Q5/Q7 inválido: `notes` debe ser string/null en `{snapshot.reference.path}`."
+        )
+
+    scenario_outcome_raw = data.get("scenario_outcome")
+    scenario_outcome: Literal["victory", "defeat"] | None
+    if scenario_outcome_raw is None:
+        scenario_outcome = None
+    elif scenario_outcome_raw in {"victory", "defeat"}:
+        scenario_outcome = scenario_outcome_raw
+    else:
+        raise FirestoreReadError(
+            f"Q5/Q7 inválido: `scenario_outcome` debe ser victory/defeat/null en `{snapshot.reference.path}`."
+        )
+
     resource_deltas_raw = data.get("resource_deltas") or {}
     if not isinstance(resource_deltas_raw, dict):
         raise FirestoreReadError(
@@ -511,6 +535,8 @@ def _map_entry_snapshot(snapshot: Any, *, year_number: int, week_number: int) ->
         label=_build_entry_label(entry_type=entry_type, scenario_ref=scenario_ref, entry_id=snapshot.id),
         entry_type=entry_type,
         scenario_ref=scenario_ref,
+        notes=notes,
+        scenario_outcome=scenario_outcome,
         order_index=order_index,
         resource_deltas=resource_deltas,
         created_at_utc=data.get("created_at_utc"),

@@ -22,6 +22,7 @@ from frosthaven_campaign_journal.ui.main_shell.state.week_entry_resources import
 from frosthaven_campaign_journal.ui.main_shell.state.types import (
     ConfirmationState,
     EntryFormState,
+    EntryNotesEditorState,
     EntryPanelReadState,
     MainScreenReadState,
     SessionFormState,
@@ -46,6 +47,7 @@ class MainShellState(
     env_name: str = field(default_factory=lambda: load_settings().env)
     confirmation_state: ConfirmationState = field(default_factory=ConfirmationState)
     entry_form_state: EntryFormState | None = None
+    entry_notes_editor_state: EntryNotesEditorState | None = None
     session_form_state: SessionFormState | None = None
     week_notes_editor_state: WeekNotesEditorState | None = None
     info_message: str | None = None

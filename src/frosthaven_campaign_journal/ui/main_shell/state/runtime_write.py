@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import Any, Callable
 
-from frosthaven_campaign_journal.config import load_settings
 from frosthaven_campaign_journal.data import (
     CampaignWriteResult,
     EntryWriteResult,
@@ -14,30 +13,14 @@ from frosthaven_campaign_journal.data import (
     FirestoreWriteError,
     ResourceBulkWriteResult,
     WeekWriteResult,
-    build_firestore_client,
     close_week,
     delete_entry,
-    load_main_screen_snapshot,
     manual_delete_session,
-    read_entry_by_ref,
-    read_q5_entries_for_selected_week,
-    read_q8_sessions_for_entry,
     reclose_week,
     reopen_week,
 )
-from frosthaven_campaign_journal.models import (
-    ENTRY_RESOURCE_KEYS,
-    EntryRef,
-    WeekSummary,
-    entry_ref_matches_selected_week,
-)
-from frosthaven_campaign_journal.ui.main_shell.state.types import ConfirmationState
-from frosthaven_campaign_journal.ui.main_shell.state.utils import (
-    find_entry_in_list,
-    map_entry_read_to_summary,
-    map_session_read_to_viewer_session,
-    map_week_read_to_summary,
-)
+from frosthaven_campaign_journal.models import EntryRef, entry_ref_matches_selected_week
+
 
 class MainShellRuntimeWriteMixin:
     def _run_campaign_write(
@@ -78,7 +61,7 @@ class MainShellRuntimeWriteMixin:
             self._refresh_and_reload(
                 selected_year_override=self.local_state.selected_year,
                 reload_q5=(self.local_state.selected_week is not None),
-                reload_q8=(self.local_state.viewer_entry_ref is not None),
+                reload_q8=False,
             )
             if result.auto_stopped_session_id:
                 self.info_message = (
@@ -105,22 +88,25 @@ class MainShellRuntimeWriteMixin:
         action: Callable[[Any, EntryRef], Any],
         *,
         success_message: str,
+        entry_ref: EntryRef | None = None,
     ) -> bool:
-        entry_ref = self.local_state.viewer_entry_ref
-        if entry_ref is None:
-            self._set_session_error("No hay entrada en el visor para gestionar sesiones.")
+        effective_ref = entry_ref or self.local_state.viewer_entry_ref
+        if effective_ref is None:
+            self._set_session_error("No hay entrada disponible para gestionar sesiones.")
             return False
 
         self.entry_panel_state.session_write_pending = True
         self.entry_panel_state.session_write_error_message = None
+        self.entry_panel_state.session_write_pending_by_entry_ref[effective_ref] = True
+        self.entry_panel_state.session_write_error_by_entry_ref[effective_ref] = None
         self.notify()
         try:
             client = self._build_client()
-            action(client, entry_ref)
+            action(client, effective_ref)
             self._refresh_and_reload(
                 selected_year_override=self.local_state.selected_year,
-                reload_q5=False,
-                reload_q8=True,
+                reload_q5=(self.local_state.selected_week is not None),
+                reload_q8=False,
             )
             self.info_message = success_message
             return True
@@ -132,10 +118,12 @@ class MainShellRuntimeWriteMixin:
             FirestoreValidationError,
             FirestoreWriteError,
         ) as exc:
+            self._set_session_error(str(exc), entry_ref=effective_ref)
             self._handle_write_exception(domain="session", exc=exc)
             return False
         finally:
             self.entry_panel_state.session_write_pending = False
+            self.entry_panel_state.session_write_pending_by_entry_ref[effective_ref] = False
 
     def _run_entry_write(
         self,
@@ -184,9 +172,14 @@ class MainShellRuntimeWriteMixin:
         action: Callable[[Any], ResourceBulkWriteResult],
         *,
         success_message: str,
+        entry_ref: EntryRef | None = None,
     ) -> ResourceBulkWriteResult | None:
+        effective_ref = entry_ref or self.local_state.viewer_entry_ref
         self.entry_panel_state.resource_write_pending = True
         self.entry_panel_state.resource_write_error_message = None
+        if effective_ref is not None:
+            self.entry_panel_state.resource_write_pending_by_entry_ref[effective_ref] = True
+            self.entry_panel_state.resource_write_error_by_entry_ref[effective_ref] = None
         self.notify()
         try:
             client = self._build_client()
@@ -194,7 +187,7 @@ class MainShellRuntimeWriteMixin:
             self._refresh_and_reload(
                 selected_year_override=self.local_state.selected_year,
                 reload_q5=(self.local_state.selected_week is not None),
-                reload_q8=(self.local_state.viewer_entry_ref is not None),
+                reload_q8=False,
             )
             self.info_message = success_message
             return result
@@ -206,10 +199,13 @@ class MainShellRuntimeWriteMixin:
             FirestoreValidationError,
             FirestoreWriteError,
         ) as exc:
+            self._set_resource_error(str(exc), entry_ref=effective_ref)
             self._handle_write_exception(domain="resource", exc=exc)
             return None
         finally:
             self.entry_panel_state.resource_write_pending = False
+            if effective_ref is not None:
+                self.entry_panel_state.resource_write_pending_by_entry_ref[effective_ref] = False
 
     def _confirm_week_transition(
         self,
@@ -237,18 +233,26 @@ class MainShellRuntimeWriteMixin:
     def _confirm_delete_entry(self, entry_ref: EntryRef) -> None:
         reload_q5 = entry_ref_matches_selected_week(self.local_state, entry_ref)
 
-        def _clear_viewer_after_delete(_result: EntryWriteResult) -> None:
-            self.local_state.viewer_entry_ref = None
+        def _clear_after_delete(_result: EntryWriteResult) -> None:
+            if (
+                self.entry_notes_editor_state is not None
+                and self.entry_notes_editor_state.entry_ref == entry_ref
+            ):
+                self.entry_notes_editor_state = None
             self.entry_panel_state.viewer_entry_snapshot = None
             self.entry_panel_state.viewer_sessions = []
             self.entry_panel_state.viewer_sessions_error_message = None
-            self._clear_resource_draft_state()
+            self.entry_panel_state.sessions_by_entry_ref.pop(entry_ref, None)
+            self.entry_panel_state.sessions_error_by_entry_ref.pop(entry_ref, None)
+            self._clear_resource_draft_for_entry(entry_ref)
+            if self.local_state.viewer_entry_ref == entry_ref:
+                self.local_state.viewer_entry_ref = None
 
         self._run_entry_write(
             lambda client: delete_entry(client, entry_ref=entry_ref),
             reload_q5=reload_q5,
             reload_q8=False,
-            before_refresh=_clear_viewer_after_delete,
+            before_refresh=_clear_after_delete,
             success_message="Entrada borrada.",
         )
 
@@ -261,6 +265,3 @@ class MainShellRuntimeWriteMixin:
             ),
             success_message="Sesión borrada.",
         )
-
-
-

@@ -5,31 +5,23 @@ from datetime import datetime, timedelta, timezone
 import flet as ft
 
 from frosthaven_campaign_journal.models import WeekSummary
-from frosthaven_campaign_journal.ui.main_shell.model import MainShellViewData
-from frosthaven_campaign_journal.ui.main_shell.view.theme import (
+from frosthaven_campaign_journal.ui.common.components.surfaces import build_inner_surface, build_panel
+from frosthaven_campaign_journal.ui.common.theme.colors import (
+    COLOR_TEXT_HEADING,
     COLOR_TEXT_MUTED,
-    COLOR_TEXT_PRIMARY,
 )
+from frosthaven_campaign_journal.ui.main_shell.model import MainShellViewData
 
 
 def _build_card(title: str, body: str) -> ft.Control:
-    return ft.Container(
-        padding=ft.Padding.all(12),
-        bgcolor="#F6F6F6",
-        border_radius=8,
-        border=ft.Border.all(1, "#D6D6D6"),
-        content=ft.Column(
-            spacing=6,
-            controls=[
-                ft.Text(title, size=14, weight=ft.FontWeight.BOLD, color=COLOR_TEXT_PRIMARY),
-                ft.Container(
-                    padding=ft.Padding.all(8),
-                    bgcolor="#FFFFFF",
-                    border_radius=6,
-                    content=ft.Text(body, size=13, color=COLOR_TEXT_MUTED),
-                ),
-            ],
-        ),
+    return build_panel(
+        spacing=6,
+        controls=[
+            ft.Text(title, size=14, weight=ft.FontWeight.BOLD, color=COLOR_TEXT_HEADING),
+            build_inner_surface(
+                content=ft.Text(body, size=13, color=COLOR_TEXT_MUTED),
+            ),
+        ],
     )
 
 

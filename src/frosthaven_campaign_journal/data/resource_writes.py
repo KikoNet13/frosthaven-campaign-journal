@@ -13,11 +13,11 @@ from frosthaven_campaign_journal.data.write_errors import (
     FirestoreWriteError,
 )
 from frosthaven_campaign_journal.models import EntryRef
+from frosthaven_campaign_journal.resource_catalog import RESOURCE_KEYS
 
 
 CAMPAIGN_ID = "01"
 WEEKS_PER_YEAR = 20
-RESOURCE_KEYS = ("lumber", "metal", "hide")
 
 
 @dataclass(frozen=True)

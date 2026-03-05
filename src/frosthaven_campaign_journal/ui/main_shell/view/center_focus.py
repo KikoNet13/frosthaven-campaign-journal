@@ -9,6 +9,7 @@ from frosthaven_campaign_journal.ui.common.components import LabeledGroupBox
 from frosthaven_campaign_journal.ui.common.components.surfaces import build_inner_surface
 from frosthaven_campaign_journal.ui.common.resources import ResourceDeltaRow, iter_resource_ui_groups
 from frosthaven_campaign_journal.ui.common.theme.colors import (
+    COLOR_BOTTOM_BAR_BG,
     COLOR_DESTRUCTIVE_ICON,
     COLOR_DEFEAT_ICON,
     COLOR_ENTRY_TAB_SELECTED_UNDERLINE,
@@ -24,6 +25,7 @@ from frosthaven_campaign_journal.ui.common.theme.colors import (
     COLOR_TEXT_MUTED,
     COLOR_TEXT_PRIMARY,
     COLOR_VICTORY_ICON,
+    COLOR_WHITE,
 )
 from frosthaven_campaign_journal.ui.main_shell.model import MainShellViewData, WeekEntryCardViewData
 from frosthaven_campaign_journal.ui.main_shell.state import MainShellState
@@ -103,7 +105,7 @@ def _build_week_entry_card(
     return ft.Container(
         expand=True,
         padding=ft.Padding.all(12),
-        bgcolor=COLOR_PANEL_BG,
+        bgcolor=COLOR_BOTTOM_BAR_BG,
         border=ft.Border.all(2 if card.is_active_session_owner else 1, active_border_color),
         border_radius=10,
         content=ft.Column(
@@ -136,7 +138,7 @@ def _build_entry_card_header(
 ) -> ft.Control:
     entry = card.entry
     outcome_icon = _build_entry_outcome_icon(entry)
-    title_controls: list[ft.Control] = [ft.Text(entry.label, size=18, weight=ft.FontWeight.BOLD, color=COLOR_TEXT_HEADING)]
+    title_controls: list[ft.Control] = [ft.Text(entry.label, size=18, weight=ft.FontWeight.BOLD, color=COLOR_WHITE)]
     if outcome_icon is not None:
         title_controls.append(outcome_icon)
 
@@ -144,6 +146,7 @@ def _build_entry_card_header(
         ft.IconButton(
             icon=ft.Icons.ARROW_UPWARD,
             icon_size=18,
+            icon_color=COLOR_WHITE,
             tooltip="Subir",
             data=entry.ref,
             on_click=state.on_reorder_entry_up_click,
@@ -152,6 +155,7 @@ def _build_entry_card_header(
         ft.IconButton(
             icon=ft.Icons.ARROW_DOWNWARD,
             icon_size=18,
+            icon_color=COLOR_WHITE,
             tooltip="Bajar",
             data=entry.ref,
             on_click=state.on_reorder_entry_down_click,
@@ -160,6 +164,7 @@ def _build_entry_card_header(
         ft.IconButton(
             icon=ft.Icons.EDIT,
             icon_size=18,
+            icon_color=COLOR_WHITE,
             tooltip="Editar tipo/ref",
             data=entry.ref,
             on_click=state.on_open_edit_entry_modal_click,
@@ -168,6 +173,7 @@ def _build_entry_card_header(
         ft.IconButton(
             icon=ft.Icons.EDIT_NOTE,
             icon_size=18,
+            icon_color=COLOR_WHITE,
             tooltip="Editar notas",
             data=entry.ref,
             on_click=state.on_open_entry_notes_editor_click,

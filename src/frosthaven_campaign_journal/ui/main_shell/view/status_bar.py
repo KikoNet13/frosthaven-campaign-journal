@@ -6,13 +6,12 @@ from frosthaven_campaign_journal.resource_catalog import ResourceCatalogItem
 from frosthaven_campaign_journal.ui.common.components import LabeledGroupBox
 from frosthaven_campaign_journal.ui.common.resources import ResourceTotalRow, ResourceUiGroup, iter_resource_ui_groups
 from frosthaven_campaign_journal.ui.common.theme.colors import (
-    COLOR_RESOURCE_TOTAL_VALUE,
     COLOR_STATUS_GROUP_BG,
     COLOR_STATUS_GROUP_BORDER,
     COLOR_STATUS_LABEL_BG,
     COLOR_STATUS_LABEL_BORDER,
     COLOR_STATUS_LABEL_TEXT,
-    COLOR_WHITE,
+    COLOR_TEXT_PRIMARY,
 )
 from frosthaven_campaign_journal.ui.main_shell.model import MainShellViewData
 
@@ -87,9 +86,9 @@ def _build_resource_total_row(
         icon_src=item.icon_src,
         label_es=item.label_es,
         total_text=_format_saved_total(resource_totals, item.key),
-        text_color=COLOR_WHITE,
-        value_color=COLOR_RESOURCE_TOTAL_VALUE,
-        icon_color=COLOR_WHITE,
+        text_color=COLOR_TEXT_PRIMARY,
+        value_color=COLOR_TEXT_PRIMARY,
+        icon_color=COLOR_TEXT_PRIMARY,
         label_size=13,
         value_size=14,
         label_width=116,

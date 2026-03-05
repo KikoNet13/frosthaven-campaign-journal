@@ -14,7 +14,10 @@ from frosthaven_campaign_journal.ui.common.theme.colors import (
     COLOR_TOP_BAR_BG,
     COLOR_TOP_BAR_TEXT,
     COLOR_TOP_NAV_BUTTON_BG,
+    COLOR_TOP_NAV_BUTTON_BORDER,
+    COLOR_TOP_NAV_BUTTON_BORDER_DISABLED,
     COLOR_TOP_NAV_BUTTON_DISABLED_BG,
+    COLOR_TOP_NAV_BUTTON_TEXT,
     COLOR_TOP_NAV_BUTTON_TEXT_DISABLED,
     COLOR_WEEK_BLOCK_BORDER,
     COLOR_WEEK_BLOCK_SUMMER_BG,
@@ -22,9 +25,7 @@ from frosthaven_campaign_journal.ui.common.theme.colors import (
     COLOR_WEEK_TILE_CLOSED_BG,
     COLOR_WEEK_TILE_CLOSED_TEXT,
     COLOR_WEEK_TILE_SELECTED_BG,
-    COLOR_WEEK_TILE_SELECTED_BORDER,
     COLOR_WEEK_TILE_SELECTED_TEXT,
-    COLOR_WHITE,
 )
 from frosthaven_campaign_journal.ui.main_shell.model import MainShellViewData
 from frosthaven_campaign_journal.ui.main_shell.state import MainShellState
@@ -190,15 +191,19 @@ def _build_year_nav_button(
     return ft.Container(
         width=50,
         height=50,
-        border_radius=999,
+        border_radius=16,
         bgcolor=COLOR_TOP_NAV_BUTTON_BG if enabled else COLOR_TOP_NAV_BUTTON_DISABLED_BG,
+        border=ft.Border.all(
+            1.5,
+            COLOR_TOP_NAV_BUTTON_BORDER if enabled else COLOR_TOP_NAV_BUTTON_BORDER_DISABLED,
+        ),
         alignment=ft.Alignment.CENTER,
         on_click=on_click,
         content=ft.Text(
             label,
             size=24,
             weight=ft.FontWeight.BOLD,
-            color=COLOR_WHITE if enabled else COLOR_TOP_NAV_BUTTON_TEXT_DISABLED,
+            color=COLOR_TOP_NAV_BUTTON_TEXT if enabled else COLOR_TOP_NAV_BUTTON_TEXT_DISABLED,
         ),
     )
 
@@ -210,7 +215,7 @@ def _build_week_tile(
     disabled: bool,
     on_select_week_click: ft.OptionalEventCallable["ControlEvent"],
 ) -> ft.Control:
-    border = ft.Border.all(2, COLOR_WEEK_TILE_SELECTED_BORDER) if is_selected else None
+    border = None
     if is_selected:
         bgcolor = COLOR_WEEK_TILE_SELECTED_BG
     else:

@@ -1091,3 +1091,43 @@
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/102`,
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/103`,
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/104`
+
+### DEC-0047
+
+- `date`: 2026-03-05
+- `status`: accepted
+- `problem`: tras aplicar acento rojo global en `DEC-0046`, la barra superior y
+  las etiquetas de grupo quedaron demasiado llamativas y las semanas cerradas
+  perdieron legibilidad por contraste de texto insuficiente.
+- `decision`: reducir el acento rojo a `FAB` y semana seleccionada; pasar
+  etiquetas de grupo y botones de año a estilo claro (fondo blanco con borde y
+  texto rojos); aumentar legibilidad de semanas cerradas; y añadir borde visible
+  a semanas abiertas y seleccionada.
+- `rationale`: mejora equilibrio visual y jerarquía de foco (acción principal y
+  selección activa) sin perder identidad de acento ni alterar layout/flujo.
+- `impact`: `colors.py` incorpora semánticos explícitos para borde/texto de
+  navegación anual, borde de semana abierta y contraste de cerradas; en
+  `temporal_bar.py` los botones de año pasan a radio `16` con borde y texto
+  rojos, y las tiles abiertas/seleccionada muestran borde visible.
+- `references`: `src/frosthaven_campaign_journal/ui/common/theme/colors.py`,
+  `src/frosthaven_campaign_journal/ui/main_shell/view/temporal_bar.py`,
+  `src/frosthaven_campaign_journal/ui/main_shell/view/shell_view.py`,
+  `src/frosthaven_campaign_journal/ui/main_shell/view/status_bar.py`,
+  `src/frosthaven_campaign_journal/ui/main_shell/view/center_focus.py`
+
+### DEC-0048
+
+- `date`: 2026-03-05
+- `status`: accepted
+- `problem`: en la barra temporal, los bordes de las tiles de semana añadían
+  ruido visual y el color de semanas abiertas no diferenciaba bien el estado
+  respecto al resto.
+- `decision`: retirar borde en todos los botones de semana y ajustar el color
+  de semanas abiertas a un tono azul claro más visible.
+- `rationale`: prioriza lectura rápida del strip semanal y reduce saturación de
+  contornos en un área con alta densidad de elementos.
+- `impact`: `temporal_bar.py` deja de renderizar bordes en tiles y
+  `colors.py` actualiza `WEEK_TILE_BG` para mejorar diferenciación de semanas
+  abiertas.
+- `references`: `src/frosthaven_campaign_journal/ui/main_shell/view/temporal_bar.py`,
+  `src/frosthaven_campaign_journal/ui/common/theme/colors.py`

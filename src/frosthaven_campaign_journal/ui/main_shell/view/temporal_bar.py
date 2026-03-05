@@ -18,7 +18,6 @@ from frosthaven_campaign_journal.ui.common.theme.colors import (
     COLOR_TOP_NAV_BUTTON_TEXT_DISABLED,
     COLOR_WEEK_BLOCK_BORDER,
     COLOR_WEEK_BLOCK_SUMMER_BG,
-    COLOR_WEEK_BLOCK_WINTER_BG,
     COLOR_WEEK_TILE_BG,
     COLOR_WEEK_TILE_CLOSED_BG,
     COLOR_WEEK_TILE_CLOSED_TEXT,
@@ -94,7 +93,7 @@ def build_top_temporal_bar(data: MainShellViewData, state: MainShellState) -> ft
                     selected_week=data.state.selected_week,
                     disabled=data.campaign_write_pending,
                     on_select_week_click=state.on_select_week_click,
-                    block_bgcolor=COLOR_WEEK_BLOCK_WINTER_BG,
+                    block_bgcolor=COLOR_WEEK_BLOCK_SUMMER_BG,
                     season_label="Invierno",
                 )
             )

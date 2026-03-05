@@ -51,8 +51,8 @@ class SemanticColor(str, Enum):
     WEEK_TILE_CLOSED_TEXT = _blend(PaletteColor.OXFORD_NAVY.value, NEUTRAL_WHITE, 0.50)
     WEEK_TILE_SELECTED_BG = _blend(PaletteColor.CERULEAN.value, NEUTRAL_WHITE, 0.84)
     WEEK_TILE_SELECTED_BORDER = PaletteColor.CERULEAN.value
-    WEEK_BLOCK_SUMMER_BG = _blend(PaletteColor.FROSTED_BLUE.value, PaletteColor.HONEYDEW.value, 0.28)
-    WEEK_BLOCK_WINTER_BG = _blend(PaletteColor.CERULEAN.value, PaletteColor.HONEYDEW.value, 0.60)
+    WEEK_BLOCK_SUMMER_BG = _blend(PaletteColor.FROSTED_BLUE.value, PaletteColor.HONEYDEW.value, 0.45)
+    WEEK_BLOCK_WINTER_BG = _blend(PaletteColor.FROSTED_BLUE.value, PaletteColor.HONEYDEW.value, 0.45)
     WEEK_BLOCK_BORDER = _blend(PaletteColor.CERULEAN.value, PaletteColor.OXFORD_NAVY.value, 0.25)
     SEASON_LABEL_BG = _blend(PaletteColor.HONEYDEW.value, NEUTRAL_WHITE, 0.50)
     SEASON_LABEL_BORDER = _blend(PaletteColor.CERULEAN.value, PaletteColor.OXFORD_NAVY.value, 0.18)
@@ -68,8 +68,8 @@ class SemanticColor(str, Enum):
     PANEL_INNER_BG = PaletteColor.HONEYDEW.value
     PANEL_INNER_BORDER = _blend(PaletteColor.CERULEAN.value, PaletteColor.HONEYDEW.value, 0.62)
 
-    STATUS_GROUP_BG = _blend(PaletteColor.CERULEAN.value, PaletteColor.OXFORD_NAVY.value, 0.10)
-    STATUS_GROUP_BORDER = _blend(PaletteColor.FROSTED_BLUE.value, PaletteColor.CERULEAN.value, 0.35)
+    STATUS_GROUP_BG = _blend(PaletteColor.FROSTED_BLUE.value, PaletteColor.HONEYDEW.value, 0.45)
+    STATUS_GROUP_BORDER = _blend(PaletteColor.CERULEAN.value, PaletteColor.OXFORD_NAVY.value, 0.25)
     STATUS_LABEL_BG = _blend(PaletteColor.FROSTED_BLUE.value, NEUTRAL_WHITE, 0.32)
     STATUS_LABEL_BORDER = _blend(PaletteColor.FROSTED_BLUE.value, PaletteColor.OXFORD_NAVY.value, 0.20)
     STATUS_LABEL_TEXT = _blend(PaletteColor.OXFORD_NAVY.value, NEUTRAL_BLACK, 0.12)

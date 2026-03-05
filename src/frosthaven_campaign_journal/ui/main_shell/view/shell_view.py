@@ -8,9 +8,8 @@ from frosthaven_campaign_journal.ui.main_shell.state import MainShellState
 from frosthaven_campaign_journal.ui.common.theme.colors import (
     COLOR_BOTTOM_BAR_BG,
     COLOR_CENTER_BG,
-    COLOR_TEXT_PRIMARY,
-    COLOR_TOP_NAV_BUTTON_BG,
     COLOR_TOP_BAR_BG,
+    COLOR_TOP_NAV_BUTTON_BG,
     COLOR_WHITE,
 )
 from frosthaven_campaign_journal.ui.common.theme.layout import (
@@ -21,7 +20,7 @@ from frosthaven_campaign_journal.ui.main_shell.view.center_panel import build_ce
 from frosthaven_campaign_journal.ui.main_shell.view.status_bar import build_status_bar
 from frosthaven_campaign_journal.ui.main_shell.view.temporal_bar import build_top_temporal_bar
 
-_FAB_MENU_TEXT_STYLE = ft.TextStyle(color=COLOR_TEXT_PRIMARY, size=15)
+_FAB_MENU_TEXT_STYLE = ft.TextStyle(color=COLOR_WHITE, size=15, weight=ft.FontWeight.W_600)
 _FAB_MENU_ITEM_MIN_WIDTH = 228
 _FAB_TRIGGER_SIZE = 56
 
@@ -74,13 +73,17 @@ def _build_fab_menu_item(
     disabled: bool,
 ) -> ft.PopupMenuItem:
     return ft.PopupMenuItem(
+        padding=0,
+        height=48,
         content=ft.Container(
             width=_FAB_MENU_ITEM_MIN_WIDTH,
+            bgcolor=COLOR_TOP_BAR_BG,
+            padding=ft.Padding(left=14, top=10, right=14, bottom=10),
             content=ft.Row(
                 spacing=10,
                 vertical_alignment=ft.CrossAxisAlignment.CENTER,
                 controls=[
-                    ft.Icon(icon, size=18, color=COLOR_TEXT_PRIMARY),
+                    ft.Icon(icon, size=18, color=COLOR_WHITE),
                     ft.Text(label, style=_FAB_MENU_TEXT_STYLE),
                 ],
             ),
@@ -161,6 +164,7 @@ def _build_week_actions_fab(data: MainShellViewData, state: MainShellState) -> f
         tooltip="Acciones de semana",
         shape=ft.RoundedRectangleBorder(radius=16),
         padding=0,
+        menu_padding=0,
         size_constraints=ft.BoxConstraints(
             min_width=_FAB_TRIGGER_SIZE,
             min_height=_FAB_TRIGGER_SIZE,

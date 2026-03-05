@@ -140,6 +140,9 @@ class MainShellWeekEntryResourceActionsMixin:
         if isinstance(entry_ref, EntryRef):
             self._open_entry_delete_confirm_for_ref(entry_ref)
 
+    def on_open_entry_delete_confirm_for_entry(self, entry_ref: EntryRef) -> None:
+        self._open_entry_delete_confirm_for_ref(entry_ref)
+
     def on_reorder_entry_up(self, _event: ft.ControlEvent | None = None) -> None:
         entry_ref = self._get_viewer_entry_ref_for_entry_write()
         if entry_ref is None:
@@ -159,12 +162,11 @@ class MainShellWeekEntryResourceActionsMixin:
         self.notify()
 
     def _reorder_entry_by_ref(self, entry_ref: EntryRef, *, direction: str) -> None:
-        success_message = "Entrada movida hacia arriba." if direction == "up" else "Entrada movida hacia abajo."
         self._run_entry_write(
             lambda client: reorder_entry_within_week(client, entry_ref=entry_ref, direction=direction),
             reload_q5=entry_ref_matches_selected_week(self.local_state, entry_ref),
             reload_q8=False,
-            success_message=success_message,
+            success_message="Entrada reordenada.",
         )
 
     def on_reorder_entry_up_click(self, event: ft.ControlEvent) -> None:
@@ -178,6 +180,14 @@ class MainShellWeekEntryResourceActionsMixin:
         if isinstance(entry_ref, EntryRef):
             self._reorder_entry_by_ref(entry_ref, direction="down")
             self.notify()
+
+    def on_reorder_entry_left_for_entry(self, entry_ref: EntryRef) -> None:
+        self._reorder_entry_by_ref(entry_ref, direction="up")
+        self.notify()
+
+    def on_reorder_entry_right_for_entry(self, entry_ref: EntryRef) -> None:
+        self._reorder_entry_by_ref(entry_ref, direction="down")
+        self.notify()
 
     def on_entry_form_set_type(self, event: ft.ControlEvent) -> None:
         form = self.entry_form_state

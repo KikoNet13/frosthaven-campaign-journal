@@ -72,8 +72,14 @@ def _build_week_cards_lane(data: MainShellViewData, state: MainShellState) -> ft
 
     card_count = len(data.week_entry_cards)
     wrappers: list[ft.Control] = []
-    for card in data.week_entry_cards:
-        card_control = _build_week_entry_card(data, state, card)
+    for card_index, card in enumerate(data.week_entry_cards):
+        card_control = _build_week_entry_card(
+            data,
+            state,
+            card,
+            card_index=card_index,
+            card_count=card_count,
+        )
         if card_count <= 2:
             wrappers.append(ft.Container(expand=1, content=card_control))
         else:
@@ -96,6 +102,9 @@ def _build_week_entry_card(
     data: MainShellViewData,
     state: MainShellState,
     card: WeekEntryCardViewData,
+    *,
+    card_index: int,
+    card_count: int,
 ) -> ft.Control:
     active_border_color = COLOR_ENTRY_TAB_SELECTED_UNDERLINE if card.is_active_session_owner else COLOR_PANEL_BORDER
     status_texts = _build_entry_card_status_texts(data, card)
@@ -110,7 +119,13 @@ def _build_week_entry_card(
             expand=True,
             spacing=10,
             controls=[
-                _build_entry_card_header(data, state, card),
+                _build_entry_card_header(
+                    data,
+                    state,
+                    card,
+                    can_move_left=(card_index > 0),
+                    can_move_right=(card_index < card_count - 1),
+                ),
                 ft.Container(
                     expand=True,
                     content=ft.ListView(
@@ -132,6 +147,9 @@ def _build_entry_card_header(
     data: MainShellViewData,
     state: MainShellState,
     card: WeekEntryCardViewData,
+    *,
+    can_move_left: bool,
+    can_move_right: bool,
 ) -> ft.Control:
     entry = card.entry
     outcome_icon = _build_entry_outcome_icon(entry)
@@ -141,33 +159,6 @@ def _build_entry_card_header(
 
     action_buttons: list[ft.Control] = [
         ft.IconButton(
-            icon=ft.Icons.ARROW_UPWARD,
-            icon_size=18,
-            icon_color=COLOR_WHITE,
-            tooltip="Subir",
-            data=entry.ref,
-            on_click=state.on_reorder_entry_up_click,
-            disabled=card.entry_write_pending,
-        ),
-        ft.IconButton(
-            icon=ft.Icons.ARROW_DOWNWARD,
-            icon_size=18,
-            icon_color=COLOR_WHITE,
-            tooltip="Bajar",
-            data=entry.ref,
-            on_click=state.on_reorder_entry_down_click,
-            disabled=card.entry_write_pending,
-        ),
-        ft.IconButton(
-            icon=ft.Icons.EDIT,
-            icon_size=18,
-            icon_color=COLOR_WHITE,
-            tooltip="Editar tipo/ref",
-            data=entry.ref,
-            on_click=state.on_open_edit_entry_modal_click,
-            disabled=card.entry_write_pending,
-        ),
-        ft.IconButton(
             icon=ft.Icons.EDIT_NOTE,
             icon_size=18,
             icon_color=COLOR_WHITE,
@@ -176,32 +167,67 @@ def _build_entry_card_header(
             on_click=state.on_open_entry_notes_editor_click,
             disabled=card.entry_write_pending,
         ),
-        ft.IconButton(
-            icon=ft.Icons.SAVE_OUTLINED,
-            icon_size=18,
-            icon_color=COLOR_WHITE,
-            tooltip="Guardar recursos",
-            on_click=lambda _event, entry_ref=entry.ref: state.on_save_resource_draft_for_entry(entry_ref),
-            disabled=card.resource_write_pending or not card.resource_draft_dirty,
-        ),
-        ft.IconButton(
-            icon=ft.Icons.UNDO,
-            icon_size=18,
-            icon_color=COLOR_WHITE,
-            tooltip="Descartar cambios de recursos",
-            on_click=lambda _event, entry_ref=entry.ref: state.on_discard_resource_draft_for_entry(entry_ref),
-            disabled=card.resource_write_pending or not card.resource_draft_dirty,
-        ),
-        ft.IconButton(
-            icon=ft.Icons.DELETE_OUTLINE,
-            icon_size=18,
-            tooltip="Eliminar",
-            icon_color=COLOR_DESTRUCTIVE_ICON,
-            data=entry.ref,
-            on_click=state.on_open_entry_delete_confirm_click,
-            disabled=card.entry_write_pending,
-        ),
     ]
+    if card.resource_draft_dirty:
+        action_buttons.extend(
+            [
+                ft.IconButton(
+                    icon=ft.Icons.SAVE_OUTLINED,
+                    icon_size=18,
+                    icon_color=COLOR_WHITE,
+                    tooltip="Guardar recursos",
+                    on_click=lambda _event, entry_ref=entry.ref: state.on_save_resource_draft_for_entry(entry_ref),
+                    disabled=card.resource_write_pending,
+                ),
+                ft.IconButton(
+                    icon=ft.Icons.DO_NOT_DISTURB_ALT_OUTLINED,
+                    icon_size=18,
+                    icon_color=COLOR_WHITE,
+                    tooltip="No guardar cambios de recursos",
+                    on_click=lambda _event, entry_ref=entry.ref: state.on_discard_resource_draft_for_entry(entry_ref),
+                    disabled=card.resource_write_pending,
+                ),
+            ]
+        )
+
+    action_buttons.append(
+        ft.PopupMenuButton(
+            icon=ft.Icons.MORE_HORIZ,
+            icon_color=COLOR_WHITE,
+            tooltip="Más acciones",
+            items=[
+                ft.PopupMenuItem(
+                    icon=ft.Icons.ARROW_BACK,
+                    text="Mover a la izquierda",
+                    on_click=(
+                        lambda _event, entry_ref=entry.ref: state.on_reorder_entry_left_for_entry(entry_ref)
+                    ),
+                    disabled=card.entry_write_pending or not can_move_left,
+                ),
+                ft.PopupMenuItem(
+                    icon=ft.Icons.ARROW_FORWARD,
+                    text="Mover a la derecha",
+                    on_click=(
+                        lambda _event, entry_ref=entry.ref: state.on_reorder_entry_right_for_entry(entry_ref)
+                    ),
+                    disabled=card.entry_write_pending or not can_move_right,
+                ),
+                ft.PopupMenuItem(
+                    on_click=(
+                        lambda _event, entry_ref=entry.ref: state.on_open_entry_delete_confirm_for_entry(entry_ref)
+                    ),
+                    disabled=card.entry_write_pending,
+                    content=ft.Row(
+                        spacing=8,
+                        controls=[
+                            ft.Icon(ft.Icons.DELETE_OUTLINE, size=18, color=COLOR_DESTRUCTIVE_ICON),
+                            ft.Text("Eliminar entrada", color=COLOR_DESTRUCTIVE_ICON),
+                        ],
+                    ),
+                ),
+            ],
+        )
+    )
 
     return ft.Column(
         spacing=6,

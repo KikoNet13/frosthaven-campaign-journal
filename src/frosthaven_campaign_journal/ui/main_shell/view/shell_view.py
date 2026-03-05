@@ -8,6 +8,7 @@ from frosthaven_campaign_journal.ui.main_shell.state import MainShellState
 from frosthaven_campaign_journal.ui.common.theme.colors import (
     COLOR_BOTTOM_BAR_BG,
     COLOR_CENTER_BG,
+    COLOR_TEXT_PRIMARY,
     COLOR_TOP_NAV_BUTTON_BG,
     COLOR_TOP_BAR_BG,
     COLOR_WHITE,
@@ -19,6 +20,10 @@ from frosthaven_campaign_journal.ui.common.theme.layout import (
 from frosthaven_campaign_journal.ui.main_shell.view.center_panel import build_center_panel
 from frosthaven_campaign_journal.ui.main_shell.view.status_bar import build_status_bar
 from frosthaven_campaign_journal.ui.main_shell.view.temporal_bar import build_top_temporal_bar
+
+_FAB_MENU_TEXT_STYLE = ft.TextStyle(color=COLOR_TEXT_PRIMARY, size=15)
+_FAB_MENU_ITEM_MIN_WIDTH = 228
+_FAB_TRIGGER_SIZE = 56
 
 
 def build_main_shell_view(state: MainShellState) -> ft.Control:
@@ -43,7 +48,7 @@ def build_main_shell_view(state: MainShellState) -> ft.Control:
             content=build_status_bar(data),
         ),
         floating_action_button=_build_week_actions_fab(data, state),
-        floating_action_button_location=ft.FloatingActionButtonLocation.END_FLOAT,
+        floating_action_button_location=ft.FloatingActionButtonLocation.END_DOCKED,
         content=ft.Container(
             expand=True,
             bgcolor=COLOR_CENTER_BG,
@@ -61,6 +66,31 @@ def _find_selected_week(data: MainShellViewData) -> WeekSummary | None:
     return None
 
 
+def _build_fab_menu_item(
+    *,
+    icon: ft.IconData,
+    label: str,
+    on_click,
+    disabled: bool,
+) -> ft.PopupMenuItem:
+    return ft.PopupMenuItem(
+        content=ft.Container(
+            width=_FAB_MENU_ITEM_MIN_WIDTH,
+            content=ft.Row(
+                spacing=10,
+                vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                controls=[
+                    ft.Icon(icon, size=18, color=COLOR_TEXT_PRIMARY),
+                    ft.Text(label, style=_FAB_MENU_TEXT_STYLE),
+                ],
+            ),
+        ),
+        label_text_style=_FAB_MENU_TEXT_STYLE,
+        on_click=on_click,
+        disabled=disabled,
+    )
+
+
 def _build_week_actions_fab(data: MainShellViewData, state: MainShellState) -> ft.Control | None:
     selected_week = _find_selected_week(data)
     if selected_week is None:
@@ -68,9 +98,9 @@ def _build_week_actions_fab(data: MainShellViewData, state: MainShellState) -> f
 
     write_pending = data.week_write_pending or data.entry_write_pending or data.campaign_write_pending
     menu_items: list[ft.PopupMenuItem] = [
-        ft.PopupMenuItem(
+        _build_fab_menu_item(
             icon=ft.Icons.ADD_CIRCLE_OUTLINE,
-            content="Crear entrada",
+            label="Crear entrada",
             on_click=state.on_open_entry_add_modal,
             disabled=data.entry_write_pending or data.campaign_write_pending,
         ),
@@ -78,9 +108,9 @@ def _build_week_actions_fab(data: MainShellViewData, state: MainShellState) -> f
 
     if selected_week.is_closed:
         menu_items.append(
-            ft.PopupMenuItem(
+            _build_fab_menu_item(
                 icon=ft.Icons.LOCK_OPEN,
-                content="Reabrir semana",
+                label="Reabrir semana",
                 on_click=state.on_request_week_reopen,
                 disabled=write_pending,
             )
@@ -88,15 +118,15 @@ def _build_week_actions_fab(data: MainShellViewData, state: MainShellState) -> f
     else:
         menu_items.extend(
             [
-                ft.PopupMenuItem(
+                _build_fab_menu_item(
                     icon=ft.Icons.LOCK,
-                    content="Cerrar semana",
+                    label="Cerrar semana",
                     on_click=state.on_request_week_close,
                     disabled=write_pending,
                 ),
-                ft.PopupMenuItem(
+                _build_fab_menu_item(
                     icon=ft.Icons.LOCK_RESET,
-                    content="Recerrar semana",
+                    label="Recerrar semana",
                     on_click=state.on_request_week_reclose,
                     disabled=write_pending,
                 ),
@@ -104,21 +134,36 @@ def _build_week_actions_fab(data: MainShellViewData, state: MainShellState) -> f
         )
 
     menu_items.append(
-        ft.PopupMenuItem(
+        _build_fab_menu_item(
             icon=ft.Icons.REFRESH,
-            content="Refrescar",
+            label="Refrescar",
             on_click=state.on_manual_refresh,
             disabled=data.campaign_write_pending,
         )
     )
 
     return ft.PopupMenuButton(
-        icon=ft.Icons.ADD,
-        icon_size=26,
-        icon_color=COLOR_WHITE,
+        content=ft.Container(
+            width=_FAB_TRIGGER_SIZE,
+            height=_FAB_TRIGGER_SIZE,
+            alignment=ft.Alignment.CENTER,
+            bgcolor=COLOR_TOP_NAV_BUTTON_BG,
+            border=ft.Border.all(1.5, COLOR_WHITE),
+            border_radius=16,
+            shadow=ft.BoxShadow(
+                spread_radius=0,
+                blur_radius=12,
+                color=ft.Colors.with_opacity(0.32, ft.Colors.BLACK),
+                offset=ft.Offset(0, 3),
+            ),
+            content=ft.Icon(ft.Icons.ADD, size=30, color=COLOR_WHITE),
+        ),
         tooltip="Acciones de semana",
-        bgcolor=COLOR_TOP_NAV_BUTTON_BG,
-        shape=ft.CircleBorder(),
-        padding=14,
+        shape=ft.RoundedRectangleBorder(radius=16),
+        padding=0,
+        size_constraints=ft.BoxConstraints(
+            min_width=_FAB_TRIGGER_SIZE,
+            min_height=_FAB_TRIGGER_SIZE,
+        ),
         items=menu_items,
     )

@@ -15,11 +15,12 @@ from frosthaven_campaign_journal.ui.common.theme.colors import (
     COLOR_ERROR_TEXT,
     COLOR_PANEL_BG,
     COLOR_PANEL_BORDER,
-    COLOR_PANEL_INNER_BG,
     COLOR_PANEL_INNER_BORDER,
-    COLOR_SEASON_LABEL_BG,
-    COLOR_SEASON_LABEL_BORDER,
-    COLOR_SEASON_LABEL_TEXT,
+    COLOR_STATUS_GROUP_BG,
+    COLOR_STATUS_GROUP_BORDER,
+    COLOR_STATUS_LABEL_BG,
+    COLOR_STATUS_LABEL_BORDER,
+    COLOR_STATUS_LABEL_TEXT,
     COLOR_TEXT_MUTED,
     COLOR_TEXT_PRIMARY,
     COLOR_VICTORY_ICON,
@@ -176,6 +177,22 @@ def _build_entry_card_header(
             disabled=card.entry_write_pending,
         ),
         ft.IconButton(
+            icon=ft.Icons.SAVE_OUTLINED,
+            icon_size=18,
+            icon_color=COLOR_WHITE,
+            tooltip="Guardar recursos",
+            on_click=lambda _event, entry_ref=entry.ref: state.on_save_resource_draft_for_entry(entry_ref),
+            disabled=card.resource_write_pending or not card.resource_draft_dirty,
+        ),
+        ft.IconButton(
+            icon=ft.Icons.UNDO,
+            icon_size=18,
+            icon_color=COLOR_WHITE,
+            tooltip="Descartar cambios de recursos",
+            on_click=lambda _event, entry_ref=entry.ref: state.on_discard_resource_draft_for_entry(entry_ref),
+            disabled=card.resource_write_pending or not card.resource_draft_dirty,
+        ),
+        ft.IconButton(
             icon=ft.Icons.DELETE_OUTLINE,
             icon_size=18,
             tooltip="Eliminar",
@@ -215,7 +232,7 @@ def _build_entry_resources_card(
     draft_controls_disabled = card.resource_write_pending
     campaign_resource_totals = data.campaign_resource_totals
 
-    group_cards: list[ft.Control] = []
+    group_cards_by_key: dict[str, ft.Control] = {}
     for group in iter_resource_ui_groups():
         column_controls: list[ft.Control] = []
         for group_column in group.columns:
@@ -263,56 +280,44 @@ def _build_entry_resources_card(
                 controls=column_controls,
             )
 
-        group_cards.append(
-            LabeledGroupBox(
-                label=group.label_es,
-                content=group_content,
-                bgcolor=COLOR_PANEL_INNER_BG,
-                border_color=COLOR_PANEL_INNER_BORDER,
-                label_bgcolor=COLOR_SEASON_LABEL_BG,
-                label_border_color=COLOR_SEASON_LABEL_BORDER,
-                label_text_color=COLOR_SEASON_LABEL_TEXT,
-                padding=ft.Padding(left=8, top=10, right=8, bottom=8),
+        group_cards_by_key[group.key] = LabeledGroupBox(
+            label=group.label_es,
+            content=group_content,
+            bgcolor=COLOR_STATUS_GROUP_BG,
+            border_color=COLOR_STATUS_GROUP_BORDER,
+            label_bgcolor=COLOR_STATUS_LABEL_BG,
+            label_border_color=COLOR_STATUS_LABEL_BORDER,
+            label_text_color=COLOR_STATUS_LABEL_TEXT,
+            padding=ft.Padding(left=8, top=10, right=8, bottom=8),
+        )
+
+    layout_rows: list[ft.Control] = []
+
+    if card.resource_write_error_message:
+        layout_rows.append(ft.Text(card.resource_write_error_message, size=12, color=COLOR_ERROR_TEXT))
+
+    first_row_boxes: list[ft.Control] = []
+    for group_key in ("others", "materials"):
+        group_box = group_cards_by_key.get(group_key)
+        if group_box is not None:
+            first_row_boxes.append(ft.Container(expand=1, content=group_box))
+
+    if first_row_boxes:
+        layout_rows.append(
+            ft.Row(
+                spacing=8,
+                vertical_alignment=ft.CrossAxisAlignment.START,
+                controls=first_row_boxes,
             )
         )
 
-    controls: list[ft.Control] = []
+    plants_box = group_cards_by_key.get("plants")
+    if plants_box is not None:
+        layout_rows.append(plants_box)
 
-    if card.resource_write_error_message:
-        controls.append(ft.Text(card.resource_write_error_message, size=12, color=COLOR_ERROR_TEXT))
-
-    controls.append(
-        ft.Row(
-            spacing=8,
-            wrap=True,
-            controls=[
-                ft.FilledButton(
-                    "Guardar recursos",
-                    on_click=lambda _event, entry_ref=card.entry.ref: state.on_save_resource_draft_for_entry(entry_ref),
-                    disabled=card.resource_write_pending or not card.resource_draft_dirty,
-                    height=32,
-                ),
-                ft.OutlinedButton(
-                    "Descartar cambios",
-                    on_click=lambda _event, entry_ref=card.entry.ref: state.on_discard_resource_draft_for_entry(entry_ref),
-                    disabled=card.resource_write_pending or not card.resource_draft_dirty,
-                    height=32,
-                ),
-            ],
-        )
-    )
-
-    controls.extend(group_cards)
-
-    return LabeledGroupBox(
-        label="Recursos",
-        content=ft.Column(spacing=8, controls=controls),
-        bgcolor=COLOR_PANEL_INNER_BG,
-        border_color=COLOR_PANEL_INNER_BORDER,
-        label_bgcolor=COLOR_SEASON_LABEL_BG,
-        label_border_color=COLOR_SEASON_LABEL_BORDER,
-        label_text_color=COLOR_SEASON_LABEL_TEXT,
-        padding=ft.Padding.all(12),
+    return ft.Column(
+        spacing=8,
+        controls=layout_rows,
     )
 
 
@@ -376,11 +381,11 @@ def _build_entry_sessions_card(
     return LabeledGroupBox(
         label="Sesiones",
         content=ft.Column(spacing=8, controls=controls),
-        bgcolor=COLOR_PANEL_INNER_BG,
-        border_color=COLOR_PANEL_INNER_BORDER,
-        label_bgcolor=COLOR_SEASON_LABEL_BG,
-        label_border_color=COLOR_SEASON_LABEL_BORDER,
-        label_text_color=COLOR_SEASON_LABEL_TEXT,
+        bgcolor=COLOR_STATUS_GROUP_BG,
+        border_color=COLOR_STATUS_GROUP_BORDER,
+        label_bgcolor=COLOR_STATUS_LABEL_BG,
+        label_border_color=COLOR_STATUS_LABEL_BORDER,
+        label_text_color=COLOR_STATUS_LABEL_TEXT,
         padding=ft.Padding.all(12),
     )
 

@@ -24,6 +24,7 @@ dist/
 .env.*
 !.env.example
 .secrets/
+src/frosthaven_campaign_journal/config/_mobile_runtime_secrets.py
 
 # Logs
 *.log

@@ -20,13 +20,13 @@ class FirestoreReadError(Exception):
 def validate_firestore_settings(settings: Settings) -> None:
     if not settings.firestore_project_id:
         raise FirestoreConfigError(
-            "Falta FIRESTORE_PROJECT_ID. Configura la variable en .env o en el entorno."
+            "Falta FIRESTORE_PROJECT_ID. Configúralo en .env, en el entorno o en secretos móviles embebidos."
         )
 
     credentials_path = settings.google_application_credentials
     if not credentials_path:
         raise FirestoreConfigError(
-            "Falta GOOGLE_APPLICATION_CREDENTIALS. Configura la ruta del JSON de credenciales."
+            "Falta GOOGLE_APPLICATION_CREDENTIALS. Configura la ruta del JSON en .env, en el entorno o en secretos móviles embebidos."
         )
 
     path_obj = Path(credentials_path)

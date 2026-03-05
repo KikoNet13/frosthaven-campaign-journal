@@ -119,6 +119,40 @@ Si el nombre final cambia por plataforma/ABI, usar el archivo `.apk` realmente g
 gh release upload <tag> build/apk/frosthaven_campaign_journal.apk --clobber
 ```
 
+## Build Android con secretos locales embebidos
+
+Cuando el APK necesita conectar Firestore sin `.env` en runtime Android:
+
+1. Guardar la cuenta de servicio en `.secrets/firestore-mobile-rw.json`.
+1. Definir `FIRESTORE_PROJECT_ID` en entorno o en `.env`.
+1. Ejecutar:
+
+```powershell
+./scripts/build-android-with-mobile-secrets.ps1 -BuildVersion 0.2.1 -BuildNumber 1
+```
+
+Este flujo:
+
+- genera temporalmente `src/frosthaven_campaign_journal/config/_mobile_runtime_secrets.py`;
+- embebe `FIRESTORE_PROJECT_ID` y el JSON de credenciales en base64;
+- compila el APK;
+- elimina el archivo temporal al terminar (bloque `finally`);
+- muestra SHA256 del APK generado.
+
+## Advertencia de seguridad
+
+- Un APK público con secretos embebidos expone credenciales de servicio.
+- Este flujo solo es aceptable como salida táctica y controlada.
+- Tras cada subida pública del APK se debe rotar la clave de la cuenta de
+  servicio de forma obligatoria.
+
+## Rotación obligatoria post-release
+
+1. Revocar la clave usada en la release recién publicada.
+1. Generar nueva clave para la cuenta de servicio.
+1. Sustituir `.secrets/firestore-mobile-rw.json` localmente.
+1. Registrar evidencia de rotación en notas operativas de la release.
+
 ## Evidencia mínima para cierre de issue
 
 - Comando de build usado.

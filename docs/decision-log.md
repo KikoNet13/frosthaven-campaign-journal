@@ -1173,3 +1173,26 @@
 - `references`: `docs/android-release-flow.md`, `pyproject.toml`,
   `docs/repo-workflow.md`, `docs/system-map.md`, `CHANGELOG.md`,
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/105`
+
+### DEC-0051
+
+- `date`: 2026-03-05
+- `status`: accepted
+- `problem`: el APK publicado en `v0.2.0` no pudo conectar con Firestore en
+  Android porque el runtime empaquetado no incluía `.env` ni archivo local de
+  `GOOGLE_APPLICATION_CREDENTIALS`.
+- `decision`: añadir fallback de secretos móviles embebidos en runtime
+  (`_mobile_runtime_secrets.py` generado en build), mantener precedencia de
+  `.env`/entorno en desktop-web, y formalizar script operativo
+  `scripts/build-android-with-mobile-secrets.ps1` para release `v0.2.1`.
+- `rationale`: permite resolver el bloqueo de conectividad Android de forma
+  táctica y reproducible sin activar backend intermedio ni CI adicional.
+- `impact`: `settings.py` pasa a resolver configuración en dos capas
+  (entorno/.env -> secretos móviles embebidos); el build Android puede inyectar
+  credenciales desde `.secrets/firestore-mobile-rw.json`; se actualiza flujo
+  oficial en `docs/android-release-flow.md` con advertencia de riesgo y
+  rotación obligatoria post-release.
+- `references`: `src/frosthaven_campaign_journal/config/settings.py`,
+  `src/frosthaven_campaign_journal/data/firestore_client.py`,
+  `scripts/build-android-with-mobile-secrets.ps1`,
+  `docs/android-release-flow.md`, `CHANGELOG.md`

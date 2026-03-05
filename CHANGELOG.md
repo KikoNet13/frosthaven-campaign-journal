@@ -9,6 +9,27 @@ y usa versionado
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-03-05
+
+### Añadido
+
+- Script operativo `scripts/build-android-with-mobile-secrets.ps1` para
+  generar APK Android con secretos móviles embebidos desde `.secrets/`.
+- Contrato interno de secretos móviles generados en
+  `src/frosthaven_campaign_journal/config/_mobile_runtime_secrets.py`
+  (archivo no versionado).
+- Registro de decisión `DEC-0051` sobre conectividad Firestore en Android.
+
+### Cambiado
+
+- `load_settings()` ahora mantiene precedencia de entorno/`.env` y aplica
+  fallback de secretos embebidos solo cuando faltan
+  `FIRESTORE_PROJECT_ID` o `GOOGLE_APPLICATION_CREDENTIALS`.
+- `firestore_client.py` actualiza mensajes de error para contemplar también
+  secretos móviles embebidos.
+- `docs/android-release-flow.md` incorpora build con secretos embebidos,
+  advertencia de riesgo y rotación obligatoria de clave tras release pública.
+
 ## [0.2.0] - 2026-03-05
 
 ### AÃ±adido
@@ -76,7 +97,9 @@ y usa versionado
 - Archivo `LICENSE` con licencia MIT.
 
 [Unreleased]:
-  https://github.com/KikoNet13/frosthaven-campaign-journal/compare/v0.2.0...HEAD
+  https://github.com/KikoNet13/frosthaven-campaign-journal/compare/v0.2.1...HEAD
+[0.2.1]:
+  https://github.com/KikoNet13/frosthaven-campaign-journal/releases/tag/v0.2.1
 [0.2.0]:
   https://github.com/KikoNet13/frosthaven-campaign-journal/releases/tag/v0.2.0
 [0.1.0]:

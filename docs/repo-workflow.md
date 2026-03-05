@@ -1,4 +1,4 @@
-﻿# Flujo de Repositorio
+# Flujo de Repositorio
 
 ## Metadatos
 
@@ -35,26 +35,26 @@ Aplicar un flujo profesional, simple y mantenible para un solo desarrollador.
 1. Kiko pide objetivo o cambio.
 1. Codex lo traduce a unidades ejecutables.
 1. Si hay varias unidades, se crean Issues separadas.
-1. Si una unidad es no trivial, va en rama con patrÃ³n
+1. Si una unidad es no trivial, va en rama con patrón
    `tipo/<issue-id>-slug`.
 1. Si una unidad es trivial y aislada, puede ir a `main`.
 1. Si una unidad se ejecuta en rama, la Issue asociada se cierra tras integrar
-   el trabajo en `main` (merge/PR), salvo instrucciÃ³n explÃ­cita de Kiko.
+   el trabajo en `main` (merge/PR), salvo instrucción explícita de Kiko.
 1. Codex reporta siempre:
-   - quÃ© unidad ejecutÃ³,
-   - quÃ© commit generÃ³,
-   - quÃ© Issue cerrÃ³ o dejÃ³ abierta.
+   - qué unidad ejecutó,
+   - qué commit generó,
+   - qué Issue cerró o dejó abierta.
 
-### Reglas de priorizaciÃ³n conversacional (`siguiente paso`, `siguiente pendiente`)
+### Reglas de priorización conversacional (`siguiente paso`, `siguiente pendiente`)
 
 - `siguiente pendiente` y `siguiente issue pendiente` son equivalentes.
 
 - Si Kiko pide `siguiente pendiente`, Codex selecciona por defecto la Issue
-  abierta (`state=open`) con nÃºmero mÃ¡s bajo.
+  abierta (`state=open`) con número más bajo.
 - Si Kiko indica filtros (por ejemplo `type`, `label` o `phase`), Codex aplica
-  esos filtros antes de ordenar por nÃºmero.
+  esos filtros antes de ordenar por número.
 - Si no hay Issues abiertas que cumplan el criterio, Codex lo reporta de forma
-  explÃ­cita.
+  explícita.
 
 #### Regla de `siguiente paso`
 
@@ -63,38 +63,38 @@ Aplicar un flujo profesional, simple y mantenible para un solo desarrollador.
   unidad antes de iniciar trabajo nuevo.
 - Solo si no existe una unidad pendiente de cierre, Codex revisa las PRs
   abiertas del repo (incluyendo `draft`).
-- Si hay varias PRs abiertas, prioriza la PR con nÃºmero mÃ¡s bajo.
+- Si hay varias PRs abiertas, prioriza la PR con número más bajo.
 - Si existe al menos una PR abierta, el siguiente paso es llevar esa PR a
-  cierre (merge o cierre explÃ­cito si se descarta).
-- Si no hay PRs abiertas, Codex busca un **orden tÃ©cnico recomendado** en la
-  documentaciÃ³n oficial aplicable.
-- Si existe orden tÃ©cnico recomendado:
-  - usa la fuente oficial mÃ¡s especÃ­fica disponible (detalle > macro);
+  cierre (merge o cierre explícito si se descarta).
+- Si no hay PRs abiertas, Codex busca un **orden técnico recomendado** en la
+  documentación oficial aplicable.
+- Si existe orden técnico recomendado:
+  - usa la fuente oficial más específica disponible (detalle > macro);
   - recorre el orden y elige la primera Issue abierta **cerrable**;
-  - si una Issue abierta no es cerrable, la salta y evalÃºa la siguiente;
+  - si una Issue abierta no es cerrable, la salta y evalúa la siguiente;
   - si no hay Issues cerrables en ese orden, elige la primera Issue
     `draftable`.
-- Si no existe orden tÃ©cnico aplicable, el siguiente paso es resolver la
+- Si no existe orden técnico aplicable, el siguiente paso es resolver la
   `siguiente pendiente` (`siguiente issue pendiente`).
-- DefiniciÃ³n operativa para esta regla:
+- Definición operativa para esta regla:
   - `unidad pendiente de cierre`: unidad ya iniciada (issue/rama/PR asociada)
-    que todavÃ­a no completÃ³ su pipeline de cierre. Se detecta en este orden de
+    que todavía no completó su pipeline de cierre. Se detecta en este orden de
     prioridad:
     1. trabajo local sin commit relacionado con la unidad activa;
     1. commit(s) locales en rama sin `push`;
     1. rama publicada con trabajo de la unidad pero sin PR (cuando corresponde
        PR por reglas del repo);
     1. PR abierta (incluyendo `draft`);
-    1. PR mergeada pero Issue asociada aÃºn abierta;
+    1. PR mergeada pero Issue asociada aún abierta;
     1. rama local/remota mergeada pendiente de limpieza.
-  - `cerrable`: Issue abierta con dependencias de cierre satisfechas segÃºn la
-    documentaciÃ³n oficial vigente.
+  - `cerrable`: Issue abierta con dependencias de cierre satisfechas según la
+    documentación oficial vigente.
   - `draftable`: Issue abierta que puede iniciarse en borrador, pero cuyo cierre
     depende de otras Issues.
   - `blocked`: Issue abierta que no debe cerrarse hasta resolver dependencias
     faltantes.
 - Cuando Kiko pide `siguiente paso`, Codex identifica el paso prioritario y lo
-  ejecuta en la misma sesiÃ³n/pasada por defecto.
+  ejecuta en la misma sesión/pasada por defecto.
 - En trabajo no trivial con rama, el objetivo por defecto es completar el
   **cierre end-to-end** de la unidad, hasta donde sea posible en la misma
   pasada:
@@ -102,14 +102,14 @@ Aplicar un flujo profesional, simple y mantenible para un solo desarrollador.
   1. commit;
   1. `push` de rama;
   1. abrir PR;
-  1. llevar PR a cierre (merge o cierre explÃ­cito si se descarta);
-  1. cerrar la Issue asociada tras integraciÃ³n en `main`;
+  1. llevar PR a cierre (merge o cierre explícito si se descarta);
+  1. cerrar la Issue asociada tras integración en `main`;
   1. limpiar rama local/remota (si aplica).
-- Regla especÃ­fica para `type:decision`:
-  - Codex llega hasta el mÃ¡ximo cerrable.
-  - Si falta aprobaciÃ³n explÃ­cita de Kiko, deja la unidad bloqueada por
-    aprobaciÃ³n y no salta a otra unidad por defecto.
-  - Si Kiko aprueba explÃ­citamente en el mismo turno, Codex completa
+- Regla específica para `type:decision`:
+  - Codex llega hasta el máximo cerrable.
+  - Si falta aprobación explícita de Kiko, deja la unidad bloqueada por
+    aprobación y no salta a otra unidad por defecto.
+  - Si Kiko aprueba explícitamente en el mismo turno, Codex completa
     merge/cierre/limpieza en esa misma pasada.
 - Regla en `Plan Mode`:
   - `siguiente paso` identifica la unidad pendiente de cierre (si existe) y
@@ -119,31 +119,31 @@ Aplicar un flujo profesional, simple y mantenible para un solo desarrollador.
     ese mismo turno antes de emitir el `<proposed_plan>`.
   - No se admite cerrar con un meta-plan cuyo siguiente paso sea iniciar el
     plan de la misma unidad ya priorizada.
-  - Debe dejar explÃ­cito cuÃ¡l serÃ­a el siguiente acto mutante al salir de
+  - Debe dejar explícito cuál sería el siguiente acto mutante al salir de
     `Plan Mode`.
 - Reporte obligatorio tras `siguiente paso`:
   - unidad priorizada;
   - estado de cierre alcanzado (`local`, `push`, `PR`, `merge`, `issue`,
     `cleanup`);
   - bloqueo (si existe) y su motivo;
-  - confirmaciÃ³n explÃ­cita de si puede o no pasar a la siguiente unidad.
-- Excepciones explÃ­citas:
+  - confirmación explícita de si puede o no pasar a la siguiente unidad.
+- Excepciones explícitas:
   - `Plan Mode` (se planifica y no se ejecuta).
   - Bloqueo real que impida continuar.
-  - PeticiÃ³n explÃ­cita de solo plan o solo anÃ¡lisis.
+  - Petición explícita de solo plan o solo análisis.
 
-##### Nota de aplicaciÃ³n (caso #13)
+##### Nota de aplicación (caso #13)
 
-- El caso de la Issue `#13` (especificaciÃ³n temporal) dejÃ³ documentado el hueco
-  de comportamiento: habÃ­a commit local en rama sin `push`/sin PR y, aun asÃ­,
-  se llegÃ³ a evaluar trabajo nuevo.
+- El caso de la Issue `#13` (especificación temporal) dejó documentado el hueco
+  de comportamiento: había commit local en rama sin `push`/sin PR y, aun así,
+  se llegó a evaluar trabajo nuevo.
 - Con esta regla, ese estado se clasifica como `unidad pendiente de cierre` y el
   siguiente `siguiente paso` correcto es publicar/cerrar esa unidad primero.
 
 ## Reglas de commits
 
-- Formato: `type(scope): resumen en espaÃ±ol`.
-- Tipos vÃ¡lidos:
+- Formato: `type(scope): resumen en español`.
+- Tipos válidos:
   - `feat`
   - `fix`
   - `docs`
@@ -152,86 +152,86 @@ Aplicar un flujo profesional, simple y mantenible para un solo desarrollador.
   - `test`
   - `hotfix`
 
-## RedacciÃ³n y codificaciÃ³n de texto
+## Redacción y codificación de texto
 
-- En textos en castellano (issues, PR, documentaciÃ³n y futuros textos de UI)
-  usar ortografÃ­a completa: tildes, `Ã±` y signos correctos.
-- Mantener identificadores tÃ©cnicos en inglÃ©s cuando aplique.
+- En textos en castellano (issues, PR, documentación y futuros textos de UI)
+  usar ortografía completa: tildes, `ñ` y signos correctos.
+- Mantener identificadores técnicos en inglés cuando aplique.
 - Archivos de texto del repo en `UTF-8`.
-- Si aparece mojibake en la terminal, verificar primero la codificaciÃ³n real
+- Si aparece mojibake en la terminal, verificar primero la codificación real
   del archivo antes de editar contenido ya correcto.
 
 ## Reglas de PR
 
 - PR obligatoria cuando el cambio sea relevante.
 - Si el trabajo se hace en rama, la Issue asociada se cierra tras merge o
-  integraciÃ³n en `main`, salvo instrucciÃ³n explÃ­cita de Kiko.
+  integración en `main`, salvo instrucción explícita de Kiko.
 - Debe incluir:
   - referencia al Issue
   - resumen de alcance
   - checklist de calidad completada
 
-## PatrÃ³n operativo de validaciÃ³n UI Flet (web) con Playwright/DevTools
+## Patrón operativo de validación UI Flet (web) con Playwright/DevTools
 
 ### Objetivo
 
-Definir un patrÃ³n simple y repetible para validar UI/flujo visual durante la
-implementaciÃ³n en Flet, evitando bloquear la CLI de Codex con procesos largos.
+Definir un patrón simple y repetible para validar UI/flujo visual durante la
+implementación en Flet, evitando bloquear la CLI de Codex con procesos largos.
 
-### ConvenciÃ³n por defecto
+### Convención por defecto
 
 - Kiko lanza y mantiene el servidor web de Flet cuando haga falta validar UI.
-- Codex usa Playwright/DevTools para inspecciÃ³n visual y tÃ©cnica.
+- Codex usa Playwright/DevTools para inspección visual y técnica.
 - La evidencia se adapta al tipo de tarea (no se fuerza un paquete completo en
-  cada validaciÃ³n).
+  cada validación).
 
-### Comando estÃ¡ndar de arranque (Kiko)
+### Comando estándar de arranque (Kiko)
 
 ```powershell
 pipenv run flet run src/main.py --web -d -r --port 8550 --host 127.0.0.1
 ```
 
 - `--web`: ejecuta la app como sitio web local.
-- `-d -r`: autoreload recursivo para iteraciÃ³n de UI.
-- `--port 8550`: URL estable para validaciÃ³n repetible.
-- `--host 127.0.0.1`: escucha local explÃ­cita.
+- `-d -r`: autoreload recursivo para iteración de UI.
+- `--port 8550`: URL estable para validación repetible.
+- `--host 127.0.0.1`: escucha local explícita.
 
 ### Roles y flujo
 
-#### Fase A â€” PreparaciÃ³n (Kiko)
+#### Fase A — Preparación (Kiko)
 
 1. Cambiar a la rama de trabajo de la issue en curso (si aplica).
-1. Lanzar el servidor con el comando estÃ¡ndar.
+1. Lanzar el servidor con el comando estándar.
 1. Confirmar a Codex:
    - URL activa (por defecto `http://127.0.0.1:8550`);
    - warnings relevantes al arranque (si existen).
 
-#### Fase B â€” ValidaciÃ³n (Codex)
+#### Fase B — Validación (Codex)
 
 1. Abrir la URL activa con Playwright.
-1. Verificar el estado esperado segÃºn la tarea (layout, navegaciÃ³n,
+1. Verificar el estado esperado según la tarea (layout, navegación,
    placeholders, etc.).
-1. Inspeccionar segÃºn necesidad:
+1. Inspeccionar según necesidad:
    - snapshot/captura;
    - consola del navegador;
    - requests/red;
-   - observaciÃ³n visual y estados.
+   - observación visual y estados.
 1. Reportar resultado:
-   - quÃ© se comprobÃ³;
+   - qué se comprobó;
    - evidencia usada;
    - resultado (`ok`, `problema`, `bloqueado`);
-   - siguiente acciÃ³n (seguir, ajustar, refresh, relanzar).
+   - siguiente acción (seguir, ajustar, refresh, relanzar).
 
-#### Fase C â€” IteraciÃ³n (Kiko + Codex)
+#### Fase C — Iteración (Kiko + Codex)
 
 1. Codex implementa cambios de la issue.
 1. Kiko mantiene el servidor en marcha.
 1. Codex revalida en la misma URL.
-1. Repetir hasta aceptaciÃ³n del alcance.
+1. Repetir hasta aceptación del alcance.
 
-#### Fase D â€” Cierre de validaciÃ³n de tarea
+#### Fase D — Cierre de validación de tarea
 
-En el cierre de la unidad (issue/PR), Codex deja una nota breve de validaciÃ³n:
+En el cierre de la unidad (issue/PR), Codex deja una nota breve de validación:
 
 - tipo de evidencia usada;
 - estados/pantallas comprobados;
@@ -239,16 +239,16 @@ En el cierre de la unidad (issue/PR), Codex deja una nota breve de validaciÃ³n
 
 ### Evidencia adaptativa (regla)
 
-- Ligera: observaciÃ³n + snapshot/captura puntual (cambios pequeÃ±os).
+- Ligera: observación + snapshot/captura puntual (cambios pequeños).
 - Media: capturas + observaciones + consola si hay warning/error (layout/flujo).
-- Alta: captura + consola + red + pasos de reproducciÃ³n (fallos raros o bloqueos).
+- Alta: captura + consola + red + pasos de reproducción (fallos raros o bloqueos).
 
 Codex escala el nivel cuando:
 
 - hay errores de consola;
 - el layout no coincide con Figma/contrato;
 - hay comportamiento intermitente;
-- la validaciÃ³n bloquea el cierre de la issue.
+- la validación bloquea el cierre de la issue.
 
 ### Fallbacks operativos
 
@@ -267,35 +267,35 @@ Codex escala el nivel cuando:
   - `main`
   - rama actual
   - ramas con PR abierta
-  - ramas no mergeadas (salvo descarte explÃ­cito)
-- Si una rama fue integrada por `rebase` y `git branch -d` avisa que no estÃ¡
+  - ramas no mergeadas (salvo descarte explícito)
+- Si una rama fue integrada por `rebase` y `git branch -d` avisa que no está
   mergeada en `HEAD`, se permite borrarla tras verificar que la PR fue mergeada.
 
-## Regla especial para diseÃ±o y arquitectura
+## Regla especial para diseño y arquitectura
 
-- Si la tarea es de dominio, arquitectura o proceso crÃ­tico:
-  - se discute primero en conversaciÃ³n interactiva;
-  - se documenta despuÃ©s de aprobaciÃ³n explÃ­cita de Kiko;
-  - no se cierra la Issue sin esa aprobaciÃ³n.
+- Si la tarea es de dominio, arquitectura o proceso crítico:
+  - se discute primero en conversación interactiva;
+  - se documenta después de aprobación explícita de Kiko;
+  - no se cierra la Issue sin esa aprobación.
   - si hace falta interfaz de respuestas clicables, Codex avisa para activar
     `Plan Mode`.
 
-## DefiniciÃ³n de cambio trivial
+## Definición de cambio trivial
 
 - typo o formato local
 - ajuste menor en una zona
 - sin impacto en flujo ni estructura
 
-## DefiniciÃ³n de cambio relevante
+## Definición de cambio relevante
 
 - cambia convenciones
-- cambia estructura de documentaciÃ³n
-- afecta mÃ¡s de un archivo crÃ­tico
+- cambia estructura de documentación
+- afecta más de un archivo crítico
 - introduce decisiones de proceso
 
 ## Versionado y releases
 
-- ConvenciÃ³n SemVer temprana: `v0.x.y`.
+- Convención SemVer temprana: `v0.x.y`.
 - En cada hito cerrado:
   - actualizar `CHANGELOG.md`
   - crear tag
@@ -318,11 +318,12 @@ Opciones para Fase 1:
 1. Automática:
    - workflow de GitHub Actions al crear tag;
    - generar `.apk` y adjuntarlo a la release.
+
 Requisitos de automatización:
 
 - toolchain Android en CI;
 - secretos de firma (`keystore`, passwords y alias);
-- definiciÃ³n de variante (`debug` o `release`).
+- definición de variante (`debug` o `release`).
 
 ## Cadencia recomendada
 
@@ -330,7 +331,7 @@ Requisitos de automatización:
 
 1. Abrir Issue.
 1. Ejecutar trabajo en rama.
-1. Hacer N commits pequeÃ±os.
+1. Hacer N commits pequeños.
 1. Abrir PR.
 1. Mergear en `main`.
 1. Cerrar Issue.
@@ -343,4 +344,3 @@ Requisitos de automatización:
 1. Hacer commit y push.
 1. Cerrar Issue (si aplica).
 1. Actualizar changelog si corresponde.
-

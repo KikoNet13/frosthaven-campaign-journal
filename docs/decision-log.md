@@ -1131,3 +1131,23 @@
   abiertas.
 - `references`: `src/frosthaven_campaign_journal/ui/main_shell/view/temporal_bar.py`,
   `src/frosthaven_campaign_journal/ui/common/theme/colors.py`
+
+### DEC-0049
+
+- `date`: 2026-03-05
+- `status`: accepted
+- `problem`: la tarjeta de `Entry` mantenía estructura vertical poco eficiente
+  para recursos/sesiones, con caja contenedora adicional de recursos y botones
+  de guardar/deshacer fuera de la barra principal de acciones.
+- `decision`: mover `guardar/deshacer recursos` a la barra de iconos del header
+  de la entrada, eliminar la caja contenedora `Recursos`, y reordenar secciones
+  en tres filas: `Otros+Materiales`, `Plantas`, `Sesiones`.
+- `rationale`: reduce fricción operativa en edición rápida por entrada, mejora
+  jerarquía de acciones y aprovecha mejor el ancho disponible en tablet/web.
+- `impact`: `center_focus.py` compone grupos de recursos por fila (sin wrapper
+  `Recursos`), mantiene errores de recursos visibles sobre la primera fila y
+  aplica estilo visual de cajas `status bar` a `Otros`, `Materiales`, `Plantas`
+  y `Sesiones`.
+- `references`: `src/frosthaven_campaign_journal/ui/main_shell/view/center_focus.py`,
+  `src/frosthaven_campaign_journal/ui/main_shell/view/status_bar.py`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/106`

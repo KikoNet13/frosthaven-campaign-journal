@@ -9,6 +9,8 @@ y usa versionado
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-03-05
+
 ### AÃ±adido
 
 - Flujo operativo manual de releases Android en `docs/android-release-flow.md`
@@ -74,7 +76,9 @@ y usa versionado
 - Archivo `LICENSE` con licencia MIT.
 
 [Unreleased]:
-  https://github.com/KikoNet13/frosthaven-campaign-journal/compare/v0.1.0...HEAD
+  https://github.com/KikoNet13/frosthaven-campaign-journal/compare/v0.2.0...HEAD
+[0.2.0]:
+  https://github.com/KikoNet13/frosthaven-campaign-journal/releases/tag/v0.2.0
 [0.1.0]:
   https://github.com/KikoNet13/frosthaven-campaign-journal/releases/tag/v0.1.0
 

@@ -56,6 +56,13 @@ class ConfirmationState:
     body: str = ""
     confirm_label: str = "Confirmar"
     payload: Any = None
+    event_id: int | None = None
+
+
+@dataclass
+class ToastState:
+    message: str | None = None
+    event_id: int | None = None
 
 
 @dataclass

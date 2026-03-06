@@ -252,11 +252,14 @@ class MainShellRuntimeReadMixin:
         confirm_label: str,
         payload: Any,
     ) -> None:
-        self.confirmation_state.key = key
-        self.confirmation_state.title = title
-        self.confirmation_state.body = body
-        self.confirmation_state.confirm_label = confirm_label
-        self.confirmation_state.payload = payload
+        self.confirmation_state = ConfirmationState(
+            key=key,
+            title=title,
+            body=body,
+            confirm_label=confirm_label,
+            payload=payload,
+            event_id=self._next_ui_event_id(),
+        )
 
     def _clear_confirmation(self) -> None:
         self.confirmation_state = ConfirmationState()

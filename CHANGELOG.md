@@ -1,4 +1,4 @@
-﻿# Changelog
+# Changelog
 
 Todos los cambios relevantes del proyecto se documentan en este archivo.
 
@@ -8,6 +8,19 @@ y usa versionado
 [SemVer](https://semver.org/lang/es/).
 
 ## [Unreleased]
+
+### Añadido
+
+- Tests unitarios de `MainShellState` para `ToastState`, `event_id` de
+  confirmación y limpieza de estado tras cancelar/confirmar.
+
+### Cambiado
+
+- `main_shell` mueve los mensajes informativos a `SnackBar` flotante y las
+  confirmaciones a `AlertDialog` modal con botones alineados visualmente al FAB.
+- `app_root.py` pasa a puentear overlays de Flet desde estado transitorio,
+  mientras el panel central mantiene solo banners de error/advertencia y
+  formularios inline.
 
 ## [0.2.1] - 2026-03-05
 

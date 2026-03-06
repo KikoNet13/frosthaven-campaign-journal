@@ -1,77 +1,77 @@
-﻿# UI Main Shell Architecture (MVS)
+# UI Main Shell Architecture (MVS)
 
 ## 1) Resumen de decisiones
 
-- Se mantiene estructura de tres capas: `model.py`, `state.py`, `view.py`.
-- El runtime sigue siendo declarativo: `page.render(build_app_root, page)`.
-- `MainShellState` es `@ft.observable` y concentra orquestaciÃ³n de lecturas,
-  escrituras y estado local de UI.
-- `build_main_shell_view` es helper puro de render (sin `@ft.component`).
-- No se usa `page.update()` ni `control.update()` en `src/.../ui`.
-- Se recupera paridad funcional pre-`#94` sin reintroducir capas `MVU+effects`
-  eliminadas (`dispatcher/reducer/effects/intents/selectors`).
+- Se mantiene estructura MVS con estado observable único en `MainShellState`.
+- El runtime sigue siendo declarativo con `page.render(build_app_root, page)`.
+- Los formularios de `entry`, notas y sesión continúan inline en el panel central.
+- Los mensajes informativos pasan a `SnackBar` flotante.
+- Las preguntas de confirmación pasan a `AlertDialog` modal.
+- El bridge a overlays vive solo en `ui/app_root.py`; el estado no se acopla a `Page`.
+- No se usa `page.update()` ni `control.update()` en la capa `ui`.
 
-## 2) Ãrbol actual del feature
+## 2) Árbol actual del feature
 
 ```text
-src/frosthaven_campaign_journal/ui/features/main_shell/
-â”œâ”€â”€ __init__.py
-â”œâ”€â”€ model.py
-â”œâ”€â”€ state.py
-â””â”€â”€ view.py
+src/frosthaven_campaign_journal/ui/
+├── app_root.py
+└── main_shell/
+    ├── __init__.py
+    ├── model.py
+    ├── state/
+    └── view/
 ```
 
 ## 3) Tabla por archivo
 
 | Archivo | Tipo | Responsabilidad |
 | --- | --- | --- |
-| `model.py` | MODEL | Contratos de datos de render (`MainShellViewData` + estados declarativos de confirmaciÃ³n/formularios). |
-| `state.py` | STATE | Estado observable y handlers de UI + wiring real Firestore (`Q1..Q8` + writes). |
-| `view.py` | VIEW | ComposiciÃ³n visual y binding directo a handlers del estado. |
-| `__init__.py` | IntegraciÃ³n | API pÃºblica estable del feature. |
+| `ui/app_root.py` | Root bridge | Observa `toast_state` y `confirmation_state`, y abre/cierra `SnackBar` y `AlertDialog`. |
+| `ui/main_shell/model.py` | MODEL | Contratos de render declarativos del panel principal. |
+| `ui/main_shell/state/` | STATE | Estado observable, handlers de UI, lecturas y escrituras. |
+| `ui/main_shell/view/` | VIEW | Render puro del shell y binding directo a handlers del estado. |
 
-## 4) Flujo declarativo
+## 4) Flujo declarativo actual
 
 1. El root crea estado con `ft.use_state(MainShellState.create)`.
-1. La vista llama `data = state.build_view_data()`.
-1. Controles invocan handlers del estado (`on_*`).
-1. El estado muta `local_state`, `read_state`, `entry_panel_state` y UI-state
-   declarativo (confirmaciones, formularios, editor de notas).
-1. El estado dispara `notify()` y la vista se reconstruye.
+1. La vista llama `state.build_view_data()` y renderiza solo contenido inline.
+1. Los handlers `on_*` mutan `local_state`, `read_state`, `entry_panel_state` y estado transitorio de UI.
+1. `toast_state` y `confirmation_state` emiten `event_id` nuevos en cada evento.
+1. `app_root.py` detecta esos `event_id` con `ft.use_effect` + `ft.use_ref` y abre el overlay correspondiente.
+1. El estado sigue siendo la fuente de verdad; el root solo traduce eventos a overlays de Flet.
 
-## 5) Estado declarativo de UI en `model.py`
+## 5) Estado declarativo de UI
 
-- `ConfirmationViewState`
+### Inline
+
 - `EntryFormViewState`
+- `EntryNotesEditorViewState`
 - `SessionFormViewState`
 
-Estos contratos permiten reemplazar modales imperativos por ediciÃ³n/confirmaciÃ³n
-declarativa renderizada en el panel central.
+### Overlays transitorios
 
-## 6) Cobertura funcional recuperada en `state.py`
+- `ToastState(message, event_id)`
+- `ConfirmationState(..., event_id)`
 
-- Lecturas: `load_main_screen_snapshot`, `read_q5_entries_for_selected_week`,
-  `read_entry_by_ref`, `read_q8_sessions_for_entry`.
-- Writes:
-  - campaÃ±a: `extend_years_plus_one`
-  - week: `close_week`, `reopen_week`, `reclose_week`
-  - session: `start_session`, `stop_session`, `manual_create_session`,
-    `manual_update_session`, `manual_delete_session`
-  - entry: `create_entry`, `update_entry`, `delete_entry`,
-    `reorder_entry_within_week`
-  - resources: `replace_entry_resource_deltas`
-- Reglas de consistencia:
-  - visor sticky separado de navegaciÃ³n temporal
-  - protecciÃ³n de borrador sucio antes de cambios de contexto
-  - refresh selectivo Q5/Q8 tras operaciones
-  - flags `*_write_pending` + errores por dominio
+El `event_id` evita que dos emisiones sucesivas con el mismo texto o payload se pierdan.
+
+## 6) Overlays del root
+
+- `SnackBar`
+  - `behavior=FLOATING`
+  - auto-dismiss
+  - icono de cierre
+  - margen inferior suficiente para no solapar bottom bar ni FAB
+- `AlertDialog`
+  - `modal=True`
+  - usa `title`, `body` y `confirm_label` ya definidos en estado
+  - botón de confirmar con la paleta del FAB
+  - botón de cancelar outlined con la misma paleta
 
 ## 7) Guardrails de arquitectura
 
 1. Runtime declarativo obligatorio (`page.render` + `@ft.component` en root).
-1. Estado observable Ãºnico de pantalla (`MainShellState`).
-1. Binding directo desde vista a handlers del estado.
-1. No usar `page.update()` ni `control.update()` en capa `ui`.
-
-
-
+1. Estado observable único de pantalla (`MainShellState`).
+1. Ningún mixin de estado conoce `Page` ni abre overlays directamente.
+1. Los banners inline se reservan para `warning` y `error`.
+1. Las confirmaciones y mensajes informativos transitorios se resuelven en el root.

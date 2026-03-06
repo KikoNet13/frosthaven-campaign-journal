@@ -64,11 +64,11 @@ class MainShellRuntimeWriteMixin:
                 reload_q8=False,
             )
             if result.auto_stopped_session_id:
-                self.info_message = (
+                self._emit_info_toast(
                     f"Semana actualizada. Se auto-cerró la sesión {result.auto_stopped_session_id}."
                 )
             else:
-                self.info_message = success_message
+                self._emit_info_toast(success_message)
             return result
         except (
             FirestoreConfigError,
@@ -108,7 +108,7 @@ class MainShellRuntimeWriteMixin:
                 reload_q5=(self.local_state.selected_week is not None),
                 reload_q8=False,
             )
-            self.info_message = success_message
+            self._emit_info_toast(success_message)
             return True
         except (
             FirestoreConfigError,
@@ -148,11 +148,11 @@ class MainShellRuntimeWriteMixin:
                 reload_q8=reload_q8,
             )
             if result.auto_stopped_session_id:
-                self.info_message = (
+                self._emit_info_toast(
                     f"Entrada actualizada. Se auto-cerró la sesión {result.auto_stopped_session_id}."
                 )
             else:
-                self.info_message = success_message
+                self._emit_info_toast(success_message)
             return result
         except (
             FirestoreConfigError,
@@ -189,7 +189,7 @@ class MainShellRuntimeWriteMixin:
                 reload_q5=(self.local_state.selected_week is not None),
                 reload_q8=False,
             )
-            self.info_message = success_message
+            self._emit_info_toast(success_message)
             return result
         except (
             FirestoreConfigError,

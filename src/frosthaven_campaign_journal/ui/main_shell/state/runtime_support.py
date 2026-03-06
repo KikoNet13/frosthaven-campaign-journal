@@ -6,6 +6,7 @@ from frosthaven_campaign_journal.data import (
     FirestoreReadError,
 )
 from frosthaven_campaign_journal.models import ENTRY_RESOURCE_KEYS, EntryRef, EntrySummary
+from frosthaven_campaign_journal.ui.main_shell.state.types import ToastState
 
 
 class MainShellRuntimeSupportMixin:
@@ -91,12 +92,20 @@ class MainShellRuntimeSupportMixin:
         for entry in self.entry_panel_state.entries_for_selected_week:
             self._sync_resource_draft_from_entry_snapshot(entry)
 
+    def _emit_info_toast(self, message: str) -> None:
+        self.toast_state = ToastState(message=message, event_id=self._next_ui_event_id())
+
+    def _clear_info_toast(self, *, event_id: int | None = None) -> None:
+        if event_id is not None and self.toast_state.event_id != event_id:
+            return
+        self.toast_state = ToastState()
+
     def _discard_resource_draft_for_context_change(self, *, show_notice: bool) -> None:
         had_dirty = self._has_any_dirty_resource_draft()
         self._clear_resource_draft_state()
         self.entry_panel_state.resource_write_error_message = None
         if show_notice and had_dirty:
-            self.info_message = "Cambios de recursos sin guardar descartados al cambiar de contexto."
+            self._emit_info_toast("Cambios de recursos sin guardar descartados al cambiar de contexto.")
 
     def _clear_write_errors(self) -> None:
         self.entry_panel_state.session_write_error_message = None

@@ -19,7 +19,7 @@ class LabeledGroupBox(ft.Stack):
     label_top: int = 0
     label_text_size: int = 10
     label_text_weight: ft.FontWeight = ft.FontWeight.W_600
-    label_overlap: int = 8
+    label_overlap: int = 6
 
     def _resolved_padding(self) -> ft.Padding:
         return self.padding or ft.Padding(left=8, top=8, right=8, bottom=6)

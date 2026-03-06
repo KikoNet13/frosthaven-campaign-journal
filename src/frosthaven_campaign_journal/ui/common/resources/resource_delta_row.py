@@ -14,6 +14,9 @@ from frosthaven_campaign_journal.ui.common.theme.colors import (
 
 
 ResourceDeltaClickHandler = Callable[[ft.ControlEvent], None]
+_DELTA_ACTION_BUTTON_SIZE = 28
+_DELTA_ACTION_ZONE_WIDTH = 88
+_DELTA_VALUE_WIDTH = 32
 
 
 @ft.control
@@ -58,42 +61,76 @@ class ResourceDeltaRow(ft.Row):
             ft.Row(
                 expand=True,
                 spacing=4,
+                wrap=False,
                 controls=[
                     ft.Text(
                         value=self.label_es,
                         size=13,
                         weight=ft.FontWeight.W_600,
                         color=COLOR_TEXT_PRIMARY,
+                        max_lines=1,
+                        no_wrap=True,
+                        overflow=ft.TextOverflow.ELLIPSIS,
                     ),
                     ft.Text(
                         value=_format_projected_total_text(self.projected_total),
                         size=12,
                         color=COLOR_TEXT_MUTED,
                         italic=True,
+                        max_lines=1,
+                        no_wrap=True,
+                        overflow=ft.TextOverflow.ELLIPSIS,
                     ),
                 ],
             ),
-            ft.IconButton(
-                icon=ft.Icons.REMOVE,
-                icon_size=16,
-                tooltip="Restar 1",
-                on_click=self._handle_decrement,
-                disabled=self.disabled,
-            ),
-            ft.Text(
-                value=_format_delta_text(self.delta_value),
-                size=14,
-                width=42,
-                text_align=ft.TextAlign.CENTER,
-                weight=ft.FontWeight.W_700,
-                color=_delta_text_color(self.delta_value),
-            ),
-            ft.IconButton(
-                icon=ft.Icons.ADD,
-                icon_size=16,
-                tooltip="Sumar 1",
-                on_click=self._handle_increment,
-                disabled=self.disabled,
+            ft.Container(
+                width=_DELTA_ACTION_ZONE_WIDTH,
+                alignment=ft.Alignment.CENTER_RIGHT,
+                content=ft.Row(
+                    spacing=0,
+                    alignment=ft.MainAxisAlignment.END,
+                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                    controls=[
+                        ft.IconButton(
+                            icon=ft.Icons.REMOVE,
+                            icon_size=16,
+                            tooltip="Restar 1",
+                            on_click=self._handle_decrement,
+                            disabled=self.disabled,
+                            padding=0,
+                            visual_density=ft.VisualDensity.COMPACT,
+                            size_constraints=ft.BoxConstraints(
+                                min_width=_DELTA_ACTION_BUTTON_SIZE,
+                                max_width=_DELTA_ACTION_BUTTON_SIZE,
+                                min_height=_DELTA_ACTION_BUTTON_SIZE,
+                                max_height=_DELTA_ACTION_BUTTON_SIZE,
+                            ),
+                        ),
+                        ft.Text(
+                            value=_format_delta_text(self.delta_value),
+                            size=14,
+                            width=_DELTA_VALUE_WIDTH,
+                            text_align=ft.TextAlign.CENTER,
+                            weight=ft.FontWeight.W_700,
+                            color=_delta_text_color(self.delta_value),
+                        ),
+                        ft.IconButton(
+                            icon=ft.Icons.ADD,
+                            icon_size=16,
+                            tooltip="Sumar 1",
+                            on_click=self._handle_increment,
+                            disabled=self.disabled,
+                            padding=0,
+                            visual_density=ft.VisualDensity.COMPACT,
+                            size_constraints=ft.BoxConstraints(
+                                min_width=_DELTA_ACTION_BUTTON_SIZE,
+                                max_width=_DELTA_ACTION_BUTTON_SIZE,
+                                min_height=_DELTA_ACTION_BUTTON_SIZE,
+                                max_height=_DELTA_ACTION_BUTTON_SIZE,
+                            ),
+                        ),
+                    ],
+                ),
             ),
         ]
 
@@ -101,13 +138,13 @@ class ResourceDeltaRow(ft.Row):
         super().init()
         self.alignment = ft.MainAxisAlignment.START
         self.vertical_alignment = ft.CrossAxisAlignment.CENTER
-        self.spacing = 10
+        self.spacing = 6
         self.controls = self._build_controls()
 
     def before_update(self) -> None:
         self.alignment = ft.MainAxisAlignment.START
         self.vertical_alignment = ft.CrossAxisAlignment.CENTER
-        self.spacing = 10
+        self.spacing = 6
         self.controls = self._build_controls()
 
 

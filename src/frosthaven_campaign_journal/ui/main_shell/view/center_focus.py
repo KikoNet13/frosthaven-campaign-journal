@@ -39,9 +39,11 @@ from frosthaven_campaign_journal.ui.main_shell.model import (
     WeekEntryCardViewData,
 )
 from frosthaven_campaign_journal.ui.main_shell.state import MainShellState
-from frosthaven_campaign_journal.ui.main_shell.view.center_helpers import (
-    _build_card,
-    _format_session_line,
+from frosthaven_campaign_journal.ui.main_shell.view.center_helpers import _build_card
+from frosthaven_campaign_journal.ui.main_shell.view.session_timing import (
+    build_session_duration_text,
+    format_session_summary_date,
+    format_session_summary_range,
 )
 
 WEEK_ENTRY_CARD_WIDTH = 540
@@ -186,7 +188,20 @@ def _build_entry_card_header(
     if outcome_icon is not None:
         title_controls.append(outcome_icon)
 
+    is_session_busy = data.session_write_pending or card.session_write_pending
     action_buttons: list[ft.Control] = [
+        ft.IconButton(
+            icon=(ft.Icons.STOP_CIRCLE_OUTLINED if card.is_active_session_owner else ft.Icons.PLAY_CIRCLE_OUTLINE),
+            icon_size=19,
+            icon_color=COLOR_WHITE,
+            tooltip=("Detener sesión" if card.is_active_session_owner else "Iniciar sesión"),
+            on_click=(
+                (lambda _event, entry_ref=entry.ref: state.on_stop_session_for_entry(entry_ref))
+                if card.is_active_session_owner
+                else (lambda _event, entry_ref=entry.ref: state.on_start_session_for_entry(entry_ref))
+            ),
+            disabled=is_session_busy,
+        ),
         ft.IconButton(
             icon=ft.Icons.EDIT_NOTE,
             icon_size=18,
@@ -306,10 +321,11 @@ def _build_entry_resources_card(
             resource_rows: list[ft.Control] = []
             for item in group_column:
                 current_delta = card.resource_draft_values.get(item.key, 0)
-                projected_total = (
-                    None
-                    if campaign_resource_totals is None
-                    else campaign_resource_totals.get(item.key, 0) + current_delta
+                projected_total = _calculate_projected_resource_total(
+                    campaign_resource_totals=campaign_resource_totals,
+                    resource_key=item.key,
+                    persisted_entry_delta=card.entry.resource_deltas.get(item.key, 0),
+                    draft_entry_delta=current_delta,
                 )
                 resource_rows.append(
                     ResourceDeltaRow(
@@ -392,19 +408,35 @@ def _build_entry_resources_card(
     )
 
 
+def _calculate_projected_resource_total(
+    *,
+    campaign_resource_totals: dict[str, int] | None,
+    resource_key: str,
+    persisted_entry_delta: int,
+    draft_entry_delta: int,
+) -> int | None:
+    if campaign_resource_totals is None:
+        return None
+    campaign_total = campaign_resource_totals.get(resource_key, 0)
+    return campaign_total - persisted_entry_delta + draft_entry_delta
+
+
 def _build_entry_sessions_card(
     data: MainShellViewData,
     state: MainShellState,
     card: WeekEntryCardViewData,
     status_line: str,
 ) -> ft.Control:
-    has_active_session = any(session.ended_at_utc is None for session in card.sessions)
+    is_session_busy = data.session_write_pending or card.session_write_pending
 
     rows: list[ft.Control] = []
     for session in card.sessions[:MAX_SESSIONS_PREVIEW]:
         rows.append(
             _build_session_row(
-                state, card.entry.ref, session, card.session_write_pending
+                state,
+                card.entry.ref,
+                session,
+                is_pending=is_session_busy,
             )
         )
 
@@ -426,46 +458,50 @@ def _build_entry_sessions_card(
                 color=COLOR_ERROR_TEXT,
             ),
         )
+    elif not card.sessions:
+        rows.append(
+            ft.Text(
+                "Sin sesiones registradas.",
+                size=12,
+                color=COLOR_TEXT_MUTED,
+            )
+        )
 
     controls: list[ft.Control] = [
-        ft.Text(status_line, size=12, color=COLOR_TEXT_MUTED),
-        ft.Text(
-            f"Total jugado (Q8): {card.sessions_total_text}",
-            size=12,
-            color=COLOR_TEXT_MUTED,
-        ),
         ft.Row(
-            spacing=6,
-            wrap=True,
+            alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+            vertical_alignment=ft.CrossAxisAlignment.CENTER,
             controls=[
+                ft.Column(
+                    expand=True,
+                    spacing=1,
+                    controls=[
+                        ft.Text(
+                            "Total jugado",
+                            size=11,
+                            color=COLOR_TEXT_MUTED,
+                        ),
+                        ft.Text(
+                            card.sessions_total_text,
+                            size=20,
+                            weight=ft.FontWeight.W_700,
+                            color=COLOR_TEXT_PRIMARY,
+                        ),
+                    ],
+                ),
                 ft.FilledButton(
-                    "Iniciar",
-                    on_click=lambda _event, entry_ref=card.entry.ref: state.on_start_session_for_entry(
-                        entry_ref
-                    ),
-                    disabled=card.session_write_pending,
-                    height=32,
-                ),
-                ft.OutlinedButton(
-                    "Detener",
-                    on_click=lambda _event, entry_ref=card.entry.ref: state.on_stop_session_for_entry(
-                        entry_ref
-                    ),
-                    disabled=card.session_write_pending or not has_active_session,
-                    height=32,
-                ),
-                ft.OutlinedButton(
                     "Nueva sesión",
                     on_click=(
                         lambda _event, entry_ref=card.entry.ref: state.on_open_manual_create_session_for_entry(
                             entry_ref
                         )
                     ),
-                    disabled=card.session_write_pending,
+                    disabled=is_session_busy,
                     height=32,
                 ),
             ],
         ),
+        ft.Text(status_line, size=12, color=COLOR_TEXT_MUTED),
     ]
 
     controls.extend(rows)
@@ -486,10 +522,11 @@ def _build_session_row(
     state: MainShellState,
     entry_ref: EntryRef,
     session: ViewerSessionItem,
+    *,
     is_pending: bool,
 ) -> ft.Control:
     return ft.Container(
-        padding=ft.Padding(left=8, top=6, right=8, bottom=6),
+        padding=ft.Padding(left=8, top=7, right=8, bottom=7),
         bgcolor=COLOR_PANEL_BG,
         border=ft.Border.all(1, COLOR_PANEL_INNER_BORDER),
         border_radius=6,
@@ -497,11 +534,47 @@ def _build_session_row(
             alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
             vertical_alignment=ft.CrossAxisAlignment.CENTER,
             controls=[
-                ft.Text(
-                    _format_session_line(session), size=12, color=COLOR_TEXT_PRIMARY
+                ft.Row(
+                    expand=True,
+                    wrap=True,
+                    spacing=14,
+                    run_spacing=6,
+                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                    controls=[
+                        _build_session_summary_metric(
+                            icon=ft.Icons.CALENDAR_MONTH_OUTLINED,
+                            content=ft.Text(
+                                format_session_summary_date(session.started_at_utc),
+                                size=12,
+                                color=COLOR_TEXT_PRIMARY,
+                            ),
+                        ),
+                        _build_session_summary_metric(
+                            icon=ft.Icons.SCHEDULE_OUTLINED,
+                            content=ft.Text(
+                                format_session_summary_range(
+                                    started_at_utc=session.started_at_utc,
+                                    ended_at_utc=session.ended_at_utc,
+                                ),
+                                size=12,
+                                color=COLOR_TEXT_PRIMARY,
+                            ),
+                        ),
+                        _build_session_summary_metric(
+                            icon=ft.Icons.HOURGLASS_BOTTOM_OUTLINED,
+                            content=build_session_duration_text(
+                                started_at_utc=session.started_at_utc,
+                                ended_at_utc=session.ended_at_utc,
+                                size=12,
+                                weight=ft.FontWeight.W_700,
+                                color=COLOR_TEXT_PRIMARY,
+                            ),
+                        ),
+                    ],
                 ),
                 ft.Row(
                     spacing=4,
+                    wrap=True,
                     controls=[
                         ft.OutlinedButton(
                             "Editar",
@@ -532,6 +605,18 @@ def _build_session_row(
     )
 
 
+def _build_session_summary_metric(*, icon: ft.IconData, content: ft.Control) -> ft.Control:
+    return ft.Row(
+        spacing=6,
+        tight=True,
+        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+        controls=[
+            ft.Icon(icon, size=15, color=COLOR_TEXT_MUTED),
+            content,
+        ],
+    )
+
+
 def _build_entry_outcome_icon(entry: EntrySummary) -> ft.Control | None:
     if entry.entry_type != "scenario":
         return None
@@ -551,13 +636,11 @@ def _build_entry_card_status_texts(
     card: WeekEntryCardViewData,
 ) -> _EntryCardStatusTexts:
     if data.active_entry_ref is None:
-        sessions_status = "Sin sesión activa real."
+        sessions_status = "Sin sesión activa."
     elif card.is_active_session_owner:
-        sessions_status = (
-            f"Con sesión activa aquí: {data.active_entry_label or card.entry.label}."
-        )
+        sessions_status = "Sesión activa en esta entrada."
     else:
-        sessions_status = f"Con sesión activa en otra entrada: {data.active_entry_label or 'Entrada activa'}."
+        sessions_status = f"Sesión activa en {data.active_entry_label or 'otra entrada'}."
 
     return _EntryCardStatusTexts(
         sessions_status=sessions_status,

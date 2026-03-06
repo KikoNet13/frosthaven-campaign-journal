@@ -12,26 +12,38 @@ from frosthaven_campaign_journal.ui.common.theme.colors import (
     COLOR_STATUS_LABEL_BORDER,
     COLOR_STATUS_LABEL_TEXT,
     COLOR_TEXT_PRIMARY,
+    COLOR_TEXT_MUTED,
 )
 from frosthaven_campaign_journal.ui.main_shell.model import MainShellViewData
+from frosthaven_campaign_journal.ui.main_shell.view.session_timing import (
+    build_active_session_subtitle,
+    build_session_duration_text,
+)
 
 
 def build_status_bar(data: MainShellViewData) -> ft.Control:
-    return ft.Row(
-        vertical_alignment=ft.CrossAxisAlignment.CENTER,
-        controls=[
-            ft.Container(
-                expand=True,
-                content=ft.Row(
-                    scroll=ft.ScrollMode.AUTO,
-                    spacing=8,
-                    controls=[
-                        _build_resource_group_box(data, group)
-                        for group in iter_resource_ui_groups()
-                    ],
-                ),
+    controls: list[ft.Control] = [
+        ft.Container(
+            expand=True,
+            content=ft.Row(
+                scroll=ft.ScrollMode.AUTO,
+                spacing=8,
+                controls=[
+                    _build_resource_group_box(data, group)
+                    for group in iter_resource_ui_groups()
+                ],
             ),
-        ],
+        ),
+    ]
+
+    active_session_box = _build_active_session_box(data)
+    if active_session_box is not None:
+        controls.append(active_session_box)
+
+    return ft.Row(
+        spacing=12,
+        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+        controls=controls,
     )
 
 
@@ -100,3 +112,51 @@ def _format_saved_total(resource_totals: dict[str, int] | None, resource_key: st
     if resource_totals is None:
         return "N/D"
     return str(resource_totals.get(resource_key, 0))
+
+
+def _build_active_session_box(data: MainShellViewData) -> ft.Control | None:
+    if data.active_session_started_at_utc is None:
+        return None
+
+    active_week_number = data.active_entry_ref.week_number if data.active_entry_ref is not None else None
+    subtitle = build_active_session_subtitle(
+        entry_label=data.active_entry_label,
+        week_number=active_week_number,
+    )
+
+    return ft.Container(
+        width=250,
+        padding=ft.Padding(left=12, top=10, right=12, bottom=10),
+        bgcolor=COLOR_STATUS_GROUP_BG,
+        border=ft.Border.all(1, COLOR_STATUS_GROUP_BORDER),
+        border_radius=10,
+        content=ft.Column(
+            spacing=2,
+            controls=[
+                ft.Row(
+                    spacing=8,
+                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                    controls=[
+                        ft.Icon(
+                            ft.Icons.TIMER_OUTLINED,
+                            size=20,
+                            color=COLOR_TEXT_PRIMARY,
+                        ),
+                        build_session_duration_text(
+                            started_at_utc=data.active_session_started_at_utc,
+                            size=24,
+                            weight=ft.FontWeight.W_700,
+                            color=COLOR_TEXT_PRIMARY,
+                        ),
+                    ],
+                ),
+                ft.Text(
+                    subtitle,
+                    size=11,
+                    color=COLOR_TEXT_MUTED,
+                    no_wrap=True,
+                    overflow=ft.TextOverflow.ELLIPSIS,
+                ),
+            ],
+        ),
+    )

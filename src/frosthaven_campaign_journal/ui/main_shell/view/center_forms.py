@@ -6,27 +6,9 @@ from frosthaven_campaign_journal.ui.common.components.surfaces import build_pane
 from frosthaven_campaign_journal.ui.common.theme.colors import (
     COLOR_ERROR_TEXT,
     COLOR_TEXT_HEADING,
-    COLOR_TEXT_PRIMARY,
 )
 from frosthaven_campaign_journal.ui.main_shell.model import MainShellViewData
 from frosthaven_campaign_journal.ui.main_shell.state import MainShellState
-
-
-def _build_confirmation_card(data: MainShellViewData, state: MainShellState) -> ft.Control:
-    assert data.confirmation is not None
-    return build_panel(
-        controls=[
-            ft.Text(data.confirmation.title, size=15, weight=ft.FontWeight.BOLD, color=COLOR_TEXT_HEADING),
-            ft.Text(data.confirmation.body, size=13, color=COLOR_TEXT_PRIMARY),
-            ft.Row(
-                spacing=8,
-                controls=[
-                    ft.TextButton("Cancelar", on_click=state.on_cancel_pending_action),
-                    ft.FilledButton(data.confirmation.confirm_label, on_click=state.on_confirm_pending_action),
-                ],
-            ),
-        ],
-    )
 
 
 def _build_entry_form_editor(data: MainShellViewData, state: MainShellState) -> ft.Control:

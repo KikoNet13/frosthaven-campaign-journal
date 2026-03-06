@@ -443,5 +443,5 @@ class MainShellWeekEntryResourceActionsMixin:
             self.entry_panel_state.resource_draft_values = dict(normalized)
             self.entry_panel_state.resource_draft_dirty = False
             self.entry_panel_state.resource_write_error_message = None
-        self.info_message = "Cambios de recursos descartados."
+        self._emit_info_toast("Cambios de recursos descartados.")
         self.notify()

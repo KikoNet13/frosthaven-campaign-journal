@@ -26,6 +26,7 @@ from frosthaven_campaign_journal.ui.main_shell.state.types import (
     EntryPanelReadState,
     MainScreenReadState,
     SessionFormState,
+    ToastState,
 )
 
 
@@ -48,12 +49,17 @@ class MainShellState(
     entry_form_state: EntryFormState | None = None
     entry_notes_editor_state: EntryNotesEditorState | None = None
     session_form_state: SessionFormState | None = None
-    info_message: str | None = None
+    toast_state: ToastState = field(default_factory=ToastState)
     _pending_context_action: Callable[[], None] | None = field(default=None, init=False, repr=False)
     _pending_context_action_label: str | None = field(default=None, init=False, repr=False)
+    _ui_event_seq: int = field(default=0, init=False, repr=False)
 
     @classmethod
     def create(cls) -> MainShellState:
         state = cls()
         state.initialize()
         return state
+
+    def _next_ui_event_id(self) -> int:
+        self._ui_event_seq += 1
+        return self._ui_event_seq

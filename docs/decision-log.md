@@ -1225,3 +1225,12 @@
   `src/frosthaven_campaign_journal/ui/main_shell/view/center_focus.py`,
   `src/frosthaven_campaign_journal/ui/main_shell/view/temporal_bar.py`,
   `https://www.mi.com/global/product/xiaomi-pad-5/specs`
+### DEC-0053
+
+- `date`: 2026-03-06
+- `status`: accepted
+- `problem`: `main_shell` mostraba mensajes informativos y confirmaciones como bloques inline en el panel central, ocupando espacio útil y mezclando feedback transitorio con edición persistente.
+- `decision`: mover mensajes informativos a `SnackBar` flotante y preguntas de confirmación a `AlertDialog` modal, manteniendo `MainShellState` como fuente de verdad y concentrando el bridge hacia overlays de Flet en `ui/app_root.py` mediante `event_id` transitorios.
+- `rationale`: separa feedback efímero del contenido principal, evita acoplar la capa de estado a `Page`, y permite reemitir el mismo mensaje o la misma confirmación sin perder eventos por igualdad de contenido.
+- `impact`: `model.py` y `view_data.py` dejan de exponer `info_message`/confirmación inline; `app_root.py` pasa a abrir/cerrar overlays; los botones del diálogo heredan la paleta del FAB; y se añaden tests para `toast_state`/`confirmation_state` con `event_id`.
+- `references`: `src/frosthaven_campaign_journal/ui/app_root.py`, `src/frosthaven_campaign_journal/ui/main_shell/state/types.py`, `src/frosthaven_campaign_journal/ui/main_shell/state/runtime_support.py`, `src/frosthaven_campaign_journal/ui/main_shell/view/center_panel.py`, `docs/ui-main-shell-architecture-mvs.md`, `CHANGELOG.md`

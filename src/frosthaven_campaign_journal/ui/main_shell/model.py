@@ -59,19 +59,9 @@ class MainShellViewData:
     read_error_message: str | None
     read_warning_message: str | None
     env_name: str
-    info_message: str | None
-    confirmation: "ConfirmationViewState | None"
     entry_form: "EntryFormViewState | None"
     entry_notes_editor: "EntryNotesEditorViewState | None"
     session_form: "SessionFormViewState | None"
-
-
-@dataclass(frozen=True)
-class ConfirmationViewState:
-    key: str
-    title: str
-    body: str
-    confirm_label: str
 
 
 @dataclass(frozen=True)
@@ -101,5 +91,3 @@ class SessionFormViewState:
     ended_time_local: str
     active_without_end: bool
     error_message: str | None
-
-

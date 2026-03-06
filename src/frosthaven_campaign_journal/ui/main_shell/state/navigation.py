@@ -177,7 +177,7 @@ class MainShellNavigationMixin:
                     reload_q5=False,
                     reload_q8=False,
                 )
-                self.info_message = (
+                self._emit_info_toast(
                     f"Año {result.new_year_number} creado "
                     f"(semanas {result.created_week_start}-{result.created_week_end})."
                 )
@@ -198,7 +198,12 @@ class MainShellNavigationMixin:
             return
 
         if key == "session_delete":
-            if isinstance(payload, tuple) and len(payload) == 2 and isinstance(payload[0], EntryRef) and isinstance(payload[1], str):
+            if (
+                isinstance(payload, tuple)
+                and len(payload) == 2
+                and isinstance(payload[0], EntryRef)
+                and isinstance(payload[1], str)
+            ):
                 self._run_session_write(
                     lambda client, entry_ref: manual_delete_session(
                         client,

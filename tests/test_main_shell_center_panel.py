@@ -5,6 +5,10 @@ from typing import Iterator
 
 import flet as ft
 
+from tests.main_shell_test_support import install_data_stub
+
+install_data_stub()
+
 from frosthaven_campaign_journal.models import WeekSummary
 from frosthaven_campaign_journal.ui.main_shell.state.shell_state import MainShellState
 from frosthaven_campaign_journal.ui.main_shell.view.center_panel import build_center_panel
@@ -78,6 +82,25 @@ class MainShellCenterPanelTests(unittest.TestCase):
         text_values = _text_values(panel)
         self.assertIn("Entradas de la semana", text_values)
         self.assertNotIn("Selecciona una semana.", text_values)
+
+    def test_center_panel_does_not_render_info_or_confirmation_inline(self) -> None:
+        state = _build_state(selected_week=1)
+        state._emit_info_toast("Cambios guardados.")
+        state._set_confirmation(
+            key="week_close",
+            title="Cerrar semana",
+            body="¿Quieres continuar?",
+            confirm_label="Cerrar",
+            payload=(1, 1),
+        )
+
+        panel = build_center_panel(state.build_view_data(), state)
+        text_values = _text_values(panel)
+
+        self.assertNotIn("Información", text_values)
+        self.assertNotIn("Cambios guardados.", text_values)
+        self.assertNotIn("Cerrar semana", text_values)
+        self.assertNotIn("¿Quieres continuar?", text_values)
 
 
 if __name__ == "__main__":

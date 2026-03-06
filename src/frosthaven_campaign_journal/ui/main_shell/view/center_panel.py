@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import flet as ft
 
@@ -11,7 +11,6 @@ from frosthaven_campaign_journal.ui.main_shell.view.center_focus import (
     _build_focus_week_mode,
 )
 from frosthaven_campaign_journal.ui.main_shell.view.center_forms import (
-    _build_confirmation_card,
     _build_entry_form_editor,
     _build_entry_notes_editor,
     _build_session_form_editor,
@@ -26,15 +25,11 @@ def build_center_panel(data: MainShellViewData, state: MainShellState) -> ft.Con
         top_controls.append(build_banner(title="Error de lectura", body=data.read_error_message, tone=BannerTone.ERROR))
     if data.read_warning_message:
         top_controls.append(build_banner(title="Advertencia", body=data.read_warning_message, tone=BannerTone.WARNING))
-    if data.info_message:
-        top_controls.append(build_banner(title="Información", body=data.info_message, tone=BannerTone.INFO))
     if data.week_write_error_message:
         top_controls.append(build_banner(title="Error de semana", body=data.week_write_error_message, tone=BannerTone.ERROR))
     if data.entry_write_error_message:
         top_controls.append(build_banner(title="Error de entrada", body=data.entry_write_error_message, tone=BannerTone.ERROR))
 
-    if data.confirmation is not None:
-        top_controls.append(_build_confirmation_card(data, state))
     if data.entry_form is not None:
         top_controls.append(_build_entry_form_editor(data, state))
     if data.entry_notes_editor is not None:

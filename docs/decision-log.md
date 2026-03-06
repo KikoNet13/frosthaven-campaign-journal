@@ -1234,3 +1234,13 @@
 - `rationale`: separa feedback efímero del contenido principal, evita acoplar la capa de estado a `Page`, y permite reemitir el mismo mensaje o la misma confirmación sin perder eventos por igualdad de contenido.
 - `impact`: `model.py` y `view_data.py` dejan de exponer `info_message`/confirmación inline; `app_root.py` pasa a abrir/cerrar overlays; los botones del diálogo heredan la paleta del FAB; y se añaden tests para `toast_state`/`confirmation_state` con `event_id`.
 - `references`: `src/frosthaven_campaign_journal/ui/app_root.py`, `src/frosthaven_campaign_journal/ui/main_shell/state/types.py`, `src/frosthaven_campaign_journal/ui/main_shell/state/runtime_support.py`, `src/frosthaven_campaign_journal/ui/main_shell/view/center_panel.py`, `docs/ui-main-shell-architecture-mvs.md`, `CHANGELOG.md`
+
+### DEC-0054
+
+- `date`: 2026-03-06
+- `status`: accepted
+- `problem`: la tarjeta de `Entry` seguía separando demasiado la operativa de sesiones entre botones redundantes dentro de la caja `Sesiones` y ausencia de resumen visible de la sesión activa global en la barra inferior.
+- `decision`: mover el `play/stop` rápido al header de cada tarjeta de `Entry`, compactar la caja `Sesiones` a formato resumen con total jugado + listado manual editable, y recuperar en la barra inferior una caja fija de sesión activa global con reloj vivo `hh:mm:ss` y subtítulo `{Entry activa} · Semana X`.
+- `rationale`: mejora jerarquía visual, acerca la acción frecuente al título de la entrada, y hace visible el estado de sesión activa aunque el usuario navegue por otra `Week`/`Entry`.
+- `impact`: supersede parcialmente `DEC-0045` en el punto que dejó la barra inferior solo para recursos; `center_focus.py` reordena acciones y filas de sesiones; `status_bar.py` vuelve a mostrar resumen activo; y `docs/active-session-flow.md` se alinea con la nueva ubicación del control rápido.
+- `references`: `src/frosthaven_campaign_journal/ui/main_shell/view/center_focus.py`, `src/frosthaven_campaign_journal/ui/main_shell/view/status_bar.py`, `src/frosthaven_campaign_journal/ui/main_shell/view/session_timing.py`, `docs/active-session-flow.md`, `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/103`

@@ -6,8 +6,8 @@
 - `purpose`: Definir el flujo funcional de sesiÃ³n activa (`start/stop/auto-stop`) del MVP, incluyendo cambio de foco, errores y recuperaciÃ³n esperada del cliente.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-02-24
-- `next_review`: 2026-03-10
+- `last_updated`: 2026-03-06
+- `next_review`: 2026-03-16
 
 ## Objetivo
 
@@ -66,8 +66,12 @@ No incluye:
 1. `active_entry`:
    - `Entry` que posee la sesiÃ³n activa global (si existe), derivado de una
      `Session` con `ended_at_utc = null`.
-1. Los controles `Iniciar/Parar sesiÃ³n` viven en el bloque de la
-   `selected_entry` (junto a total jugado y lista de sesiones desplegable).
+1. El control rÃ¡pido `play/stop` vive en la barra de acciones del header de la
+   `Entry` visible/operable.
+1. El bloque `Sesiones` de esa `Entry` mantiene:
+   - total jugado;
+   - listado/resumen de sesiones;
+   - acciones manuales (`crear/editar/borrar`).
 1. Cambiar `selected_week` o `selected_entry` no implica por sÃ­ mismo cambiar
    `current week` ni cerrar la sesiÃ³n activa global.
 1. Una implementaciÃ³n puede mantener un **visor sticky** (Ãºltima entry visible)

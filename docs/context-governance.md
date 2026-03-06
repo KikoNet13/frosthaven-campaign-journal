@@ -6,8 +6,8 @@
 - `purpose`: Gobierno de contexto, gate de calidad y estado verificable.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-03-05
-- `next_review`: 2026-03-13
+- `last_updated`: 2026-03-06
+- `next_review`: 2026-03-16
 
 ## Alcance de Fase 0
 
@@ -254,6 +254,36 @@ Se valida:
     incluyendo orden visual `Otros -> Materiales -> Plantas`.
   - Soporte de notas de semana eliminado de modelos, estado, writes y contratos
     activos del MVP.
+
+### Hito H1-08
+
+- Fecha: 2026-03-06
+- Objetivo: mover el control rápido de sesión al header de las `Entry`,
+  compactar la caja `Sesiones` y recuperar el resumen de sesión activa global
+  en la barra inferior (`#103`).
+- Resultado: completado
+- Verificación A: aprobado (UI, tests y documentación oficial alineados con el
+  nuevo flujo de sesión activa)
+- Verificación B: aprobado (suite `python -m unittest discover -s tests -p
+  "test_*.py"` en verde y validación Flet web no mutativa en
+  `http://127.0.0.1:8550`)
+- Evidencia:
+  - `src/frosthaven_campaign_journal/ui/main_shell/view/center_focus.py`
+  - `src/frosthaven_campaign_journal/ui/main_shell/view/status_bar.py`
+  - `src/frosthaven_campaign_journal/ui/main_shell/view/session_timing.py`
+  - `tests/test_main_shell_center_panel.py`
+  - `tests/test_main_shell_status_bar.py`
+  - `tests/test_session_timing.py`
+  - `docs/active-session-flow.md`
+  - `docs/decision-log.md` (DEC-0054)
+  - `CHANGELOG.md`
+- Resumen:
+  - Cada tarjeta de `Entry` muestra `play` o `stop` en el header según
+    `active_entry_ref`.
+  - La caja `Sesiones` pasa a formato resumen de ancho completo con total
+    jugado, botón `Nueva sesión` y filas compactas editables.
+  - La barra inferior vuelve a mostrar la sesión activa global con reloj vivo
+    `hh:mm:ss` y subtítulo contextual `{Entry activa} · Semana X`.
 
 
 ## Conocimiento migrado desde legado

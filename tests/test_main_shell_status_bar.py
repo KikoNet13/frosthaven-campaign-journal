@@ -39,22 +39,39 @@ def _text_values(control: ft.Control) -> list[str]:
     return values
 
 
+def _text_items(control: ft.Control) -> list[ft.Text]:
+    return [item for item in _iter_controls(control) if isinstance(item, ft.Text)]
+
+
 class MainShellStatusBarTests(unittest.TestCase):
-    def test_status_bar_shows_active_session_subtitle_when_global_session_exists(self) -> None:
+    def test_status_bar_shows_active_session_label_subtitle_and_timer_size(self) -> None:
         state = MainShellState()
-        state.read_state.active_entry_ref = EntryRef(year_number=1, week_number=6, entry_id="entry-1")
+        state.read_state.active_entry_ref = EntryRef(
+            year_number=1,
+            week_number=6,
+            entry_id="entry-1",
+        )
         state.read_state.active_entry_label = "Escenario 12"
-        state.read_state.active_session_started_at_utc = datetime.now(timezone.utc) - timedelta(hours=1)
+        state.read_state.active_session_started_at_utc = datetime.now(
+            timezone.utc
+        ) - timedelta(hours=1)
 
         status_bar = build_status_bar(state.build_view_data())
+        text_values = _text_values(status_bar)
+        timer_text = next(
+            item for item in _text_items(status_bar) if item.value == "01:00:00"
+        )
 
-        self.assertIn("Escenario 12 · Semana 6", _text_values(status_bar))
+        self.assertIn("Sesión actual", text_values)
+        self.assertIn("Escenario 12 · Semana 6", text_values)
+        self.assertEqual(26, timer_text.size)
 
     def test_status_bar_hides_active_session_box_without_active_session(self) -> None:
         state = MainShellState()
 
         status_bar = build_status_bar(state.build_view_data())
 
+        self.assertNotIn("Sesión actual", " ".join(_text_values(status_bar)))
         self.assertNotIn("Entrada activa", " ".join(_text_values(status_bar)))
 
 

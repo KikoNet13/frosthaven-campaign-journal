@@ -4,7 +4,11 @@ import flet as ft
 
 from frosthaven_campaign_journal.resource_catalog import ResourceCatalogItem
 from frosthaven_campaign_journal.ui.common.components import LabeledGroupBox
-from frosthaven_campaign_journal.ui.common.resources import ResourceTotalRow, ResourceUiGroup, iter_resource_ui_groups
+from frosthaven_campaign_journal.ui.common.resources import (
+    ResourceTotalRow,
+    ResourceUiGroup,
+    iter_resource_ui_groups,
+)
 from frosthaven_campaign_journal.ui.common.theme.colors import (
     COLOR_STATUS_GROUP_BG,
     COLOR_STATUS_GROUP_BORDER,
@@ -47,7 +51,9 @@ def build_status_bar(data: MainShellViewData) -> ft.Control:
     )
 
 
-def _build_resource_group_box(data: MainShellViewData, group: ResourceUiGroup) -> ft.Control:
+def _build_resource_group_box(
+    data: MainShellViewData, group: ResourceUiGroup
+) -> ft.Control:
     column_controls: list[ft.Control] = []
     for group_column in group.columns:
         column_controls.append(
@@ -108,7 +114,9 @@ def _build_resource_total_row(
     )
 
 
-def _format_saved_total(resource_totals: dict[str, int] | None, resource_key: str) -> str:
+def _format_saved_total(
+    resource_totals: dict[str, int] | None, resource_key: str
+) -> str:
     if resource_totals is None:
         return "N/D"
     return str(resource_totals.get(resource_key, 0))
@@ -118,18 +126,23 @@ def _build_active_session_box(data: MainShellViewData) -> ft.Control | None:
     if data.active_session_started_at_utc is None:
         return None
 
-    active_week_number = data.active_entry_ref.week_number if data.active_entry_ref is not None else None
+    active_week_number = (
+        data.active_entry_ref.week_number if data.active_entry_ref is not None else None
+    )
     subtitle = build_active_session_subtitle(
         entry_label=data.active_entry_label,
         week_number=active_week_number,
     )
 
-    return ft.Container(
-        width=250,
-        padding=ft.Padding(left=12, top=10, right=12, bottom=10),
+    return LabeledGroupBox(
+        label="Sesión actual",
+        width=200,
         bgcolor=COLOR_STATUS_GROUP_BG,
-        border=ft.Border.all(1, COLOR_STATUS_GROUP_BORDER),
-        border_radius=10,
+        border_color=COLOR_STATUS_GROUP_BORDER,
+        label_bgcolor=COLOR_STATUS_LABEL_BG,
+        label_border_color=COLOR_STATUS_LABEL_BORDER,
+        label_text_color=COLOR_STATUS_LABEL_TEXT,
+        padding=ft.Padding(left=12, top=10, right=12, bottom=10),
         content=ft.Column(
             spacing=2,
             controls=[
@@ -144,7 +157,7 @@ def _build_active_session_box(data: MainShellViewData) -> ft.Control | None:
                         ),
                         build_session_duration_text(
                             started_at_utc=data.active_session_started_at_utc,
-                            size=24,
+                            size=26,
                             weight=ft.FontWeight.W_700,
                             color=COLOR_TEXT_PRIMARY,
                         ),

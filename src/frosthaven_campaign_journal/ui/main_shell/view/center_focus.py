@@ -113,13 +113,13 @@ def _build_week_entry_card(
 
     return ft.Container(
         expand=True,
-        padding=ft.Padding.all(12),
+        padding=ft.Padding.all(10),
         bgcolor=COLOR_BOTTOM_BAR_BG,
         border=ft.Border.all(2 if card.is_active_session_owner else 1, active_border_color),
         border_radius=10,
         content=ft.Column(
             expand=True,
-            spacing=10,
+            spacing=6,
             controls=[
                 _build_entry_card_header(
                     data,
@@ -132,7 +132,7 @@ def _build_week_entry_card(
                     expand=True,
                     content=ft.ListView(
                         expand=True,
-                        spacing=10,
+                        spacing=8,
                         padding=0,
                         controls=[
                             _build_entry_resources_card(data, state, card),
@@ -200,7 +200,7 @@ def _build_entry_card_header(
             items=[
                 ft.PopupMenuItem(
                     icon=ft.Icons.ARROW_BACK,
-                    text="Mover a la izquierda",
+                    content="Mover a la izquierda",
                     on_click=(
                         lambda _event, entry_ref=entry.ref: state.on_reorder_entry_left_for_entry(entry_ref)
                     ),
@@ -208,7 +208,7 @@ def _build_entry_card_header(
                 ),
                 ft.PopupMenuItem(
                     icon=ft.Icons.ARROW_FORWARD,
-                    text="Mover a la derecha",
+                    content="Mover a la derecha",
                     on_click=(
                         lambda _event, entry_ref=entry.ref: state.on_reorder_entry_right_for_entry(entry_ref)
                     ),
@@ -222,8 +222,8 @@ def _build_entry_card_header(
                     content=ft.Row(
                         spacing=8,
                         controls=[
-                            ft.Icon(ft.Icons.DELETE_OUTLINE, size=18, color=COLOR_DESTRUCTIVE_ICON),
-                            ft.Text("Eliminar entrada", color=COLOR_DESTRUCTIVE_ICON),
+                            ft.Icon(ft.Icons.DELETE_OUTLINE, size=18, color=COLOR_WHITE),
+                            ft.Text("Eliminar entrada", color=COLOR_WHITE),
                         ],
                     ),
                 ),
@@ -296,14 +296,14 @@ def _build_entry_resources_card(
                         ),
                     )
                 )
-            column_controls.append(ft.Column(spacing=6, expand=True, controls=resource_rows))
+            column_controls.append(ft.Column(spacing=4, expand=True, controls=resource_rows))
 
         group_content: ft.Control
         if len(column_controls) == 1:
             group_content = column_controls[0]
         else:
             group_content = ft.Row(
-                spacing=12,
+                spacing=10,
                 vertical_alignment=ft.CrossAxisAlignment.START,
                 controls=column_controls,
             )
@@ -316,7 +316,7 @@ def _build_entry_resources_card(
             label_bgcolor=COLOR_STATUS_LABEL_BG,
             label_border_color=COLOR_STATUS_LABEL_BORDER,
             label_text_color=COLOR_STATUS_LABEL_TEXT,
-            padding=ft.Padding(left=8, top=10, right=8, bottom=8),
+            padding=ft.Padding(left=8, top=8, right=8, bottom=6),
         )
 
     layout_rows: list[ft.Control] = []
@@ -333,7 +333,7 @@ def _build_entry_resources_card(
     if first_row_boxes:
         layout_rows.append(
             ft.Row(
-                spacing=8,
+                spacing=6,
                 vertical_alignment=ft.CrossAxisAlignment.START,
                 controls=first_row_boxes,
             )
@@ -344,7 +344,7 @@ def _build_entry_resources_card(
         layout_rows.append(plants_box)
 
     return ft.Column(
-        spacing=8,
+        spacing=6,
         controls=layout_rows,
     )
 
@@ -377,7 +377,7 @@ def _build_entry_sessions_card(
         ft.Text(status_line, size=12, color=COLOR_TEXT_MUTED),
         ft.Text(f"Total jugado (Q8): {card.sessions_total_text}", size=12, color=COLOR_TEXT_MUTED),
         ft.Row(
-            spacing=8,
+            spacing=6,
             wrap=True,
             controls=[
                 ft.FilledButton(
@@ -408,13 +408,13 @@ def _build_entry_sessions_card(
 
     return LabeledGroupBox(
         label="Sesiones",
-        content=ft.Column(spacing=8, controls=controls),
+        content=ft.Column(spacing=6, controls=controls),
         bgcolor=COLOR_STATUS_GROUP_BG,
         border_color=COLOR_STATUS_GROUP_BORDER,
         label_bgcolor=COLOR_STATUS_LABEL_BG,
         label_border_color=COLOR_STATUS_LABEL_BORDER,
         label_text_color=COLOR_STATUS_LABEL_TEXT,
-        padding=ft.Padding.all(12),
+        padding=ft.Padding(left=10, top=9, right=10, bottom=10),
     )
 
 

@@ -6,7 +6,7 @@
 - `purpose`: Registrar decisiones con trazabilidad y precedencia.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-03-05
+- `last_updated`: 2026-03-06
 - `next_review`: 2026-03-12
 
 ## Formato canónico por entrada
@@ -1196,3 +1196,32 @@
   `src/frosthaven_campaign_journal/data/firestore_client.py`,
   `scripts/build-android-with-mobile-secrets.ps1`,
   `docs/android-release-flow.md`, `CHANGELOG.md`
+
+### DEC-0052
+
+- `date`: 2026-03-06
+- `status`: accepted
+- `problem`: tras la compactación previa de la shell tablet, la tarjeta de
+  `Entry` seguía dejando demasiado hueco vertical entre título y recursos, los
+  controles de delta desperdiciaban ancho y las etiquetas rojas competían
+  visualmente con la semana seleccionada/FAB en un viewport contractual
+  `2560x1600` landscape.
+- `decision`: compactar la geometría de `LabeledGroupBox` y de la tarjeta de
+  `Entry`, rehacer `ResourceDeltaRow` con una zona fija derecha para `- valor +`
+  y una zona izquierda expandible con truncado seguro, pasar etiquetas de grupo
+  y botones de año a azul claro con texto oscuro, y alinear `Eliminar entrada`
+  con el color claro del resto del popup.
+- `rationale`: recupera densidad útil en tablet sin reintroducir lógica
+  responsive por viewport, mantiene el rojo reservado para focos activos
+  principales y evita solapes entre etiqueta, total proyectado y delta.
+- `impact`: `center_focus.py` reduce padding/spacing en la tarjeta semanal y en
+  las cajas de recursos/sesiones; `resource_delta_row.py` fija una huella más
+  compacta para los botones `+/-` y el valor; `colors.py` redefine los
+  semánticos de etiquetas y navegación anual hacia la paleta azul; y
+  `labeled_group_box.py` reduce el overlap superior por defecto.
+- `references`: `src/frosthaven_campaign_journal/ui/common/components/labeled_group_box.py`,
+  `src/frosthaven_campaign_journal/ui/common/resources/resource_delta_row.py`,
+  `src/frosthaven_campaign_journal/ui/common/theme/colors.py`,
+  `src/frosthaven_campaign_journal/ui/main_shell/view/center_focus.py`,
+  `src/frosthaven_campaign_journal/ui/main_shell/view/temporal_bar.py`,
+  `https://www.mi.com/global/product/xiaomi-pad-5/specs`

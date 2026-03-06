@@ -14,9 +14,7 @@ from frosthaven_campaign_journal.ui.common.theme.colors import (
 
 
 ResourceDeltaClickHandler = Callable[[ft.ControlEvent], None]
-_DELTA_ACTION_BUTTON_SIZE = 28
-_DELTA_ACTION_ZONE_WIDTH = 88
-_DELTA_VALUE_WIDTH = 32
+_DELTA_VALUE_WIDTH = 22
 
 
 @ft.control
@@ -60,7 +58,7 @@ class ResourceDeltaRow(ft.Row):
             self._build_resource_icon(),
             ft.Row(
                 expand=True,
-                spacing=4,
+                spacing=2,
                 wrap=False,
                 controls=[
                     ft.Text(
@@ -72,6 +70,9 @@ class ResourceDeltaRow(ft.Row):
                         no_wrap=True,
                         overflow=ft.TextOverflow.ELLIPSIS,
                     ),
+                    ft.Container(
+                        expand=True,
+                    ),
                     ft.Text(
                         value=_format_projected_total_text(self.projected_total),
                         size=12,
@@ -81,56 +82,33 @@ class ResourceDeltaRow(ft.Row):
                         no_wrap=True,
                         overflow=ft.TextOverflow.ELLIPSIS,
                     ),
+                    ft.IconButton(
+                        icon=ft.Icons.REMOVE,
+                        icon_size=16,
+                        tooltip="Restar 1",
+                        on_click=self._handle_decrement,
+                        disabled=self.disabled,
+                        padding=0,
+                        visual_density=ft.VisualDensity.COMPACT,
+                    ),
+                    ft.Text(
+                        value=_format_delta_text(self.delta_value),
+                        size=14,
+                        width=_DELTA_VALUE_WIDTH,
+                        text_align=ft.TextAlign.CENTER,
+                        weight=ft.FontWeight.W_700,
+                        color=_delta_text_color(self.delta_value),
+                    ),
+                    ft.IconButton(
+                        icon=ft.Icons.ADD,
+                        icon_size=16,
+                        tooltip="Sumar 1",
+                        on_click=self._handle_increment,
+                        disabled=self.disabled,
+                        padding=0,
+                        visual_density=ft.VisualDensity.COMPACT,
+                    ),
                 ],
-            ),
-            ft.Container(
-                width=_DELTA_ACTION_ZONE_WIDTH,
-                alignment=ft.Alignment.CENTER_RIGHT,
-                content=ft.Row(
-                    spacing=0,
-                    alignment=ft.MainAxisAlignment.END,
-                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
-                    controls=[
-                        ft.IconButton(
-                            icon=ft.Icons.REMOVE,
-                            icon_size=16,
-                            tooltip="Restar 1",
-                            on_click=self._handle_decrement,
-                            disabled=self.disabled,
-                            padding=0,
-                            visual_density=ft.VisualDensity.COMPACT,
-                            size_constraints=ft.BoxConstraints(
-                                min_width=_DELTA_ACTION_BUTTON_SIZE,
-                                max_width=_DELTA_ACTION_BUTTON_SIZE,
-                                min_height=_DELTA_ACTION_BUTTON_SIZE,
-                                max_height=_DELTA_ACTION_BUTTON_SIZE,
-                            ),
-                        ),
-                        ft.Text(
-                            value=_format_delta_text(self.delta_value),
-                            size=14,
-                            width=_DELTA_VALUE_WIDTH,
-                            text_align=ft.TextAlign.CENTER,
-                            weight=ft.FontWeight.W_700,
-                            color=_delta_text_color(self.delta_value),
-                        ),
-                        ft.IconButton(
-                            icon=ft.Icons.ADD,
-                            icon_size=16,
-                            tooltip="Sumar 1",
-                            on_click=self._handle_increment,
-                            disabled=self.disabled,
-                            padding=0,
-                            visual_density=ft.VisualDensity.COMPACT,
-                            size_constraints=ft.BoxConstraints(
-                                min_width=_DELTA_ACTION_BUTTON_SIZE,
-                                max_width=_DELTA_ACTION_BUTTON_SIZE,
-                                min_height=_DELTA_ACTION_BUTTON_SIZE,
-                                max_height=_DELTA_ACTION_BUTTON_SIZE,
-                            ),
-                        ),
-                    ],
-                ),
             ),
         ]
 
@@ -156,8 +134,8 @@ def _format_delta_text(delta_value: int) -> str:
 
 def _format_projected_total_text(projected_total: int | None) -> str:
     if projected_total is None:
-        return "(Total: N/D)"
-    return f"(Total: {projected_total})"
+        return "(N/D)"
+    return f"({projected_total})"
 
 
 def _delta_text_color(delta_value: int) -> str:

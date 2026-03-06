@@ -79,8 +79,11 @@ class MainShellNavigationMixin:
 
     def on_select_week_click(self, event: ft.ControlEvent) -> None:
         week_number = event.control.data
-        if isinstance(week_number, int):
+        if isinstance(week_number, int) and not isinstance(week_number, bool):
             self.on_select_week(week_number)
+            return
+        if isinstance(week_number, str) and week_number.isdigit():
+            self.on_select_week(int(week_number))
 
     def on_select_week(self, week_number: int) -> None:
         if self.local_state.selected_year is None:

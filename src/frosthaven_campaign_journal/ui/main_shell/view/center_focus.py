@@ -4,9 +4,17 @@ from dataclasses import dataclass
 
 import flet as ft
 
-from frosthaven_campaign_journal.models import EntryRef, EntrySummary, ViewerSessionItem, WeekSummary
+from frosthaven_campaign_journal.models import (
+    EntryRef,
+    EntrySummary,
+    ViewerSessionItem,
+    WeekSummary,
+)
 from frosthaven_campaign_journal.ui.common.components import LabeledGroupBox
-from frosthaven_campaign_journal.ui.common.resources import ResourceDeltaRow, iter_resource_ui_groups
+from frosthaven_campaign_journal.ui.common.resources import (
+    ResourceDeltaRow,
+    iter_resource_ui_groups,
+)
 from frosthaven_campaign_journal.ui.common.theme.colors import (
     COLOR_BOTTOM_BAR_BG,
     COLOR_DESTRUCTIVE_ICON,
@@ -26,7 +34,10 @@ from frosthaven_campaign_journal.ui.common.theme.colors import (
     COLOR_VICTORY_ICON,
     COLOR_WHITE,
 )
-from frosthaven_campaign_journal.ui.main_shell.model import MainShellViewData, WeekEntryCardViewData
+from frosthaven_campaign_journal.ui.main_shell.model import (
+    MainShellViewData,
+    WeekEntryCardViewData,
+)
 from frosthaven_campaign_journal.ui.main_shell.state import MainShellState
 from frosthaven_campaign_journal.ui.main_shell.view.center_helpers import (
     _build_card,
@@ -47,7 +58,7 @@ def _build_focus_empty_mode(_data: MainShellViewData) -> ft.Control:
         expand=True,
         alignment=ft.Alignment.CENTER,
         content=ft.Text(
-            "Selecciona una semana.",
+            "Selecciona una semana",
             size=18,
             color=COLOR_TEXT_MUTED,
             text_align=ft.TextAlign.CENTER,
@@ -55,11 +66,15 @@ def _build_focus_empty_mode(_data: MainShellViewData) -> ft.Control:
     )
 
 
-def _build_focus_week_mode(data: MainShellViewData, state: MainShellState, _week: WeekSummary) -> ft.Control:
+def _build_focus_week_mode(
+    data: MainShellViewData, state: MainShellState, _week: WeekSummary
+) -> ft.Control:
     return _build_week_cards_lane(data, state)
 
 
-def _build_week_cards_lane(data: MainShellViewData, state: MainShellState) -> ft.Control:
+def _build_week_cards_lane(
+    data: MainShellViewData, state: MainShellState
+) -> ft.Control:
     if data.entries_panel_error_message:
         return _build_card(
             title="Entradas de la semana",
@@ -85,7 +100,9 @@ def _build_week_cards_lane(data: MainShellViewData, state: MainShellState) -> ft
         if card_count <= 2:
             wrappers.append(ft.Container(expand=1, content=card_control))
         else:
-            wrappers.append(ft.Container(width=WEEK_ENTRY_CARD_WIDTH, content=card_control))
+            wrappers.append(
+                ft.Container(width=WEEK_ENTRY_CARD_WIDTH, content=card_control)
+            )
 
     return ft.Container(
         expand=True,
@@ -108,14 +125,20 @@ def _build_week_entry_card(
     card_index: int,
     card_count: int,
 ) -> ft.Control:
-    active_border_color = COLOR_ENTRY_TAB_SELECTED_UNDERLINE if card.is_active_session_owner else COLOR_PANEL_BORDER
+    active_border_color = (
+        COLOR_ENTRY_TAB_SELECTED_UNDERLINE
+        if card.is_active_session_owner
+        else COLOR_PANEL_BORDER
+    )
     status_texts = _build_entry_card_status_texts(data, card)
 
     return ft.Container(
         expand=True,
         padding=ft.Padding.all(10),
         bgcolor=COLOR_BOTTOM_BAR_BG,
-        border=ft.Border.all(2 if card.is_active_session_owner else 1, active_border_color),
+        border=ft.Border.all(
+            2 if card.is_active_session_owner else 1, active_border_color
+        ),
         border_radius=10,
         content=ft.Column(
             expand=True,
@@ -136,7 +159,9 @@ def _build_week_entry_card(
                         padding=0,
                         controls=[
                             _build_entry_resources_card(data, state, card),
-                            _build_entry_sessions_card(data, state, card, status_texts.sessions_status),
+                            _build_entry_sessions_card(
+                                data, state, card, status_texts.sessions_status
+                            ),
                         ],
                     ),
                 ),
@@ -155,7 +180,9 @@ def _build_entry_card_header(
 ) -> ft.Control:
     entry = card.entry
     outcome_icon = _build_entry_outcome_icon(entry)
-    title_controls: list[ft.Control] = [ft.Text(entry.label, size=18, weight=ft.FontWeight.BOLD, color=COLOR_WHITE)]
+    title_controls: list[ft.Control] = [
+        ft.Text(entry.label, size=18, weight=ft.FontWeight.BOLD, color=COLOR_WHITE)
+    ]
     if outcome_icon is not None:
         title_controls.append(outcome_icon)
 
@@ -178,7 +205,9 @@ def _build_entry_card_header(
                     icon_size=18,
                     icon_color=COLOR_WHITE,
                     tooltip="Guardar recursos",
-                    on_click=lambda _event, entry_ref=entry.ref: state.on_save_resource_draft_for_entry(entry_ref),
+                    on_click=lambda _event, entry_ref=entry.ref: state.on_save_resource_draft_for_entry(
+                        entry_ref
+                    ),
                     disabled=card.resource_write_pending,
                 ),
                 ft.IconButton(
@@ -186,7 +215,9 @@ def _build_entry_card_header(
                     icon_size=18,
                     icon_color=COLOR_WHITE,
                     tooltip="No guardar cambios de recursos",
-                    on_click=lambda _event, entry_ref=entry.ref: state.on_discard_resource_draft_for_entry(entry_ref),
+                    on_click=lambda _event, entry_ref=entry.ref: state.on_discard_resource_draft_for_entry(
+                        entry_ref
+                    ),
                     disabled=card.resource_write_pending,
                 ),
             ]
@@ -202,7 +233,9 @@ def _build_entry_card_header(
                     icon=ft.Icons.ARROW_BACK,
                     content="Mover a la izquierda",
                     on_click=(
-                        lambda _event, entry_ref=entry.ref: state.on_reorder_entry_left_for_entry(entry_ref)
+                        lambda _event, entry_ref=entry.ref: state.on_reorder_entry_left_for_entry(
+                            entry_ref
+                        )
                     ),
                     disabled=card.entry_write_pending or not can_move_left,
                 ),
@@ -210,19 +243,25 @@ def _build_entry_card_header(
                     icon=ft.Icons.ARROW_FORWARD,
                     content="Mover a la derecha",
                     on_click=(
-                        lambda _event, entry_ref=entry.ref: state.on_reorder_entry_right_for_entry(entry_ref)
+                        lambda _event, entry_ref=entry.ref: state.on_reorder_entry_right_for_entry(
+                            entry_ref
+                        )
                     ),
                     disabled=card.entry_write_pending or not can_move_right,
                 ),
                 ft.PopupMenuItem(
                     on_click=(
-                        lambda _event, entry_ref=entry.ref: state.on_open_entry_delete_confirm_for_entry(entry_ref)
+                        lambda _event, entry_ref=entry.ref: state.on_open_entry_delete_confirm_for_entry(
+                            entry_ref
+                        )
                     ),
                     disabled=card.entry_write_pending,
                     content=ft.Row(
                         spacing=8,
                         controls=[
-                            ft.Icon(ft.Icons.DELETE_OUTLINE, size=18, color=COLOR_WHITE),
+                            ft.Icon(
+                                ft.Icons.DELETE_OUTLINE, size=18, color=COLOR_WHITE
+                            ),
                             ft.Text("Eliminar entrada", color=COLOR_WHITE),
                         ],
                     ),
@@ -296,7 +335,9 @@ def _build_entry_resources_card(
                         ),
                     )
                 )
-            column_controls.append(ft.Column(spacing=4, expand=True, controls=resource_rows))
+            column_controls.append(
+                ft.Column(spacing=4, expand=True, controls=resource_rows)
+            )
 
         group_content: ft.Control
         if len(column_controls) == 1:
@@ -322,7 +363,9 @@ def _build_entry_resources_card(
     layout_rows: list[ft.Control] = []
 
     if card.resource_write_error_message:
-        layout_rows.append(ft.Text(card.resource_write_error_message, size=12, color=COLOR_ERROR_TEXT))
+        layout_rows.append(
+            ft.Text(card.resource_write_error_message, size=12, color=COLOR_ERROR_TEXT)
+        )
 
     first_row_boxes: list[ft.Control] = []
     for group_key in ("others", "materials"):
@@ -359,7 +402,11 @@ def _build_entry_sessions_card(
 
     rows: list[ft.Control] = []
     for session in card.sessions[:MAX_SESSIONS_PREVIEW]:
-        rows.append(_build_session_row(state, card.entry.ref, session, card.session_write_pending))
+        rows.append(
+            _build_session_row(
+                state, card.entry.ref, session, card.session_write_pending
+            )
+        )
 
     if len(card.sessions) > MAX_SESSIONS_PREVIEW:
         rows.append(
@@ -371,31 +418,48 @@ def _build_entry_sessions_card(
         )
 
     if card.sessions_error_message:
-        rows.insert(0, ft.Text(f"Error Q8: {card.sessions_error_message}", size=12, color=COLOR_ERROR_TEXT))
+        rows.insert(
+            0,
+            ft.Text(
+                f"Error Q8: {card.sessions_error_message}",
+                size=12,
+                color=COLOR_ERROR_TEXT,
+            ),
+        )
 
     controls: list[ft.Control] = [
         ft.Text(status_line, size=12, color=COLOR_TEXT_MUTED),
-        ft.Text(f"Total jugado (Q8): {card.sessions_total_text}", size=12, color=COLOR_TEXT_MUTED),
+        ft.Text(
+            f"Total jugado (Q8): {card.sessions_total_text}",
+            size=12,
+            color=COLOR_TEXT_MUTED,
+        ),
         ft.Row(
             spacing=6,
             wrap=True,
             controls=[
                 ft.FilledButton(
                     "Iniciar",
-                    on_click=lambda _event, entry_ref=card.entry.ref: state.on_start_session_for_entry(entry_ref),
+                    on_click=lambda _event, entry_ref=card.entry.ref: state.on_start_session_for_entry(
+                        entry_ref
+                    ),
                     disabled=card.session_write_pending,
                     height=32,
                 ),
                 ft.OutlinedButton(
                     "Detener",
-                    on_click=lambda _event, entry_ref=card.entry.ref: state.on_stop_session_for_entry(entry_ref),
+                    on_click=lambda _event, entry_ref=card.entry.ref: state.on_stop_session_for_entry(
+                        entry_ref
+                    ),
                     disabled=card.session_write_pending or not has_active_session,
                     height=32,
                 ),
                 ft.OutlinedButton(
                     "Nueva sesión",
                     on_click=(
-                        lambda _event, entry_ref=card.entry.ref: state.on_open_manual_create_session_for_entry(entry_ref)
+                        lambda _event, entry_ref=card.entry.ref: state.on_open_manual_create_session_for_entry(
+                            entry_ref
+                        )
                     ),
                     disabled=card.session_write_pending,
                     height=32,
@@ -433,7 +497,9 @@ def _build_session_row(
             alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
             vertical_alignment=ft.CrossAxisAlignment.CENTER,
             controls=[
-                ft.Text(_format_session_line(session), size=12, color=COLOR_TEXT_PRIMARY),
+                ft.Text(
+                    _format_session_line(session), size=12, color=COLOR_TEXT_PRIMARY
+                ),
                 ft.Row(
                     spacing=4,
                     controls=[
@@ -470,9 +536,13 @@ def _build_entry_outcome_icon(entry: EntrySummary) -> ft.Control | None:
     if entry.entry_type != "scenario":
         return None
     if entry.scenario_outcome == "victory":
-        return ft.Icon(ft.Icons.CHECK_CIRCLE, size=18, color=COLOR_VICTORY_ICON, tooltip="Victoria")
+        return ft.Icon(
+            ft.Icons.CHECK_CIRCLE, size=18, color=COLOR_VICTORY_ICON, tooltip="Victoria"
+        )
     if entry.scenario_outcome == "defeat":
-        return ft.Icon(ft.Icons.CANCEL, size=18, color=COLOR_DEFEAT_ICON, tooltip="Derrota")
+        return ft.Icon(
+            ft.Icons.CANCEL, size=18, color=COLOR_DEFEAT_ICON, tooltip="Derrota"
+        )
     return None
 
 
@@ -483,7 +553,9 @@ def _build_entry_card_status_texts(
     if data.active_entry_ref is None:
         sessions_status = "Sin sesión activa real."
     elif card.is_active_session_owner:
-        sessions_status = f"Con sesión activa aquí: {data.active_entry_label or card.entry.label}."
+        sessions_status = (
+            f"Con sesión activa aquí: {data.active_entry_label or card.entry.label}."
+        )
     else:
         sessions_status = f"Con sesión activa en otra entrada: {data.active_entry_label or 'Entrada activa'}."
 

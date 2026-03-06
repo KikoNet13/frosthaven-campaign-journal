@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from dataclasses import dataclass
 
@@ -30,7 +30,6 @@ from frosthaven_campaign_journal.ui.main_shell.model import MainShellViewData, W
 from frosthaven_campaign_journal.ui.main_shell.state import MainShellState
 from frosthaven_campaign_journal.ui.main_shell.view.center_helpers import (
     _build_card,
-    _format_navigation_line,
     _format_session_line,
 )
 
@@ -43,12 +42,15 @@ class _EntryCardStatusTexts:
     sessions_status: str
 
 
-def _build_focus_empty_mode(data: MainShellViewData) -> ft.Control:
-    return _build_card(
-        title="Sin semana seleccionada",
-        body=(
-            "Navega por las semanas del año visible y selecciona una entrada para mostrarla en el visor.\n"
-            + _format_navigation_line(data)
+def _build_focus_empty_mode(_data: MainShellViewData) -> ft.Control:
+    return ft.Container(
+        expand=True,
+        alignment=ft.Alignment.CENTER,
+        content=ft.Text(
+            "Selecciona una semana.",
+            size=18,
+            color=COLOR_TEXT_MUTED,
+            text_align=ft.TextAlign.CENTER,
         ),
     )
 

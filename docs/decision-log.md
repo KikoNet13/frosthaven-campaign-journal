@@ -1250,26 +1250,21 @@
 - `date`: 2026-03-06
 - `status`: accepted
 - `problem`: existía flujo manual de release Android y convención `v0.x.y`,
-  pero faltaba un procedimiento ejecutable y determinista para automatizar una
-  release diaria desde Codex App con changelog, tag, GitHub Release y `.apk`.
-- `decision`: adoptar una automatización local directa en
-  `$CODEX_HOME/automations/release-diaria-github/automation.toml` que ejecute
-  por sí misma validación, cálculo de versión, corte de `CHANGELOG.md`, build
-  APK, commit, tag, push y GitHub Release; mantener
-  `scripts/create-github-release.ps1` como fallback manual documentado fuera del
-  camino automático principal.
-- `rationale`: elimina la capa extra de wrapper en la automatización diaria,
-  mantiene la release de GitHub alineada con el changelog y conserva un respaldo
-  manual verificable para depuración o ejecución puntual.
+  pero faltaba un procedimiento determinista para ejecutar una release diaria
+  desde Codex App sin ocultar la lógica dentro de un script versionado.
+- `decision`: las releases GitHub se operan manualmente por Codex en sesión,
+  lanzando los comandos necesarios de validación, build, git y `gh` sobre
+  `main` limpio y sincronizado; `CHANGELOG.md` es la fuente de verdad para las
+  notas en Markdown y no se versiona ningún script de release en el repo.
+- `rationale`: mantiene el control explícito del flujo en cada sesión, evita
+  lógica opaca o divergente en scripts de release y deja la publicación
+  completamente auditable en la conversación y en el historial Git.
 - `impact`: se añade `docs/github-release-automation.md`, se actualizan
-  `docs/system-map.md` y `docs/repo-workflow.md`, Codex App pasa a ejecutar el
-  flujo completo desde el prompt de la automatización, el build Android directo
-  reproduce el contrato temporal de secretos móviles, el repo versiona
-  `codex/rules/release-diaria-github.rules` como soporte operativo y
-  `scripts/create-github-release.ps1` queda como respaldo manual.
+  `docs/system-map.md` y `docs/repo-workflow.md`, Codex App pasa a ejecutar la
+  release con comandos directos y `scripts/build-android-with-mobile-secrets.ps1`
+  queda acotado a helper de build Android, no de publicación.
 - `references`: `docs/github-release-automation.md`,
-  `$CODEX_HOME/automations/release-diaria-github/automation.toml`,
-  `codex/rules/release-diaria-github.rules`,
-  `scripts/create-github-release.ps1`,
+  `docs/android-release-flow.md`,
+  `scripts/build-android-with-mobile-secrets.ps1`,
   `docs/repo-workflow.md`, `docs/system-map.md`,
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/114`

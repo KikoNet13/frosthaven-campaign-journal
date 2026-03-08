@@ -1,9 +1,9 @@
-# Flujo de Release GitHub Automatizada
+# Flujo de Release GitHub desde Codex App
 
 ## Metadatos
 
 - `doc_id`: DOC-GITHUB-RELEASE-AUTOMATION
-- `purpose`: Definir el flujo local automatizado de releases GitHub con tag, changelog y APK desde Codex App.
+- `purpose`: Definir el flujo local de releases GitHub operado por Codex con tag, changelog y APK desde Codex App.
 - `status`: active
 - `source_of_truth`: official
 - `last_updated`: 2026-03-08
@@ -11,7 +11,7 @@
 
 ## Objetivo
 
-Establecer un flujo automatizado y reproducible para:
+Establecer un flujo reproducible para:
 
 1. detectar si procede una nueva release diaria;
 1. calcular la siguiente versión `v0.x.y`;
@@ -24,15 +24,16 @@ Establecer un flujo automatizado y reproducible para:
 
 Incluye:
 
-- automatización local en Codex App sobre el worktree del repo;
+- ejecución manual por Codex en la sesión activa sobre el worktree del repo;
 - sincronización `origin/main` por `fast-forward only`;
 - release notes derivadas de `CHANGELOG.md`;
-- build Android directo desde la propia automatización;
+- build Android directo desde la propia sesión;
 - publicación en GitHub vía `gh`.
 
 No incluye:
 
 - GitHub Actions o CI remota adicional;
+- automatizaciones programadas o wrappers versionados de release;
 - rollback automático si ya hubo publicación parcial remota;
 - subida a Google Play.
 
@@ -46,20 +47,13 @@ No incluye:
 - `.secrets/firestore-mobile-rw.json`;
 - `FIRESTORE_PROJECT_ID` en entorno o `.env`.
 
-## Automatización directa en Codex App
+## Regla operativa
 
-Ruta oficial: `$CODEX_HOME/automations/release-diaria-github/automation.toml`
+- Codex ejecuta la release completa mediante comandos directos en la sesión.
+- No se versiona ningún script de release en el repo.
+- `CHANGELOG.md` es la fuente de verdad para la descripción Markdown.
 
-Contrato operativo:
-
-- la automatización ejecuta el flujo completo de release directamente;
-- no invoca `scripts/create-github-release.ps1` en el camino automático;
-- el repo versiona `codex/rules/release-diaria-github.rules` como soporte
-  operativo de permisos mínimos;
-- deja siempre inbox item `released`, `skipped`, `blocked` o `failed`;
-- la cadencia se fija a las `20:00` en la zona horaria local del usuario.
-
-## Flujo operativo directo
+## Flujo operativo
 
 1. Verificar worktree limpio, rama `main`, secretos y sesión `gh`.
 1. Ejecutar `git fetch --tags origin` y `git pull --ff-only origin main`.
@@ -81,7 +75,7 @@ pipenv run python -m unittest discover -s tests -p "test_*.py"
 ```
 
 1. Calcular `BuildNumber = git rev-list --count HEAD + 1`.
-1. Generar el `.apk` directamente desde la automatización:
+1. Generar el `.apk` directamente en la sesión:
    - resolver `FIRESTORE_PROJECT_ID`;
    - leer `.secrets/firestore-mobile-rw.json`;
    - crear temporalmente `src/frosthaven_campaign_journal/config/_mobile_runtime_secrets.py`;
@@ -105,25 +99,10 @@ pipenv run python -m unittest discover -s tests -p "test_*.py"
 
 - Si el repo está sucio o falta un prerrequisito, la release se omite.
 - Si existe estado parcial publicado o la tag/release objetivo ya existe, el flujo se bloquea y no intenta rehacer historia.
-- El flujo directo debe limpiar siempre `_mobile_runtime_secrets.py` aunque falle el build.
-
-## Fallback manual documentado
-
-Ruta oficial: `scripts/create-github-release.ps1`
-
-Uso previsto:
-
-- validación manual en `dry_run`;
-- build manual `-BuildOnly` cuando se necesita generar el `.apk` con secretos
-  embebidos sin publicar release;
-- comparación de comportamiento si falla la automatización directa;
-- ejecución manual puntual fuera de la automatización programada.
-
-El script permanece como respaldo operativo, pero no es el camino automático principal.
+- La sesión debe limpiar siempre `_mobile_runtime_secrets.py` aunque falle el build.
 
 ## Referencias
 
 - `docs/repo-workflow.md`
 - `docs/android-release-flow.md`
-- `codex/rules/release-diaria-github.rules`
-- `scripts/create-github-release.ps1`
+- `scripts/build-android-with-mobile-secrets.ps1`

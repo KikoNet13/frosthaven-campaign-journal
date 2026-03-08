@@ -288,31 +288,27 @@ Se valida:
 ### Hito H1-09
 
 - Fecha: 2026-03-06
-- Objetivo: formalizar y automatizar el flujo local de GitHub Release diaria
-  con changelog, tag y APK desde Codex App.
+- Objetivo: formalizar el flujo local de GitHub Release diaria desde Codex App
+  sin script versionado de release.
 - Resultado: completado
-- Verificación A: aprobado (automatización directa, fallback manual y
-  documentación oficial alineados)
-- Verificación B: aprobado (inspección de `automation.toml`, referencias
-  documentales y script de respaldo verificados)
+- Verificación A: aprobado (flujo manual, build APK y documentación oficial
+  alineados)
+- Verificación B: aprobado (comandos requeridos, referencias documentales y
+  helper Android verificados)
 - Evidencia:
-  - `C:/Users/Kiko/.codex/automations/release-diaria-github/automation.toml`
-  - `codex/rules/release-diaria-github.rules`
   - `docs/github-release-automation.md`
   - `docs/android-release-flow.md`
   - `docs/repo-workflow.md`
   - `docs/system-map.md`
   - `docs/decision-log.md` (DEC-0055)
-  - `scripts/create-github-release.ps1`
+  - `scripts/build-android-with-mobile-secrets.ps1`
 - Resumen:
-  - El flujo diario queda definido para ejecutarse directamente desde la
-    automatización de Codex App.
-  - El repo versiona reglas locales de permisos para que la automatización
-    diaria pueda operar con `git`, `gh`, `pipenv` y PowerShell de forma trazada.
+  - El flujo diario queda definido para ejecutarse desde Codex App mediante
+    comandos directos, sin encapsular la release en un script del repo.
   - La GitHub Release reutiliza la sección recién cortada de `CHANGELOG.md` y
-    adjunta el `.apk` generado en el propio flujo automático.
-  - `scripts/create-github-release.ps1` se mantiene como respaldo manual y no
-    como camino automático principal.
+    adjunta el `.apk` generado en la propia sesión de trabajo.
+  - `scripts/build-android-with-mobile-secrets.ps1` se mantiene solo como
+    helper acotado para build Android con secretos embebidos.
 
 
 ## Conocimiento migrado desde legado

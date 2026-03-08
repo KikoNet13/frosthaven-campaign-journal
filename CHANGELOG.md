@@ -11,24 +11,17 @@ y usa versionado
 
 ### Añadido
 
-- Script operativo `scripts/create-github-release.ps1` para automatizar
-  releases GitHub locales con corte de changelog, validación, build APK y
-  publicación desde Codex App.
 - Documento oficial `docs/github-release-automation.md` para fijar el flujo
-  diario de release local con tag `v0.x.y`, GitHub Release y `.apk`.
-- Reglas de repo `codex/rules/release-diaria-github.rules` para declarar los
-  permisos mínimos que necesita la automatización diaria de release.
+  diario de release local desde Codex App con tag `v0.x.y`, GitHub Release y
+  `.apk`.
 
 ### Cambiado
 
 - `docs/repo-workflow.md`, `docs/system-map.md` y `docs/context-governance.md`
-  alinean la trazabilidad del nuevo flujo automatizado de release local.
-- La automatización `release-diaria-github` deja de actuar como wrapper de
-  `scripts/create-github-release.ps1` y pasa a ejecutar directamente
-  validación, build APK y publicación de la release, manteniendo el script como
-  fallback manual documentado.
-- `docs/android-release-flow.md` sustituye la referencia al helper borrado de
-  build por el nuevo fallback manual `scripts/create-github-release.ps1`.
+  alinean la trazabilidad del nuevo flujo manual de release local.
+- Las releases GitHub pasan a ejecutarse siempre mediante comandos directos en
+  sesión por parte de Codex, con notas en Markdown derivadas de `CHANGELOG.md`
+  y sin script versionado de release en el repo.
 
 ## [0.2.1] - 2026-03-05
 

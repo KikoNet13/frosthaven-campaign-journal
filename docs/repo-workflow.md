@@ -301,15 +301,14 @@ Codex escala el nivel cuando:
   - crear tag
   - publicar release notes
 
-### Automatización local con Codex App
+### Release manual con Codex App
 
 - Flujo oficial: `docs/github-release-automation.md`.
-- Soporte operativo versionado: `codex/rules/release-diaria-github.rules`.
-- La automatización diaria trabaja solo sobre `main` limpio y sincronizado con
+- La release diaria trabaja solo sobre `main` limpio y sincronizado con
   `origin/main`.
-- La automatización real ejecuta directamente validación, changelog, build APK,
-  commit, tag, push y GitHub Release.
-- `scripts/create-github-release.ps1` queda como fallback manual documentado.
+- Codex debe ejecutar directamente validación, changelog, build APK, commit,
+  tag, push y GitHub Release en la propia sesión.
+- No se versionan scripts de release en el repo para encapsular este flujo.
 - Si detecta estado parcial publicado (por ejemplo tag sin GitHub Release), se
   bloquea y no intenta rollback automático.
 

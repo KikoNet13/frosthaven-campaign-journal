@@ -30,7 +30,7 @@ Este documento permite entender rápidamente:
 - `docs/repo-workflow.md`
   - Flujo Git/GitHub del repo.
 - `docs/github-release-automation.md`
-  - Flujo automatizado local de release GitHub con changelog y APK.
+  - Flujo de release GitHub desde Codex App con changelog y APK.
 - `docs/android-release-flow.md`
   - Flujo operativo manual para build y publicación de `.apk` en releases.
 - `docs/domain-glossary.md`
@@ -97,4 +97,4 @@ Este documento permite entender rápidamente:
 - Estado de fase -> `docs/context-governance.md`
 - Pasos operativos -> `docs/context-checklists.md`
 - Flujo Git/GitHub -> `docs/repo-workflow.md`
-- Release GitHub automatizada -> `docs/github-release-automation.md`
+- Release GitHub desde Codex App -> `docs/github-release-automation.md`

@@ -6,7 +6,7 @@
 - `purpose`: Registrar decisiones con trazabilidad y precedencia.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-03-06
+- `last_updated`: 2026-03-08
 - `next_review`: 2026-03-12
 
 ## Formato canónico por entrada
@@ -1244,3 +1244,27 @@
 - `rationale`: mejora jerarquía visual, acerca la acción frecuente al título de la entrada, y hace visible el estado de sesión activa aunque el usuario navegue por otra `Week`/`Entry`.
 - `impact`: supersede parcialmente `DEC-0045` en el punto que dejó la barra inferior solo para recursos; `center_focus.py` reordena acciones y filas de sesiones; `status_bar.py` vuelve a mostrar resumen activo; y `docs/active-session-flow.md` se alinea con la nueva ubicación del control rápido.
 - `references`: `src/frosthaven_campaign_journal/ui/main_shell/view/center_focus.py`, `src/frosthaven_campaign_journal/ui/main_shell/view/status_bar.py`, `src/frosthaven_campaign_journal/ui/main_shell/view/session_timing.py`, `docs/active-session-flow.md`, `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/103`
+
+### DEC-0055
+
+- `date`: 2026-03-06
+- `status`: accepted
+- `problem`: existía flujo manual de release Android y convención `v0.x.y`,
+  pero faltaba un procedimiento determinista para ejecutar una release diaria
+  desde Codex App sin ocultar la lógica dentro de un script versionado.
+- `decision`: las releases GitHub se operan manualmente por Codex en sesión,
+  lanzando los comandos necesarios de validación, build, git y `gh` sobre
+  `main` limpio y sincronizado; `CHANGELOG.md` es la fuente de verdad para las
+  notas en Markdown y no se versiona ningún script de release en el repo.
+- `rationale`: mantiene el control explícito del flujo en cada sesión, evita
+  lógica opaca o divergente en scripts de release y deja la publicación
+  completamente auditable en la conversación y en el historial Git.
+- `impact`: se añade `docs/github-release-automation.md`, se actualizan
+  `docs/system-map.md` y `docs/repo-workflow.md`, Codex App pasa a ejecutar la
+  release con comandos directos y `scripts/build-android-with-mobile-secrets.ps1`
+  queda acotado a helper de build Android, no de publicación.
+- `references`: `docs/github-release-automation.md`,
+  `docs/android-release-flow.md`,
+  `scripts/build-android-with-mobile-secrets.ps1`,
+  `docs/repo-workflow.md`, `docs/system-map.md`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/114`

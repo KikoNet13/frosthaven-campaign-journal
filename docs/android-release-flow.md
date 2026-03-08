@@ -6,7 +6,7 @@
 - `purpose`: Definir el flujo operativo manual para generar y publicar `.apk` en GitHub Releases.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-03-05
+- `last_updated`: 2026-03-08
 - `next_review`: 2026-03-19
 
 ## Objetivo

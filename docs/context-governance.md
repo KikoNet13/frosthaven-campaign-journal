@@ -6,7 +6,7 @@
 - `purpose`: Gobierno de contexto, gate de calidad y estado verificable.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-03-06
+- `last_updated`: 2026-03-08
 - `next_review`: 2026-03-16
 
 ## Alcance de Fase 0
@@ -284,6 +284,31 @@ Se valida:
     jugado, botón `Nueva sesión` y filas compactas editables.
   - La barra inferior vuelve a mostrar la sesión activa global con reloj vivo
     `hh:mm:ss` y subtítulo contextual `{Entry activa} · Semana X`.
+
+### Hito H1-09
+
+- Fecha: 2026-03-06
+- Objetivo: formalizar el flujo local de GitHub Release diaria desde Codex App
+  sin script versionado de release.
+- Resultado: completado
+- Verificación A: aprobado (flujo manual, build APK y documentación oficial
+  alineados)
+- Verificación B: aprobado (comandos requeridos, referencias documentales y
+  helper Android verificados)
+- Evidencia:
+  - `docs/github-release-automation.md`
+  - `docs/android-release-flow.md`
+  - `docs/repo-workflow.md`
+  - `docs/system-map.md`
+  - `docs/decision-log.md` (DEC-0055)
+  - `scripts/build-android-with-mobile-secrets.ps1`
+- Resumen:
+  - El flujo diario queda definido para ejecutarse desde Codex App mediante
+    comandos directos, sin encapsular la release en un script del repo.
+  - La GitHub Release reutiliza la sección recién cortada de `CHANGELOG.md` y
+    adjunta el `.apk` generado en la propia sesión de trabajo.
+  - `scripts/build-android-with-mobile-secrets.ps1` se mantiene solo como
+    helper acotado para build Android con secretos embebidos.
 
 
 ## Conocimiento migrado desde legado

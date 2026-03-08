@@ -6,7 +6,7 @@
 - `purpose`: Definir el flujo Git y GitHub adoptado.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-03-05
+- `last_updated`: 2026-03-08
 - `next_review`: 2026-03-19
 
 ## Objetivo
@@ -300,6 +300,17 @@ Codex escala el nivel cuando:
   - actualizar `CHANGELOG.md`
   - crear tag
   - publicar release notes
+
+### Release manual con Codex App
+
+- Flujo oficial: `docs/github-release-automation.md`.
+- La release diaria trabaja solo sobre `main` limpio y sincronizado con
+  `origin/main`.
+- Codex debe ejecutar directamente validación, changelog, build APK, commit,
+  tag, push y GitHub Release en la propia sesión.
+- No se versionan scripts de release en el repo para encapsular este flujo.
+- Si detecta estado parcial publicado (por ejemplo tag sin GitHub Release), se
+  bloquea y no intenta rollback automático.
 
 ## Estrategia de APK en releases
 

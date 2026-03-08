@@ -6,8 +6,8 @@
 - `purpose`: Contrato operativo de trabajo entre IA y humano.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-03-01
-- `next_review`: 2026-03-11
+- `last_updated`: 2026-03-06
+- `next_review`: 2026-03-16
 
 ## Propósito
 
@@ -184,6 +184,7 @@ Cada interacción termina con un menú numerado fijo de 3 a 5 siguientes pasos.
 - Anexo Frosthaven: `learning/frosthaven-annex.md`
 - Bibliografía anotada: `learning/sources.md`
 - Flujo Git y GitHub: `docs/repo-workflow.md`
+- Flujo de release GitHub desde Codex App: `docs/github-release-automation.md`
 - Guía didáctica de flujo Git: `learning/git-workflow-handbook.md`
 
 ## Nota sobre APK y releases

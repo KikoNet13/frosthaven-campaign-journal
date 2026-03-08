@@ -3,12 +3,16 @@ from __future__ import annotations
 from datetime import datetime, timezone
 import unittest
 
+import flet as ft
+
 from tests.main_shell_test_support import install_data_stub
 
 install_data_stub()
 
 from frosthaven_campaign_journal.ui.main_shell.view.session_timing import (
+    SessionDurationText,
     build_active_session_subtitle,
+    build_session_duration_text,
     format_session_duration_hms,
     format_session_summary_date,
     format_session_summary_range,
@@ -72,6 +76,22 @@ class SessionTimingFormattingTests(unittest.TestCase):
             "02:24:31",
             format_session_duration_hms(started_at_utc=started, now=now),
         )
+
+    def test_build_session_duration_text_returns_live_text_control(self) -> None:
+        started = datetime(2026, 2, 9, 21, 41, 0, tzinfo=timezone.utc)
+        ended = datetime(2026, 2, 10, 0, 5, 31, tzinfo=timezone.utc)
+
+        control = build_session_duration_text(
+            started_at_utc=started,
+            ended_at_utc=ended,
+            size=18,
+            color="#ffffff",
+        )
+
+        self.assertIsInstance(control, SessionDurationText)
+        self.assertIsInstance(control, ft.Text)
+        self.assertEqual("02:24:31", control.value)
+        self.assertEqual(18, control.size)
 
 
 if __name__ == "__main__":

@@ -64,7 +64,7 @@ class MainShellStatusBarTests(unittest.TestCase):
 
         self.assertIn("Sesión actual", text_values)
         self.assertIn("Escenario 12 · Semana 6", text_values)
-        self.assertEqual(26, timer_text.size)
+        self.assertEqual(32, timer_text.size)
 
     def test_status_bar_hides_active_session_box_without_active_session(self) -> None:
         state = MainShellState()

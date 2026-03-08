@@ -78,7 +78,7 @@ def _build_resource_group_box(
     else:
         columns_control = ft.Row(
             spacing=10,
-            vertical_alignment=ft.CrossAxisAlignment.START,
+            vertical_alignment=ft.CrossAxisAlignment.CENTER,
             controls=column_controls,
         )
 
@@ -91,7 +91,8 @@ def _build_resource_group_box(
         label_bgcolor=COLOR_STATUS_LABEL_BG,
         label_border_color=COLOR_STATUS_LABEL_BORDER,
         label_text_color=COLOR_STATUS_LABEL_TEXT,
-        padding=ft.Padding(left=8, top=9, right=8, bottom=4),
+        padding=ft.Padding(left=12, top=14, right=12, bottom=10),
+        # padding=ft.Padding(left=8, top=9, right=8, bottom=4),
     )
 
 
@@ -145,27 +146,29 @@ def _build_active_session_box(data: MainShellViewData) -> ft.Control | None:
         padding=ft.Padding(left=12, top=10, right=12, bottom=10),
         content=ft.Column(
             spacing=2,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            alignment=ft.MainAxisAlignment.CENTER,
             controls=[
-                ft.Row(
-                    spacing=8,
-                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
-                    controls=[
-                        ft.Icon(
-                            ft.Icons.TIMER_OUTLINED,
-                            size=20,
-                            color=COLOR_TEXT_PRIMARY,
-                        ),
-                        build_session_duration_text(
-                            started_at_utc=data.active_session_started_at_utc,
-                            size=26,
-                            weight=ft.FontWeight.W_700,
-                            color=COLOR_TEXT_PRIMARY,
-                        ),
-                    ],
+                # ft.Row(
+                #     spacing=4,
+                #     vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                #     controls=[
+                #         ft.Icon(
+                #             ft.Icons.TIMER_OUTLINED,
+                #             size=32,
+                #             color=COLOR_TEXT_PRIMARY,
+                #         ),
+                #     ],
+                # ),
+                build_session_duration_text(
+                    started_at_utc=data.active_session_started_at_utc,
+                    size=32,
+                    weight=ft.FontWeight.W_700,
+                    color=COLOR_TEXT_PRIMARY,
                 ),
                 ft.Text(
                     subtitle,
-                    size=11,
+                    size=12,
                     color=COLOR_TEXT_MUTED,
                     no_wrap=True,
                     overflow=ft.TextOverflow.ELLIPSIS,

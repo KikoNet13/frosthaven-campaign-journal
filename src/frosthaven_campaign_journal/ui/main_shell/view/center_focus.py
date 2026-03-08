@@ -489,15 +489,17 @@ def _build_entry_sessions_card(
                         ),
                     ],
                 ),
-                ft.FilledButton(
-                    "Nueva sesión",
+                ft.IconButton(
+                    icon=ft.Icons.ADD_CIRCLE_OUTLINE,
+                    icon_size=20,
+                    icon_color=COLOR_TEXT_PRIMARY,
+                    tooltip="Nueva sesión",
                     on_click=(
                         lambda _event, entry_ref=card.entry.ref: state.on_open_manual_create_session_for_entry(
                             entry_ref
                         )
                     ),
                     disabled=is_session_busy,
-                    height=32,
                 ),
             ],
         ),
@@ -576,8 +578,11 @@ def _build_session_row(
                     spacing=4,
                     wrap=True,
                     controls=[
-                        ft.OutlinedButton(
-                            "Editar",
+                        ft.IconButton(
+                            icon=ft.Icons.EDIT_OUTLINED,
+                            icon_size=18,
+                            icon_color=COLOR_TEXT_PRIMARY,
+                            tooltip="Editar sesión",
                             on_click=(
                                 lambda _event, ref=entry_ref, session_id=session.session_id: state.on_open_manual_edit_session_for_entry(
                                     ref,
@@ -585,10 +590,12 @@ def _build_session_row(
                                 )
                             ),
                             disabled=is_pending,
-                            height=30,
                         ),
-                        ft.OutlinedButton(
-                            "Borrar",
+                        ft.IconButton(
+                            icon=ft.Icons.DELETE_OUTLINE,
+                            icon_size=18,
+                            icon_color=COLOR_DESTRUCTIVE_ICON,
+                            tooltip="Borrar sesión",
                             on_click=(
                                 lambda _event, ref=entry_ref, session_id=session.session_id: state.on_open_manual_delete_session_for_entry(
                                     ref,
@@ -596,7 +603,6 @@ def _build_session_row(
                                 )
                             ),
                             disabled=is_pending,
-                            height=30,
                         ),
                     ],
                 ),

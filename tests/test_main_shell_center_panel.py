@@ -109,13 +109,21 @@ def _text_values(control: ft.Control) -> list[str]:
     return [item.value for item in _iter_controls(control) if isinstance(item, ft.Text)]
 
 
-def _button_labels(control: ft.Control) -> list[str]:
-    labels: list[str] = []
-    for item in _iter_controls(control):
-        content = getattr(item, "content", None)
-        if isinstance(content, str):
-            labels.append(content)
-    return labels
+def _find_control_by_tooltip(control: ft.Control, tooltip: str) -> ft.Control:
+    matches = _controls_by_tooltip(control, tooltip)
+    if len(matches) != 1:
+        raise AssertionError(
+            f"Se esperaba un control con tooltip={tooltip!r} y se encontraron {len(matches)}."
+        )
+    return matches[0]
+
+
+def _controls_by_tooltip(control: ft.Control, tooltip: str) -> list[ft.Control]:
+    return [
+        item
+        for item in _iter_controls(control)
+        if getattr(item, "tooltip", None) == tooltip
+    ]
 
 
 def _tooltips(control: ft.Control) -> list[str]:
@@ -299,7 +307,7 @@ class MainShellCenterPanelTests(unittest.TestCase):
         self.assertEqual(_tooltips(panel).count("Iniciar sesión"), 1)
         self.assertEqual(_tooltips(panel).count("Detener sesión"), 1)
 
-    def test_sessions_card_keeps_manual_actions_and_new_session_button(self) -> None:
+    def test_sessions_card_uses_icon_tooltips_for_manual_actions(self) -> None:
         state = _build_state(selected_week=1)
         entry = _build_entry(entry_id="entry-1", label="Escenario 1")
         state.entry_panel_state.entries_for_selected_week = [entry]
@@ -308,14 +316,40 @@ class MainShellCenterPanelTests(unittest.TestCase):
         }
 
         panel = build_center_panel(state.build_view_data(), state)
-        labels = _button_labels(panel)
+        tooltips = _tooltips(panel)
         text_values = _text_values(panel)
 
-        self.assertIn("Nueva sesión", labels)
-        self.assertIn("Editar", labels)
-        self.assertIn("Borrar", labels)
+        self.assertIn("Nueva sesión", tooltips)
+        self.assertIn("Editar sesión", tooltips)
+        self.assertIn("Borrar sesión", tooltips)
         self.assertIn("Total jugado", text_values)
         self.assertIn("Sesiones", text_values)
+
+    def test_session_action_icons_are_disabled_while_session_write_is_pending(self) -> None:
+        state = _build_state(selected_week=1)
+        entry = _build_entry(entry_id="entry-1", label="Escenario 1")
+        state.entry_panel_state.entries_for_selected_week = [entry]
+        state.entry_panel_state.sessions_by_entry_ref = {
+            entry.ref: [_build_session(session_id="sess-1", active=False)],
+        }
+        state.entry_panel_state.session_write_pending = True
+        state.entry_panel_state.session_write_pending_by_entry_ref[entry.ref] = True
+
+        panel = build_center_panel(state.build_view_data(), state)
+
+        for tooltip in (
+            "Iniciar sesión",
+            "Nueva sesión",
+            "Editar sesión",
+            "Borrar sesión",
+        ):
+            controls = _controls_by_tooltip(panel, tooltip)
+            self.assertGreaterEqual(
+                len(controls), 1, msg=f"Se esperaba al menos un control con tooltip={tooltip!r}."
+            )
+            for control in controls:
+                self.assertIsInstance(control, ft.IconButton)
+                self.assertTrue(control.disabled, msg=f"{tooltip!r} debería estar deshabilitado.")
 
 
 if __name__ == "__main__":

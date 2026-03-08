@@ -6,7 +6,7 @@
 - `purpose`: Registrar decisiones con trazabilidad y precedencia.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-03-06
+- `last_updated`: 2026-03-08
 - `next_review`: 2026-03-12
 
 ## Formato canónico por entrada
@@ -1244,3 +1244,32 @@
 - `rationale`: mejora jerarquía visual, acerca la acción frecuente al título de la entrada, y hace visible el estado de sesión activa aunque el usuario navegue por otra `Week`/`Entry`.
 - `impact`: supersede parcialmente `DEC-0045` en el punto que dejó la barra inferior solo para recursos; `center_focus.py` reordena acciones y filas de sesiones; `status_bar.py` vuelve a mostrar resumen activo; y `docs/active-session-flow.md` se alinea con la nueva ubicación del control rápido.
 - `references`: `src/frosthaven_campaign_journal/ui/main_shell/view/center_focus.py`, `src/frosthaven_campaign_journal/ui/main_shell/view/status_bar.py`, `src/frosthaven_campaign_journal/ui/main_shell/view/session_timing.py`, `docs/active-session-flow.md`, `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/103`
+
+### DEC-0055
+
+- `date`: 2026-03-06
+- `status`: accepted
+- `problem`: existía flujo manual de release Android y convención `v0.x.y`,
+  pero faltaba un procedimiento ejecutable y determinista para automatizar una
+  release diaria desde Codex App con changelog, tag, GitHub Release y `.apk`.
+- `decision`: adoptar una automatización local directa en
+  `$CODEX_HOME/automations/release-diaria-github/automation.toml` que ejecute
+  por sí misma validación, cálculo de versión, corte de `CHANGELOG.md`, build
+  APK, commit, tag, push y GitHub Release; mantener
+  `scripts/create-github-release.ps1` como fallback manual documentado fuera del
+  camino automático principal.
+- `rationale`: elimina la capa extra de wrapper en la automatización diaria,
+  mantiene la release de GitHub alineada con el changelog y conserva un respaldo
+  manual verificable para depuración o ejecución puntual.
+- `impact`: se añade `docs/github-release-automation.md`, se actualizan
+  `docs/system-map.md` y `docs/repo-workflow.md`, Codex App pasa a ejecutar el
+  flujo completo desde el prompt de la automatización, el build Android directo
+  reproduce el contrato temporal de secretos móviles, el repo versiona
+  `codex/rules/release-diaria-github.rules` como soporte operativo y
+  `scripts/create-github-release.ps1` queda como respaldo manual.
+- `references`: `docs/github-release-automation.md`,
+  `$CODEX_HOME/automations/release-diaria-github/automation.toml`,
+  `codex/rules/release-diaria-github.rules`,
+  `scripts/create-github-release.ps1`,
+  `docs/repo-workflow.md`, `docs/system-map.md`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/114`

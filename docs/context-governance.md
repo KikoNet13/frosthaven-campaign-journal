@@ -6,7 +6,7 @@
 - `purpose`: Gobierno de contexto, gate de calidad y estado verificable.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-03-06
+- `last_updated`: 2026-03-08
 - `next_review`: 2026-03-16
 
 ## Alcance de Fase 0
@@ -284,6 +284,35 @@ Se valida:
     jugado, botón `Nueva sesión` y filas compactas editables.
   - La barra inferior vuelve a mostrar la sesión activa global con reloj vivo
     `hh:mm:ss` y subtítulo contextual `{Entry activa} · Semana X`.
+
+### Hito H1-09
+
+- Fecha: 2026-03-06
+- Objetivo: formalizar y automatizar el flujo local de GitHub Release diaria
+  con changelog, tag y APK desde Codex App.
+- Resultado: completado
+- Verificación A: aprobado (automatización directa, fallback manual y
+  documentación oficial alineados)
+- Verificación B: aprobado (inspección de `automation.toml`, referencias
+  documentales y script de respaldo verificados)
+- Evidencia:
+  - `C:/Users/Kiko/.codex/automations/release-diaria-github/automation.toml`
+  - `codex/rules/release-diaria-github.rules`
+  - `docs/github-release-automation.md`
+  - `docs/android-release-flow.md`
+  - `docs/repo-workflow.md`
+  - `docs/system-map.md`
+  - `docs/decision-log.md` (DEC-0055)
+  - `scripts/create-github-release.ps1`
+- Resumen:
+  - El flujo diario queda definido para ejecutarse directamente desde la
+    automatización de Codex App.
+  - El repo versiona reglas locales de permisos para que la automatización
+    diaria pueda operar con `git`, `gh`, `pipenv` y PowerShell de forma trazada.
+  - La GitHub Release reutiliza la sección recién cortada de `CHANGELOG.md` y
+    adjunta el `.apk` generado en el propio flujo automático.
+  - `scripts/create-github-release.ps1` se mantiene como respaldo manual y no
+    como camino automático principal.
 
 
 ## Conocimiento migrado desde legado

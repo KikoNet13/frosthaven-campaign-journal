@@ -6,7 +6,7 @@
 - `purpose`: Definir el flujo operativo manual para generar y publicar `.apk` en GitHub Releases.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-03-05
+- `last_updated`: 2026-03-08
 - `next_review`: 2026-03-19
 
 ## Objetivo
@@ -128,7 +128,7 @@ Cuando el APK necesita conectar Firestore sin `.env` en runtime Android:
 1. Ejecutar:
 
 ```powershell
-./scripts/build-android-with-mobile-secrets.ps1 -BuildVersion 0.2.1 -BuildNumber 1
+./scripts/create-github-release.ps1 -BuildOnly -ReleaseVersion v0.3.1
 ```
 
 Este flujo:
@@ -138,6 +138,12 @@ Este flujo:
 - compila el APK;
 - elimina el archivo temporal al terminar (bloque `finally`);
 - muestra SHA256 del APK generado.
+
+Si solo se necesita validación sin publicar ni compilar, usar:
+
+```powershell
+./scripts/create-github-release.ps1 -DryRun -SkipBuild
+```
 
 ## Advertencia de seguridad
 
@@ -163,5 +169,7 @@ Este flujo:
 ## Referencias
 
 - `docs/repo-workflow.md`
+- `docs/github-release-automation.md`
+- `scripts/create-github-release.ps1`
 - `pyproject.toml`
 - `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/105`

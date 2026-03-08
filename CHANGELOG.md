@@ -11,25 +11,24 @@ y usa versionado
 
 ### Añadido
 
-- Tests unitarios de `MainShellState` para `ToastState`, `event_id` de
-  confirmación y limpieza de estado tras cancelar/confirmar.
-- Helpers y componente de temporización en
-  `ui/main_shell/view/session_timing.py` para formatear sesiones y renderizar
-  reloj vivo `hh:mm:ss`.
-- Tests de vista para el toggle rápido `play/stop`, el resumen de sesiones por
-  entry y la caja de sesión activa en la barra inferior.
+- Script operativo `scripts/create-github-release.ps1` para automatizar
+  releases GitHub locales con corte de changelog, validación, build APK y
+  publicación desde Codex App.
+- Documento oficial `docs/github-release-automation.md` para fijar el flujo
+  diario de release local con tag `v0.x.y`, GitHub Release y `.apk`.
+- Reglas de repo `codex/rules/release-diaria-github.rules` para declarar los
+  permisos mínimos que necesita la automatización diaria de release.
 
 ### Cambiado
 
-- `main_shell` mueve los mensajes informativos a `SnackBar` flotante y las
-  confirmaciones a `AlertDialog` modal con botones alineados visualmente al FAB.
-- `app_root.py` pasa a puentear overlays de Flet desde estado transitorio,
-  mientras el panel central mantiene solo banners de error/advertencia y
-  formularios inline.
-- Las tarjetas de `Entry` mueven el control rápido de sesión al header con
-  iconos `play/stop`, compactan la caja `Sesiones` a formato resumen y la barra
-  inferior recupera el resumen de sesión activa global con reloj vivo y
-  subtítulo de contexto.
+- `docs/repo-workflow.md`, `docs/system-map.md` y `docs/context-governance.md`
+  alinean la trazabilidad del nuevo flujo automatizado de release local.
+- La automatización `release-diaria-github` deja de actuar como wrapper de
+  `scripts/create-github-release.ps1` y pasa a ejecutar directamente
+  validación, build APK y publicación de la release, manteniendo el script como
+  fallback manual documentado.
+- `docs/android-release-flow.md` sustituye la referencia al helper borrado de
+  build por el nuevo fallback manual `scripts/create-github-release.ps1`.
 
 ## [0.2.1] - 2026-03-05
 

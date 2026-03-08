@@ -6,7 +6,7 @@
 - `purpose`: Mapa navegable de la documentación oficial y su trazabilidad.
 - `status`: active
 - `source_of_truth`: official
-- `last_updated`: 2026-03-05
+- `last_updated`: 2026-03-06
 - `next_review`: 2026-03-15
 
 ## Objetivo
@@ -29,6 +29,8 @@ Este documento permite entender rápidamente:
   - Checklists por trigger.
 - `docs/repo-workflow.md`
   - Flujo Git/GitHub del repo.
+- `docs/github-release-automation.md`
+  - Flujo automatizado local de release GitHub con changelog y APK.
 - `docs/android-release-flow.md`
   - Flujo operativo manual para build y publicación de `.apk` en releases.
 - `docs/domain-glossary.md`
@@ -95,3 +97,4 @@ Este documento permite entender rápidamente:
 - Estado de fase -> `docs/context-governance.md`
 - Pasos operativos -> `docs/context-checklists.md`
 - Flujo Git/GitHub -> `docs/repo-workflow.md`
+- Release GitHub automatizada -> `docs/github-release-automation.md`

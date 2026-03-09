@@ -72,12 +72,14 @@ def build_session_duration_text(
     *,
     started_at_utc: object | None,
     ended_at_utc: object | None = None,
+    key: str | None = None,
     size: int,
     weight: ft.FontWeight = ft.FontWeight.W_700,
     color: str,
     text_align: ft.TextAlign = ft.TextAlign.LEFT,
 ) -> ft.Control:
     return SessionDurationText(
+        key=key,
         started_at_utc=started_at_utc,
         ended_at_utc=ended_at_utc,
         size=size,
@@ -87,7 +89,7 @@ def build_session_duration_text(
     )
 
 
-@ft.control(isolated=True)
+@ft.control
 class SessionDurationText(ft.Text):
     started_at_utc: object | None = None
     ended_at_utc: object | None = None

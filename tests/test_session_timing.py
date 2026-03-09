@@ -94,7 +94,7 @@ class SessionTimingFormattingTests(unittest.TestCase):
         self.assertIsInstance(control, ft.Text)
         self.assertEqual("02:24:31", control.value)
         self.assertEqual(18, control.size)
-        self.assertTrue(control.is_isolated())
+        self.assertFalse(control.is_isolated())
 
 
 class SessionTimingTickerTests(unittest.TestCase):

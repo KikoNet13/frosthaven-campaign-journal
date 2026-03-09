@@ -161,6 +161,7 @@ def _build_week_season_block(
     season_label: str,
 ) -> ft.Control:
     return LabeledGroupBox(
+        key=f"season-{season_label.lower()}",
         label=season_label,
         content=ft.Row(
             spacing=4,
@@ -225,6 +226,7 @@ def _build_week_tile(
     else:
         text_color = COLOR_WEEK_TILE_CLOSED_TEXT if week.is_closed else COLOR_TEXT_PRIMARY
     return ft.Container(
+        key=f"week-{week.week_number}",
         width=40,
         height=36,
         bgcolor=bgcolor,

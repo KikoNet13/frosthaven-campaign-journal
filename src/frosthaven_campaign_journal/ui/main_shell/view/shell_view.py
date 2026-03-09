@@ -9,7 +9,6 @@ from frosthaven_campaign_journal.ui.common.theme.colors import (
     COLOR_ACCENT_BG,
     COLOR_BOTTOM_BAR_BG,
     COLOR_CENTER_BG,
-    COLOR_TOP_BAR_BG,
     COLOR_WHITE,
 )
 from frosthaven_campaign_journal.ui.common.theme.layout import (
@@ -22,6 +21,8 @@ from frosthaven_campaign_journal.ui.main_shell.view.temporal_bar import build_to
 
 _FAB_MENU_TEXT_STYLE = ft.TextStyle(color=COLOR_WHITE, size=15, weight=ft.FontWeight.W_600)
 _FAB_TRIGGER_SIZE = 56
+_FAB_DOCK_MARGIN_RIGHT = 16
+_FAB_DOCK_MARGIN_BOTTOM = max(16, BOTTOM_BAR_HEIGHT - (_FAB_TRIGGER_SIZE // 2))
 
 
 def build_main_shell_view(
@@ -31,32 +32,53 @@ def build_main_shell_view(
 ) -> ft.Control:
     if data is None:
         data = state.build_view_data()
-    return ft.Pagelet(
-        expand=True,
-        appbar=ft.AppBar(
-            toolbar_height=TOP_BAR_HEIGHT,
-            automatically_imply_leading=False,
-            leading_width=0,
-            title_spacing=0,
-            elevation=0,
-            force_material_transparency=False,
-            bgcolor=COLOR_TOP_BAR_BG,
-            title=build_top_temporal_bar(data, state),
-        ),
-        bottom_appbar=ft.BottomAppBar(
-            height=BOTTOM_BAR_HEIGHT,
-            padding=ft.Padding(left=12, top=8, right=12, bottom=8),
-            elevation=0,
-            bgcolor=COLOR_BOTTOM_BAR_BG,
-            content=build_status_bar(data),
-        ),
-        floating_action_button=_build_week_actions_fab(data, state),
-        floating_action_button_location=ft.FloatingActionButtonLocation.END_DOCKED,
-        content=ft.Container(
+    stack_controls: list[ft.Control] = [
+        ft.Column(
             expand=True,
-            bgcolor=COLOR_CENTER_BG,
-            content=build_center_panel(data, state),
+            spacing=0,
+            controls=[
+                ft.Container(
+                    key="main-shell-top-bar",
+                    height=TOP_BAR_HEIGHT,
+                    content=build_top_temporal_bar(data, state),
+                ),
+                ft.Container(
+                    key="main-shell-center-panel",
+                    expand=True,
+                    bgcolor=COLOR_CENTER_BG,
+                    content=build_center_panel(data, state),
+                ),
+                ft.Container(
+                    key="main-shell-bottom-bar",
+                    height=BOTTOM_BAR_HEIGHT,
+                    padding=ft.Padding(left=12, top=8, right=12, bottom=8),
+                    bgcolor=COLOR_BOTTOM_BAR_BG,
+                    content=build_status_bar(data),
+                ),
+            ],
         ),
+    ]
+
+    week_actions_fab = _build_week_actions_fab(data, state)
+    if week_actions_fab is not None:
+        stack_controls.append(
+            ft.Container(
+                key="main-shell-fab-layer",
+                expand=True,
+                alignment=ft.Alignment(1, 1),
+                padding=ft.Padding(
+                    left=0,
+                    top=0,
+                    right=_FAB_DOCK_MARGIN_RIGHT,
+                    bottom=_FAB_DOCK_MARGIN_BOTTOM,
+                ),
+                content=week_actions_fab,
+            )
+        )
+
+    return ft.Stack(
+        expand=True,
+        controls=stack_controls,
     )
 
 

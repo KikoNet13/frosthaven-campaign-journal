@@ -14,7 +14,12 @@ from frosthaven_campaign_journal.ui.common.theme.colors import (
     COLOR_WEEK_TILE_SELECTED_BG,
 )
 from frosthaven_campaign_journal.ui.main_shell.state.shell_state import MainShellState
-from frosthaven_campaign_journal.ui.main_shell.view.shell_view import build_main_shell_view
+from frosthaven_campaign_journal.ui.main_shell.view.shell_view import (
+    _FAB_DOCK_MARGIN_BOTTOM,
+    _FAB_DOCK_MARGIN_RIGHT,
+    _FAB_TRIGGER_SIZE,
+    build_main_shell_view,
+)
 from frosthaven_campaign_journal.ui.main_shell.view.temporal_bar import build_top_temporal_bar
 
 
@@ -74,13 +79,20 @@ class MainShellShellViewTests(unittest.TestCase):
         state = _build_state(selected_week=2)
 
         shell_view = build_main_shell_view(state, data=state.build_view_data())
+        fab_layer = _find_control_by_key(shell_view, "main-shell-fab-layer")
 
         self.assertIsInstance(shell_view, ft.Stack)
         self.assertFalse(any(isinstance(item, ft.Pagelet) for item in _iter_controls(shell_view)))
         self.assertIsNotNone(_find_control_by_key(shell_view, "main-shell-top-bar"))
         self.assertIsNotNone(_find_control_by_key(shell_view, "main-shell-center-panel"))
         self.assertIsNotNone(_find_control_by_key(shell_view, "main-shell-bottom-bar"))
-        self.assertIsNotNone(_find_control_by_key(shell_view, "main-shell-fab-layer"))
+        self.assertIsNotNone(fab_layer)
+        assert isinstance(fab_layer, ft.Container)
+        self.assertIsNone(fab_layer.expand)
+        self.assertEqual(_FAB_TRIGGER_SIZE, fab_layer.width)
+        self.assertEqual(_FAB_TRIGGER_SIZE, fab_layer.height)
+        self.assertEqual(_FAB_DOCK_MARGIN_RIGHT, fab_layer.right)
+        self.assertEqual(_FAB_DOCK_MARGIN_BOTTOM, fab_layer.bottom)
 
 
 if __name__ == "__main__":

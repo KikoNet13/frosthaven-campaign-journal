@@ -64,14 +64,10 @@ def build_main_shell_view(
         stack_controls.append(
             ft.Container(
                 key="main-shell-fab-layer",
-                expand=True,
-                alignment=ft.Alignment(1, 1),
-                padding=ft.Padding(
-                    left=0,
-                    top=0,
-                    right=_FAB_DOCK_MARGIN_RIGHT,
-                    bottom=_FAB_DOCK_MARGIN_BOTTOM,
-                ),
+                width=_FAB_TRIGGER_SIZE,
+                height=_FAB_TRIGGER_SIZE,
+                right=_FAB_DOCK_MARGIN_RIGHT,
+                bottom=_FAB_DOCK_MARGIN_BOTTOM,
                 content=week_actions_fab,
             )
         )

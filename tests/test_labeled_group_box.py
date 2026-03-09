@@ -8,7 +8,7 @@ from frosthaven_campaign_journal.ui.common.components import LabeledGroupBox
 
 
 class LabeledGroupBoxTests(unittest.TestCase):
-    def test_labeled_group_box_is_isolated_and_preserves_content_on_update(self) -> None:
+    def test_labeled_group_box_rebuilds_content_without_isolating_updates(self) -> None:
         content = ft.Text("contenido")
         box = LabeledGroupBox(
             label="Caja",
@@ -20,7 +20,7 @@ class LabeledGroupBoxTests(unittest.TestCase):
             label_text_color="#111111",
         )
 
-        self.assertTrue(box.is_isolated())
+        self.assertFalse(box.is_isolated())
         self.assertIs(content, box.controls[0].content)
 
         box.label = "Caja actualizada"

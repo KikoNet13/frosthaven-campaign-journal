@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+import asyncio
+from concurrent.futures import Future
+from typing import Callable
+
 import flet as ft
 
 from frosthaven_campaign_journal.ui.common.theme.colors import (
@@ -26,8 +30,10 @@ def _close_overlay(overlay: ft.SnackBar | None) -> None:
 @ft.component
 def build_app_root(page: ft.Page) -> ft.Control:
     shell_state, _ = ft.use_state(MainShellState.create)
+    _live_session_tick, set_live_session_tick = ft.use_state(0)
     active_toast = ft.use_ref(None)
     last_toast_event_id = ft.use_ref(None)
+    active_session_ticker = ft.use_ref(None)
 
     def _sync_info_toast() -> None:
         toast = shell_state.toast_state
@@ -69,6 +75,39 @@ def build_app_root(page: ft.Page) -> ft.Control:
         page.show_dialog(snackbar)
 
     ft.use_effect(_sync_info_toast, dependencies=[shell_state.toast_state.event_id])
+
+    def _sync_live_session_ticker() -> Callable[[], None] | None:
+        current_future: Future[None] | None = active_session_ticker.current
+        if current_future is not None and not current_future.done():
+            current_future.cancel()
+        active_session_ticker.current = None
+
+        if shell_state.read_state.active_session_started_at_utc is None:
+            return None
+
+        async def _run_live_session_ticker() -> None:
+            try:
+                while shell_state.read_state.active_session_started_at_utc is not None:
+                    await asyncio.sleep(1)
+                    set_live_session_tick(lambda current: current + 1)
+            except asyncio.CancelledError:
+                pass
+
+        future = page.run_task(_run_live_session_ticker)
+        active_session_ticker.current = future
+
+        def _cleanup_live_session_ticker() -> None:
+            cleanup_future: Future[None] | None = active_session_ticker.current
+            if cleanup_future is not None and not cleanup_future.done():
+                cleanup_future.cancel()
+            active_session_ticker.current = None
+
+        return _cleanup_live_session_ticker
+
+    ft.use_effect(
+        _sync_live_session_ticker,
+        dependencies=[shell_state.read_state.active_session_started_at_utc],
+    )
 
     data = shell_state.build_view_data()
     stack_controls: list[ft.Control] = [build_main_shell_view(shell_state, data=data)]

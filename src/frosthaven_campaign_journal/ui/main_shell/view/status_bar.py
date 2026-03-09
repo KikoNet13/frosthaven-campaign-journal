@@ -1,5 +1,7 @@
 ﻿from __future__ import annotations
 
+from datetime import datetime
+
 import flet as ft
 
 from frosthaven_campaign_journal.resource_catalog import ResourceCatalogItem
@@ -162,6 +164,7 @@ def _build_active_session_box(data: MainShellViewData) -> ft.Control | None:
                 # ),
                 build_session_duration_text(
                     started_at_utc=data.active_session_started_at_utc,
+                    key=_build_active_session_timer_key(data),
                     size=32,
                     weight=ft.FontWeight.W_700,
                     color=COLOR_TEXT_PRIMARY,
@@ -176,3 +179,21 @@ def _build_active_session_box(data: MainShellViewData) -> ft.Control | None:
             ],
         ),
     )
+
+
+def _build_active_session_timer_key(data: MainShellViewData) -> str:
+    parts = ["active-session"]
+    if data.active_entry_ref is not None:
+        parts.extend(
+            [
+                str(data.active_entry_ref.year_number),
+                str(data.active_entry_ref.week_number),
+                data.active_entry_ref.entry_id,
+            ]
+        )
+    started_at_utc = data.active_session_started_at_utc
+    if isinstance(started_at_utc, datetime):
+        parts.append(started_at_utc.isoformat())
+    else:
+        parts.append(repr(started_at_utc))
+    return "|".join(parts)

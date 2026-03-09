@@ -76,6 +76,10 @@ def _text_fields(control: ft.Control) -> list[ft.TextField]:
     return [item for item in _iter_controls(control) if isinstance(item, ft.TextField)]
 
 
+def _containers(control: ft.Control) -> list[ft.Container]:
+    return [item for item in _iter_controls(control) if isinstance(item, ft.Container)]
+
+
 def _tooltips(control: ft.Control) -> list[str]:
     values: list[str] = []
     for item in _iter_controls(control):
@@ -124,7 +128,8 @@ class MainShellModalOverlayTests(unittest.TestCase):
         self.assertNotIn("Cerrar diálogo", _tooltips(overlay))
         self.assertEqual(["Cancelar", "Guardar"], _button_labels(overlay))
         self.assertEqual(1, len(_text_fields(overlay)))
-        self.assertEqual(220, _text_fields(overlay)[0].height)
+        self.assertTrue(_text_fields(overlay)[0].fit_parent_size)
+        self.assertTrue(any(container.expand for container in _containers(overlay)))
         self.assertGreaterEqual(len(_rows_with_alignment(overlay, ft.MainAxisAlignment.END)), 1)
 
         state.on_cancel_entry_notes_editor()

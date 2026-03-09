@@ -38,19 +38,27 @@ def build_entry_notes_dialog_body(
 ) -> ft.Control:
     assert data.entry_notes_editor is not None
     controls: list[ft.Control] = [
-        ft.Container(
+        ft.Row(
             expand=True,
-            content=ft.TextField(
-                value=data.entry_notes_editor.notes_value,
-                multiline=True,
-                fit_parent_size=True,
-                on_change=state.on_entry_notes_change,
-            ),
+            controls=[
+                ft.TextField(
+                    value=data.entry_notes_editor.notes_value,
+                    multiline=True,
+                    fit_parent_size=True,
+                    expand=True,
+                    on_change=state.on_entry_notes_change,
+                )
+            ],
         )
     ]
     if data.entry_notes_editor.error_message:
         controls.append(ft.Text(data.entry_notes_editor.error_message, size=12, color=COLOR_ERROR_TEXT))
-    return ft.Column(expand=True, spacing=12, controls=controls)
+    return ft.Column(
+        expand=True,
+        spacing=12,
+        horizontal_alignment=ft.CrossAxisAlignment.STRETCH,
+        controls=controls,
+    )
 
 
 def build_session_form_dialog_body(data: MainShellViewData, state: MainShellState) -> ft.Control:

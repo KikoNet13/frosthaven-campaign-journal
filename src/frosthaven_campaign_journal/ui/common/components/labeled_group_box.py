@@ -3,7 +3,7 @@ from __future__ import annotations
 import flet as ft
 
 
-@ft.control
+@ft.control(isolated=True)
 class LabeledGroupBox(ft.Stack):
     label: str = ""
     content: ft.Control | None = None

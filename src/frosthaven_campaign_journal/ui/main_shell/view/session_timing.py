@@ -87,7 +87,7 @@ def build_session_duration_text(
     )
 
 
-@ft.control
+@ft.control(isolated=True)
 class SessionDurationText(ft.Text):
     started_at_utc: object | None = None
     ended_at_utc: object | None = None
@@ -119,6 +119,13 @@ class SessionDurationText(ft.Text):
     def will_unmount(self) -> None:
         self._stop_ticker()
         super().will_unmount()
+
+    def _migrate_state(self, other: ft.BaseControl) -> None:
+        super()._migrate_state(other)
+        if isinstance(other, SessionDurationText):
+            other._stop_ticker()
+        self._ticker_future = None
+        self._ticker_running = False
 
     def _apply_display_value(self) -> None:
         self.value = self._display_value
@@ -154,7 +161,7 @@ class SessionDurationText(ft.Text):
                 )
                 if self._display_value != next_value:
                     self._display_value = next_value
-                    self._before_update_safe()
+                    self._apply_display_value()
                     self.update()
         except asyncio.CancelledError:
             pass

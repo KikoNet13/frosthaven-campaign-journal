@@ -74,6 +74,7 @@ class MainShellWeekEntryResourceActionsMixin:
             self._set_entry_error("No hay semana seleccionada para crear una entrada.")
             self.notify()
             return
+        self._clear_form_modal_states()
         self.entry_form_state = EntryFormState(
             mode="create",
             entry_type="scenario",
@@ -97,6 +98,7 @@ class MainShellWeekEntryResourceActionsMixin:
             self.notify()
             return
         self.local_state.viewer_entry_ref = entry_ref
+        self._clear_form_modal_states()
         self.entry_form_state = EntryFormState(
             mode="edit",
             entry_type=selected_entry.entry_type,
@@ -282,6 +284,7 @@ class MainShellWeekEntryResourceActionsMixin:
             self.notify()
             return
         self.local_state.viewer_entry_ref = entry_ref
+        self._clear_form_modal_states()
         self.entry_notes_editor_state = EntryNotesEditorState(
             entry_ref=entry_ref,
             entry_label=selected_entry.label,

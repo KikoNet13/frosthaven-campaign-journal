@@ -10,6 +10,11 @@ from frosthaven_campaign_journal.ui.main_shell.state.types import ToastState
 
 
 class MainShellRuntimeSupportMixin:
+    def _clear_form_modal_states(self) -> None:
+        self.entry_form_state = None
+        self.entry_notes_editor_state = None
+        self.session_form_state = None
+
     def _normalize_resource_draft_values(self, raw_map: dict[str, int] | None) -> dict[str, int]:
         if not isinstance(raw_map, dict):
             return {}

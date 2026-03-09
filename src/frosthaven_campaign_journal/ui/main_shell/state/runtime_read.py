@@ -77,7 +77,7 @@ class MainShellRuntimeReadMixin:
             self.entry_panel_state.viewer_sessions_error_message = None
             self.entry_panel_state.sessions_by_entry_ref = {}
             self.entry_panel_state.sessions_error_by_entry_ref = {}
-            self.entry_notes_editor_state = None
+            self._clear_form_modal_states()
             self._clear_resource_draft_state()
 
         if snapshot.active_entry is None:

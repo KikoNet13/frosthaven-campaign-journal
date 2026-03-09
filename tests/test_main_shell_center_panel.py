@@ -19,7 +19,16 @@ from frosthaven_campaign_journal.models import (
 from frosthaven_campaign_journal.ui.common.resources.resource_delta_row import (
     ResourceDeltaRow,
 )
+from frosthaven_campaign_journal.ui.common.theme.colors import (
+    COLOR_ACCENT_BG,
+    COLOR_WHITE,
+)
 from frosthaven_campaign_journal.ui.main_shell.state.shell_state import MainShellState
+from frosthaven_campaign_journal.ui.main_shell.state.types import (
+    EntryFormState,
+    EntryNotesEditorState,
+    SessionFormState,
+)
 from frosthaven_campaign_journal.ui.main_shell.view.center_panel import (
     build_center_panel,
 )
@@ -69,12 +78,13 @@ def _set_single_entry_resources(
     return entry_ref
 
 
-def _build_entry(*, entry_id: str, label: str) -> EntrySummary:
+def _build_entry(*, entry_id: str, label: str, notes: str | None = None) -> EntrySummary:
     return EntrySummary(
         ref=EntryRef(year_number=1, week_number=1, entry_id=entry_id),
         label=label,
         entry_type="scenario",
         scenario_ref=1,
+        notes=notes,
         resource_deltas={},
     )
 
@@ -209,6 +219,37 @@ class MainShellCenterPanelTests(unittest.TestCase):
         self.assertNotIn("Cerrar semana", text_values)
         self.assertNotIn("\u00bfQuieres continuar?", text_values)
 
+    def test_center_panel_does_not_render_form_editors_inline(self) -> None:
+        state = _build_state(selected_week=1)
+        entry_ref = EntryRef(year_number=1, week_number=1, entry_id="entry-1")
+        state.entry_form_state = EntryFormState(
+            mode="create",
+            entry_type="scenario",
+            scenario_ref_text="",
+        )
+        state.entry_notes_editor_state = EntryNotesEditorState(
+            entry_ref=entry_ref,
+            entry_label="Escenario 1",
+            notes_value="Notas ya cargadas",
+        )
+        state.session_form_state = SessionFormState(
+            mode="create",
+            entry_ref=entry_ref,
+            session_id=None,
+            started_date_local="2026-03-09",
+            started_time_local="10:00",
+            ended_date_local="",
+            ended_time_local="",
+            active_without_end=False,
+        )
+
+        panel = build_center_panel(state.build_view_data(), state)
+        text_values = _text_values(panel)
+
+        self.assertNotIn("Crear entrada", text_values)
+        self.assertNotIn("Editar notas de entry: Escenario 1", text_values)
+        self.assertNotIn("Crear sesión manual", text_values)
+
     def test_resource_projected_total_for_new_entry_uses_draft_delta(self) -> None:
         state = _build_state(selected_week=1)
         _set_single_entry_resources(
@@ -324,6 +365,30 @@ class MainShellCenterPanelTests(unittest.TestCase):
         self.assertIn("Borrar sesión", tooltips)
         self.assertIn("Total jugado", text_values)
         self.assertIn("Sesiones", text_values)
+
+    def test_notes_button_uses_add_tooltip_and_white_color_when_entry_has_no_notes(self) -> None:
+        state = _build_state(selected_week=1)
+        entry = _build_entry(entry_id="entry-1", label="Escenario 1", notes=None)
+        state.entry_panel_state.entries_for_selected_week = [entry]
+        state.entry_panel_state.sessions_by_entry_ref = {entry.ref: []}
+
+        panel = build_center_panel(state.build_view_data(), state)
+        notes_button = _find_control_by_tooltip(panel, "Añadir notas")
+
+        self.assertIsInstance(notes_button, ft.IconButton)
+        self.assertEqual(COLOR_WHITE, notes_button.icon_color)
+
+    def test_notes_button_uses_edit_tooltip_and_accent_color_when_entry_has_notes(self) -> None:
+        state = _build_state(selected_week=1)
+        entry = _build_entry(entry_id="entry-1", label="Escenario 1", notes="Ya hay notas")
+        state.entry_panel_state.entries_for_selected_week = [entry]
+        state.entry_panel_state.sessions_by_entry_ref = {entry.ref: []}
+
+        panel = build_center_panel(state.build_view_data(), state)
+        notes_button = _find_control_by_tooltip(panel, "Ver o editar notas")
+
+        self.assertIsInstance(notes_button, ft.IconButton)
+        self.assertEqual(COLOR_ACCENT_BG, notes_button.icon_color)
 
     def test_session_action_icons_are_disabled_while_session_write_is_pending(self) -> None:
         state = _build_state(selected_week=1)

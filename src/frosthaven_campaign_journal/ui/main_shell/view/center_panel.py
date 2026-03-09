@@ -10,11 +10,6 @@ from frosthaven_campaign_journal.ui.main_shell.view.center_focus import (
     _build_focus_empty_mode,
     _build_focus_week_mode,
 )
-from frosthaven_campaign_journal.ui.main_shell.view.center_forms import (
-    _build_entry_form_editor,
-    _build_entry_notes_editor,
-    _build_session_form_editor,
-)
 from frosthaven_campaign_journal.ui.main_shell.view.center_helpers import _find_selected_week
 
 
@@ -29,13 +24,6 @@ def build_center_panel(data: MainShellViewData, state: MainShellState) -> ft.Con
         top_controls.append(build_banner(title="Error de semana", body=data.week_write_error_message, tone=BannerTone.ERROR))
     if data.entry_write_error_message:
         top_controls.append(build_banner(title="Error de entrada", body=data.entry_write_error_message, tone=BannerTone.ERROR))
-
-    if data.entry_form is not None:
-        top_controls.append(_build_entry_form_editor(data, state))
-    if data.entry_notes_editor is not None:
-        top_controls.append(_build_entry_notes_editor(data, state))
-    if data.session_form is not None:
-        top_controls.append(_build_session_form_editor(data, state))
 
     selected_week = _find_selected_week(data)
     focus_control = (

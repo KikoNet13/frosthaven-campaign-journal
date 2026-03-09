@@ -13,6 +13,7 @@ from frosthaven_campaign_journal.ui.common.theme.colors import (
 )
 from frosthaven_campaign_journal.ui.common.theme.layout import BOTTOM_BAR_HEIGHT
 from frosthaven_campaign_journal.ui.main_shell import MainShellState, build_main_shell_view
+from frosthaven_campaign_journal.ui.main_shell.view.center_forms import build_form_modal_overlay
 
 _SNACKBAR_SIDE_MARGIN = 16
 _SNACKBAR_BOTTOM_MARGIN = BOTTOM_BAR_HEIGHT + 24
@@ -149,10 +150,19 @@ def build_app_root(page: ft.Page) -> ft.Control:
 
     ft.use_effect(_sync_confirmation_dialog, dependencies=[shell_state.confirmation_state.event_id])
 
+    data = shell_state.build_view_data()
+    stack_controls: list[ft.Control] = [build_main_shell_view(shell_state, data=data)]
+    modal_overlay = build_form_modal_overlay(data, shell_state)
+    if modal_overlay is not None:
+        stack_controls.append(modal_overlay)
+
     return ft.Container(
         expand=True,
         content=ft.SafeArea(
             expand=True,
-            content=build_main_shell_view(shell_state),
+            content=ft.Stack(
+                expand=True,
+                controls=stack_controls,
+            ),
         ),
     )

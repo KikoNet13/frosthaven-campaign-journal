@@ -16,6 +16,7 @@ from frosthaven_campaign_journal.ui.common.resources import (
     iter_resource_ui_groups,
 )
 from frosthaven_campaign_journal.ui.common.theme.colors import (
+    COLOR_ACCENT_BG,
     COLOR_BOTTOM_BAR_BG,
     COLOR_DESTRUCTIVE_ICON,
     COLOR_DEFEAT_ICON,
@@ -182,6 +183,7 @@ def _build_entry_card_header(
 ) -> ft.Control:
     entry = card.entry
     outcome_icon = _build_entry_outcome_icon(entry)
+    entry_has_notes = _entry_has_notes(entry)
     title_controls: list[ft.Control] = [
         ft.Text(entry.label, size=18, weight=ft.FontWeight.BOLD, color=COLOR_WHITE)
     ]
@@ -205,8 +207,8 @@ def _build_entry_card_header(
         ft.IconButton(
             icon=ft.Icons.EDIT_NOTE,
             icon_size=18,
-            icon_color=COLOR_WHITE,
-            tooltip="Editar notas",
+            icon_color=(COLOR_ACCENT_BG if entry_has_notes else COLOR_WHITE),
+            tooltip=("Ver o editar notas" if entry_has_notes else "Añadir notas"),
             data=entry.ref,
             on_click=state.on_open_entry_notes_editor_click,
             disabled=card.entry_write_pending,
@@ -651,3 +653,7 @@ def _build_entry_card_status_texts(
     return _EntryCardStatusTexts(
         sessions_status=sessions_status,
     )
+
+
+def _entry_has_notes(entry: EntrySummary) -> bool:
+    return isinstance(entry.notes, str) and entry.notes.strip() != ""

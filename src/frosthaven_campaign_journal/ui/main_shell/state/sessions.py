@@ -68,6 +68,7 @@ class MainShellSessionActionsMixin:
 
     def on_open_manual_create_session_for_entry(self, entry_ref: EntryRef) -> None:
         now_date, now_time = to_local_strings(datetime.now(timezone.utc))
+        self._clear_form_modal_states()
         self.session_form_state = SessionFormState(
             mode="create",
             entry_ref=entry_ref,
@@ -125,6 +126,7 @@ class MainShellSessionActionsMixin:
         started_date, started_time = to_local_strings(started_at_utc)
         ended_date, ended_time = to_local_strings(ended_at_utc)
         is_active = ended_at_utc is None
+        self._clear_form_modal_states()
         self.session_form_state = SessionFormState(
             mode="edit",
             entry_ref=entry_ref,

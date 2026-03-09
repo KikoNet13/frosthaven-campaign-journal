@@ -24,8 +24,13 @@ _FAB_MENU_TEXT_STYLE = ft.TextStyle(color=COLOR_WHITE, size=15, weight=ft.FontWe
 _FAB_TRIGGER_SIZE = 56
 
 
-def build_main_shell_view(state: MainShellState) -> ft.Control:
-    data = state.build_view_data()
+def build_main_shell_view(
+    state: MainShellState,
+    *,
+    data: MainShellViewData | None = None,
+) -> ft.Control:
+    if data is None:
+        data = state.build_view_data()
     return ft.Pagelet(
         expand=True,
         appbar=ft.AppBar(

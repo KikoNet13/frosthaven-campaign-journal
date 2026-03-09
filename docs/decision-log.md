@@ -1268,3 +1268,29 @@
   `scripts/build-android-with-mobile-secrets.ps1`,
   `docs/repo-workflow.md`, `docs/system-map.md`,
   `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/114`
+
+### DEC-0056
+
+- `date`: 2026-03-09
+- `status`: accepted
+- `problem`: los formularios de `entry`, notas y sesión seguían ocupando espacio
+  en el visor semanal como bloques `inline`, y la tarjeta de `Entry` no
+  diferenciaba si una entrada ya tenía notas guardadas.
+- `decision`: mover los tres formularios persistentes a un modal declarativo
+  renderizado desde `ui/app_root.py`, mantener un único botón de notas por
+  tarjeta que abre el editor modal para leer/escribir, y señalar presencia de
+  notas con cambio de color del icono (`COLOR_ACCENT_BG` cuando hay contenido,
+  `COLOR_WHITE` cuando no lo hay).
+- `rationale`: libera espacio del visor para lectura/acciones, unifica el patrón
+  de edición persistente sin acoplar estado a `Page`, y permite detectar de un
+  vistazo qué entradas ya contienen notas.
+- `impact`: `center_panel.py` deja de renderizar formularios `inline`;
+  `center_forms.py` pasa a construir el modal activo; `app_root.py` monta la
+  capa modal sobre la shell; y `center_focus.py` ajusta tooltip/color del botón
+  de notas según `Entry.notes`.
+- `references`: `src/frosthaven_campaign_journal/ui/app_root.py`,
+  `src/frosthaven_campaign_journal/ui/main_shell/view/center_panel.py`,
+  `src/frosthaven_campaign_journal/ui/main_shell/view/center_forms.py`,
+  `src/frosthaven_campaign_journal/ui/main_shell/view/center_focus.py`,
+  `docs/ui-main-shell-architecture-mvs.md`,
+  `https://github.com/KikoNet13/frosthaven-campaign-journal/issues/102`

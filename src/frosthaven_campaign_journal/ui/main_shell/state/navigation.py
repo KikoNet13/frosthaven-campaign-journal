@@ -37,7 +37,7 @@ class MainShellNavigationMixin:
             self.entry_panel_state.viewer_sessions_error_message = None
             self.entry_panel_state.sessions_by_entry_ref = {}
             self.entry_panel_state.sessions_error_by_entry_ref = {}
-            self.entry_notes_editor_state = None
+            self._clear_form_modal_states()
             self._clear_resource_draft_state()
             self._refresh_and_reload(
                 selected_year_override=self.local_state.selected_year,
@@ -67,7 +67,7 @@ class MainShellNavigationMixin:
             self.entry_panel_state.viewer_sessions_error_message = None
             self.entry_panel_state.sessions_by_entry_ref = {}
             self.entry_panel_state.sessions_error_by_entry_ref = {}
-            self.entry_notes_editor_state = None
+            self._clear_form_modal_states()
             self._clear_resource_draft_state()
             self._refresh_and_reload(
                 selected_year_override=self.local_state.selected_year,
@@ -98,7 +98,7 @@ class MainShellNavigationMixin:
             self.entry_panel_state.viewer_entry_snapshot = None
             self.entry_panel_state.viewer_sessions = []
             self.entry_panel_state.viewer_sessions_error_message = None
-            self.entry_notes_editor_state = None
+            self._clear_form_modal_states()
             self._clear_resource_draft_state()
             self._load_entries_for_selected_week()
 
@@ -113,7 +113,7 @@ class MainShellNavigationMixin:
         def _action() -> None:
             self.local_state.viewer_entry_ref = entry_ref
             self._clear_write_errors()
-            self.entry_notes_editor_state = None
+            self._clear_form_modal_states()
             self._load_viewer_entry_and_sessions()
 
         self._run_or_confirm_resource_draft_before_context_change(_action, action_label="cambiar de entrada")
@@ -173,7 +173,7 @@ class MainShellNavigationMixin:
                 self.entry_panel_state.viewer_sessions_error_message = None
                 self.entry_panel_state.sessions_by_entry_ref = {}
                 self.entry_panel_state.sessions_error_by_entry_ref = {}
-                self.entry_notes_editor_state = None
+                self._clear_form_modal_states()
                 self._clear_resource_draft_state()
                 self._refresh_and_reload(
                     selected_year_override=result.new_year_number,

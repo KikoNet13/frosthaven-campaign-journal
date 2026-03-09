@@ -234,11 +234,7 @@ class MainShellRuntimeWriteMixin:
         reload_q5 = entry_ref_matches_selected_week(self.local_state, entry_ref)
 
         def _clear_after_delete(_result: EntryWriteResult) -> None:
-            if (
-                self.entry_notes_editor_state is not None
-                and self.entry_notes_editor_state.entry_ref == entry_ref
-            ):
-                self.entry_notes_editor_state = None
+            self._clear_form_modal_states()
             self.entry_panel_state.viewer_entry_snapshot = None
             self.entry_panel_state.viewer_sessions = []
             self.entry_panel_state.viewer_sessions_error_message = None

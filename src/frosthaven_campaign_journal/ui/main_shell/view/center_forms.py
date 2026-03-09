@@ -4,11 +4,16 @@ import flet as ft
 
 from frosthaven_campaign_journal.ui.common.components.surfaces import build_panel
 from frosthaven_campaign_journal.ui.common.theme.colors import (
+    COLOR_ACCENT_BG,
     COLOR_ERROR_TEXT,
     COLOR_TEXT_HEADING,
+    COLOR_WHITE,
 )
 from frosthaven_campaign_journal.ui.main_shell.model import MainShellViewData
 from frosthaven_campaign_journal.ui.main_shell.state import MainShellState
+
+_MODAL_WIDTH = 560
+_MODAL_BACKDROP = ft.Colors.with_opacity(0.42, ft.Colors.BLACK)
 
 
 def _build_entry_form_editor(data: MainShellViewData, state: MainShellState) -> ft.Control:
@@ -28,7 +33,7 @@ def _build_entry_form_editor(data: MainShellViewData, state: MainShellState) -> 
                     ft.dropdown.Option(key="scenario", text="Escenario"),
                     ft.dropdown.Option(key="outpost", text="Puesto fronterizo"),
                 ],
-                on_change=state.on_entry_form_set_type,
+                on_select=state.on_entry_form_set_type,
             ),
             ft.TextField(
                 label="Referencia de escenario",
@@ -142,4 +147,57 @@ def _build_session_form_editor(data: MainShellViewData, state: MainShellState) -
             ),
             ft.Text(data.session_form.error_message or "", size=12, color=COLOR_ERROR_TEXT),
         ],
+    )
+
+
+def build_form_modal_overlay(data: MainShellViewData, state: MainShellState) -> ft.Control | None:
+    if data.entry_form is not None:
+        return _build_modal_overlay(
+            content=_build_entry_form_editor(data, state),
+            on_close=state.on_cancel_entry_form,
+        )
+    if data.entry_notes_editor is not None:
+        return _build_modal_overlay(
+            content=_build_entry_notes_editor(data, state),
+            on_close=state.on_cancel_entry_notes_editor,
+        )
+    if data.session_form is not None:
+        return _build_modal_overlay(
+            content=_build_session_form_editor(data, state),
+            on_close=state.on_cancel_session_form,
+        )
+    return None
+
+
+def _build_modal_overlay(*, content: ft.Control, on_close) -> ft.Control:
+    return ft.Container(
+        expand=True,
+        bgcolor=_MODAL_BACKDROP,
+        alignment=ft.Alignment.CENTER,
+        padding=ft.Padding(left=24, top=24, right=24, bottom=24),
+        content=ft.Container(
+            width=_MODAL_WIDTH,
+            content=ft.Column(
+                tight=True,
+                spacing=8,
+                controls=[
+                    ft.Row(
+                        alignment=ft.MainAxisAlignment.END,
+                        controls=[
+                            ft.IconButton(
+                                icon=ft.Icons.CLOSE,
+                                icon_color=COLOR_WHITE,
+                                tooltip="Cerrar diálogo",
+                                style=ft.ButtonStyle(
+                                    bgcolor=COLOR_ACCENT_BG,
+                                    shape=ft.RoundedRectangleBorder(radius=12),
+                                ),
+                                on_click=on_close,
+                            )
+                        ],
+                    ),
+                    content,
+                ],
+            ),
+        ),
     )

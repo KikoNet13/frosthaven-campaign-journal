@@ -6,6 +6,8 @@ from frosthaven_campaign_journal.ui.common.theme.colors import COLOR_ERROR_TEXT
 from frosthaven_campaign_journal.ui.main_shell.model import MainShellViewData
 from frosthaven_campaign_journal.ui.main_shell.state import MainShellState
 
+_NOTES_TEXT_FIELD_HEIGHT = 220
+
 
 def build_entry_form_dialog_body(data: MainShellViewData, state: MainShellState) -> ft.Control:
     assert data.entry_form is not None
@@ -32,13 +34,20 @@ def build_entry_form_dialog_body(data: MainShellViewData, state: MainShellState)
     return ft.Column(spacing=12, tight=True, controls=controls)
 
 
-def build_entry_notes_dialog_body(data: MainShellViewData, state: MainShellState) -> ft.Control:
+def build_entry_notes_dialog_body(
+    data: MainShellViewData,
+    state: MainShellState,
+    *,
+    text_field_height: int = _NOTES_TEXT_FIELD_HEIGHT,
+) -> ft.Control:
     assert data.entry_notes_editor is not None
     controls: list[ft.Control] = [
         ft.TextField(
             value=data.entry_notes_editor.notes_value,
             multiline=True,
-            expand=True,
+            min_lines=1,
+            max_lines=None,
+            height=text_field_height,
             on_change=state.on_entry_notes_change,
         )
     ]

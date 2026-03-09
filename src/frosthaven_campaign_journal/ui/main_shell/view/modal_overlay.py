@@ -18,6 +18,7 @@ from frosthaven_campaign_journal.ui.main_shell.view.center_forms import (
 )
 
 _NOTES_DIALOG_HEIGHT = 320
+_NOTES_TEXT_FIELD_HEIGHT = 220
 
 
 @dataclass
@@ -82,7 +83,11 @@ def _build_entry_notes_dialog(data: MainShellViewData, state: MainShellState) ->
     if data.entry_notes_editor is None:
         return None
     return _DialogDefinition(
-        body=build_entry_notes_dialog_body(data, state),
+        body=build_entry_notes_dialog_body(
+            data,
+            state,
+            text_field_height=_NOTES_TEXT_FIELD_HEIGHT,
+        ),
         actions=[
             _build_dialog_button("Cancelar", filled=False, on_click=state.on_cancel_entry_notes_editor),
             _build_dialog_button("Guardar", filled=True, on_click=state.on_submit_entry_notes),

@@ -124,7 +124,7 @@ class MainShellModalOverlayTests(unittest.TestCase):
         self.assertNotIn("Cerrar diálogo", _tooltips(overlay))
         self.assertEqual(["Cancelar", "Guardar"], _button_labels(overlay))
         self.assertEqual(1, len(_text_fields(overlay)))
-        self.assertTrue(_text_fields(overlay)[0].expand)
+        self.assertEqual(220, _text_fields(overlay)[0].height)
         self.assertGreaterEqual(len(_rows_with_alignment(overlay, ft.MainAxisAlignment.END)), 1)
 
         state.on_cancel_entry_notes_editor()

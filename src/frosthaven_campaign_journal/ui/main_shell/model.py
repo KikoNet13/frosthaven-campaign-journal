@@ -59,9 +59,18 @@ class MainShellViewData:
     read_error_message: str | None
     read_warning_message: str | None
     env_name: str
+    confirmation_dialog: "ConfirmationDialogViewState | None"
     entry_form: "EntryFormViewState | None"
     entry_notes_editor: "EntryNotesEditorViewState | None"
     session_form: "SessionFormViewState | None"
+
+
+@dataclass(frozen=True)
+class ConfirmationDialogViewState:
+    key: str
+    title: str
+    body: str
+    confirm_label: str
 
 
 @dataclass(frozen=True)

@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, timezone
 
 from frosthaven_campaign_journal.models import EntryRef, EntrySummary, ViewerSessionItem
 from frosthaven_campaign_journal.ui.main_shell.model import (
+    ConfirmationDialogViewState,
     EntryFormViewState,
     EntryNotesEditorViewState,
     MainShellViewData,
@@ -14,6 +15,14 @@ from frosthaven_campaign_journal.ui.main_shell.model import (
 
 class MainShellViewDataMixin:
     def build_view_data(self) -> MainShellViewData:
+        confirmation_view: ConfirmationDialogViewState | None = None
+        if self.confirmation_state.key is not None:
+            confirmation_view = ConfirmationDialogViewState(
+                key=self.confirmation_state.key,
+                title=self.confirmation_state.title,
+                body=self.confirmation_state.body,
+                confirm_label=self.confirmation_state.confirm_label,
+            )
         entry_form_view: EntryFormViewState | None = None
         if self.entry_form_state is not None:
             entry_form_view = EntryFormViewState(
@@ -97,6 +106,7 @@ class MainShellViewDataMixin:
             read_error_message=self.read_state.error_message,
             read_warning_message=self.read_state.warning_message,
             env_name=self.env_name,
+            confirmation_dialog=confirmation_view,
             entry_form=entry_form_view,
             entry_notes_editor=entry_notes_view,
             session_form=session_form_view,

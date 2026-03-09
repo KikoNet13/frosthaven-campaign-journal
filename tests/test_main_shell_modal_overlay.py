@@ -17,8 +17,8 @@ from frosthaven_campaign_journal.ui.main_shell.state.types import (
     EntryNotesEditorState,
     SessionFormState,
 )
-from frosthaven_campaign_journal.ui.main_shell.view.center_forms import (
-    build_form_modal_overlay,
+from frosthaven_campaign_journal.ui.main_shell.view.modal_overlay import (
+    build_main_shell_modal_overlay,
 )
 
 
@@ -72,6 +72,10 @@ def _text_field_values(control: ft.Control) -> list[str]:
     return [item.value for item in _iter_controls(control) if isinstance(item, ft.TextField)]
 
 
+def _text_fields(control: ft.Control) -> list[ft.TextField]:
+    return [item for item in _iter_controls(control) if isinstance(item, ft.TextField)]
+
+
 def _tooltips(control: ft.Control) -> list[str]:
     values: list[str] = []
     for item in _iter_controls(control):
@@ -81,37 +85,100 @@ def _tooltips(control: ft.Control) -> list[str]:
     return values
 
 
+def _button_labels(control: ft.Control) -> list[str]:
+    labels: list[str] = []
+    for item in _iter_controls(control):
+        if isinstance(item, (ft.OutlinedButton, ft.FilledButton, ft.TextButton)):
+            content = getattr(item, "content", None)
+            if isinstance(content, str) and content:
+                labels.append(content)
+    return labels
+
+
+def _rows_with_alignment(control: ft.Control, alignment: ft.MainAxisAlignment) -> list[ft.Row]:
+    return [
+        item
+        for item in _iter_controls(control)
+        if isinstance(item, ft.Row) and item.alignment == alignment
+    ]
+
+
 class MainShellModalOverlayTests(unittest.TestCase):
-    def test_build_form_modal_overlay_returns_none_without_active_form(self) -> None:
+    def test_build_main_shell_modal_overlay_returns_none_without_active_dialog(self) -> None:
         state = _build_state()
 
-        self.assertIsNone(build_form_modal_overlay(state.build_view_data(), state))
+        self.assertIsNone(build_main_shell_modal_overlay(state.build_view_data(), state))
 
-    def test_notes_modal_renders_loaded_value_and_close_action(self) -> None:
+    def test_notes_modal_renders_loaded_value_without_title_or_close_action(self) -> None:
         state = _build_state()
         entry = _build_entry(entry_id="entry-1", label="Escenario 1", notes="Notas ya guardadas")
         state.entry_panel_state.entries_for_selected_week = [entry]
 
         state.on_open_entry_notes_editor(entry.ref)
-        overlay = build_form_modal_overlay(state.build_view_data(), state)
+        overlay = build_main_shell_modal_overlay(state.build_view_data(), state)
 
         self.assertIsNotNone(overlay)
         assert overlay is not None
-        self.assertIn("Editar notas de entry: Escenario 1", _text_values(overlay))
+        self.assertNotIn("Editar notas de entry: Escenario 1", _text_values(overlay))
         self.assertIn("Notas ya guardadas", _text_field_values(overlay))
-        self.assertIn("Cerrar diálogo", _tooltips(overlay))
+        self.assertNotIn("Cerrar diálogo", _tooltips(overlay))
+        self.assertEqual(["Cancelar", "Guardar"], _button_labels(overlay))
+        self.assertEqual(1, len(_text_fields(overlay)))
+        self.assertTrue(_text_fields(overlay)[0].expand)
+        self.assertGreaterEqual(len(_rows_with_alignment(overlay, ft.MainAxisAlignment.END)), 1)
 
         state.on_cancel_entry_notes_editor()
-        self.assertIsNone(build_form_modal_overlay(state.build_view_data(), state))
+        self.assertIsNone(build_main_shell_modal_overlay(state.build_view_data(), state))
 
-    def test_only_one_modal_state_is_active_at_a_time_and_overlay_tracks_current_form(self) -> None:
+    def test_confirmation_dialog_uses_shared_overlay_instead_of_alertdialog(self) -> None:
+        state = _build_state()
+        state._set_confirmation(
+            key="week_close",
+            title="Cerrar semana",
+            body="¿Quieres continuar?",
+            confirm_label="Cerrar",
+            payload=(1, 1),
+        )
+
+        overlay = build_main_shell_modal_overlay(state.build_view_data(), state)
+
+        self.assertIsNotNone(overlay)
+        assert overlay is not None
+        self.assertIn("Cerrar semana", _text_values(overlay))
+        self.assertIn("¿Quieres continuar?", _text_values(overlay))
+        self.assertEqual(["Cancelar", "Cerrar"], _button_labels(overlay))
+        self.assertFalse(any(isinstance(item, ft.AlertDialog) for item in _iter_controls(overlay)))
+
+    def test_confirmation_dialog_has_priority_over_active_form_dialog(self) -> None:
+        state = _build_state()
+        entry = _build_entry(entry_id="entry-1", label="Escenario 1", notes="Notas")
+        state.entry_panel_state.entries_for_selected_week = [entry]
+
+        state.on_open_entry_notes_editor(entry.ref)
+        state._set_confirmation(
+            key="entry_delete",
+            title="Eliminar entrada",
+            body="¿Seguro?",
+            confirm_label="Eliminar",
+            payload=entry.ref,
+        )
+
+        overlay = build_main_shell_modal_overlay(state.build_view_data(), state)
+
+        self.assertIsNotNone(overlay)
+        assert overlay is not None
+        self.assertIn("Eliminar entrada", _text_values(overlay))
+        self.assertNotIn("Notas", _text_field_values(overlay))
+        self.assertIsNotNone(state.entry_notes_editor_state)
+
+    def test_only_one_form_modal_state_is_active_at_a_time_and_overlay_tracks_current_form(self) -> None:
         state = _build_state()
         entry = _build_entry(entry_id="entry-1", label="Escenario 1", notes="Notas")
         state.entry_panel_state.entries_for_selected_week = [entry]
         state.entry_panel_state.sessions_by_entry_ref = {entry.ref: []}
 
         state.on_open_entry_add_modal()
-        overlay = build_form_modal_overlay(state.build_view_data(), state)
+        overlay = build_main_shell_modal_overlay(state.build_view_data(), state)
         self.assertIsNotNone(state.entry_form_state)
         self.assertIsNone(state.entry_notes_editor_state)
         self.assertIsNone(state.session_form_state)
@@ -119,15 +186,15 @@ class MainShellModalOverlayTests(unittest.TestCase):
         self.assertIn("Crear entrada", _text_values(overlay))
 
         state.on_open_entry_notes_editor(entry.ref)
-        overlay = build_form_modal_overlay(state.build_view_data(), state)
+        overlay = build_main_shell_modal_overlay(state.build_view_data(), state)
         self.assertIsNone(state.entry_form_state)
         self.assertIsNotNone(state.entry_notes_editor_state)
         self.assertIsNone(state.session_form_state)
         assert overlay is not None
-        self.assertIn("Editar notas de entry: Escenario 1", _text_values(overlay))
+        self.assertIn("Notas", _text_field_values(overlay))
 
         state.on_open_manual_create_session_for_entry(entry.ref)
-        overlay = build_form_modal_overlay(state.build_view_data(), state)
+        overlay = build_main_shell_modal_overlay(state.build_view_data(), state)
         self.assertIsNone(state.entry_form_state)
         self.assertIsNone(state.entry_notes_editor_state)
         self.assertIsNotNone(state.session_form_state)
